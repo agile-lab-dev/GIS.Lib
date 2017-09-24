@@ -39,64 +39,45 @@ class ShapeLoader() extends Loader[OSMStreet]{
     lines
   }
 
-  override def loadIndex(sources: String*): GeometryList[OSMStreet] = {
+  protected def streetMapping(fields: Array[AnyRef],line: Geometry): OSMStreet = {
+    val streetType: String = if(fields(3) != null) fields(3).toString else ""
+    val st = streetType match {
+      case "motorway" => OSMStreetType.Motorway
+      case "secondary" => OSMStreetType.Secondary
+      case "unclassified" => OSMStreetType.Unclassified
+      case "tertiary" => OSMStreetType.Tertiary
+      case "primary_link" => OSMStreetType.Primary_link
+      case "primary" => OSMStreetType.Primary
+      case "track" => OSMStreetType.Track
+      case "residential" => OSMStreetType.Residential
+      case "pedestrian" => OSMStreetType.Pedestrian
+      case "trunk_link" => OSMStreetType.Trunk_Link
+      case "motorway_link" => OSMStreetType.Motorway_Link
+      case "footway" => OSMStreetType.Footway
+      case "service" => OSMStreetType.Service
+      case "path" => OSMStreetType.Path
+      case "cycleway" => OSMStreetType.Cycleway
+      case "track_grade2" => OSMStreetType.Track_Grade2
+      case "steps" => OSMStreetType.Steps
+      case _ => OSMStreetType.Unclassified
+    }
 
-    var i = 0
-    val lines: Iterator[OSMStreet] = sources.foldLeft(Seq.empty[OSMStreet].toIterator)( (acc, source) => acc ++ loadFile(source).map(e => {
+    //val length: Double = fields(8).replace(',', '.').toDouble
+    //var bidirected: Boolean = false
+    //if (fields(5) == 1) bidirected = true
+    val street: String = if(fields(4) != null) fields(4).toString else ""
+    val code: String = if(fields(5) != null) fields(5).toString else ""
+    val oneway: Boolean = if(fields(6).toString == "F") false else true
+    val isTunnel: Boolean = if(fields(10).toString == "F") false else true
+    val isBridge: Boolean = if(fields(9).toString == "F") false else true
+    val speedlimit: Int = if(fields(7).toString.toInt != 0) fields(7).toString.toInt else 0
+    //val toSpeed: Integer = fields(6).toInt
 
 
-      if(i % 10000 == 0){
-        println("loaded "+i+" lines")
-      }
-
-      val lr: MultiLineString = e._2.asInstanceOf[MultiLineString]
-
-      val fields = e._1
-
-      val streetType: String = if(fields(3) != null) fields(3).toString else ""
-      val st = streetType match {
-        case "motorway" => OSMStreetType.Motorway
-        case "secondary" => OSMStreetType.Secondary
-        case "unclassified" => OSMStreetType.Unclassified
-        case "tertiary" => OSMStreetType.Tertiary
-        case "primary_link" => OSMStreetType.Primary_link
-        case "primary" => OSMStreetType.Primary
-        case "track" => OSMStreetType.Track
-        case "residential" => OSMStreetType.Residential
-        case "pedestrian" => OSMStreetType.Pedestrian
-        case "trunk_link" => OSMStreetType.Trunk_Link
-        case "motorway_link" => OSMStreetType.Motorway_Link
-        case "footway" => OSMStreetType.Footway
-        case "service" => OSMStreetType.Service
-        case "path" => OSMStreetType.Path
-        case "cycleway" => OSMStreetType.Cycleway
-        case "track_grade2" => OSMStreetType.Track_Grade2
-        case "steps" => OSMStreetType.Steps
-        case _ => OSMStreetType.Unclassified
-      }
-
-      //val length: Double = fields(8).replace(',', '.').toDouble
-      //var bidirected: Boolean = false
-      //if (fields(5) == 1) bidirected = true
-      val street: String = if(fields(4) != null) fields(4).toString else ""
-      val code: String = if(fields(5) != null) fields(5).toString else ""
-      val oneway: Boolean = if(fields(6).toString == "F") false else true
-      val isTunnel: Boolean = if(fields(10).toString == "F") false else true
-      val isBridge: Boolean = if(fields(9).toString == "F") false else true
-      val speedlimit: Int = if(fields(7).toString.toInt != 0) fields(7).toString.toInt else 0
-      //val toSpeed: Integer = fields(6).toInt
-      i += 1
-
-      OSMStreet(lr, street, code, isBridge, isTunnel, speedlimit, oneway, st)
-
-    }) )
-    val streetL: List[OSMStreet] = lines.toList
-    println("starting to build index")
-    val streetIndex = new GeometryList[OSMStreet](streetL)
-    streetIndex.buildIndex(IndexType.RTREE)
-    println("index built")
-    streetIndex
+    OSMStreet(line, street, code, isBridge, isTunnel, speedlimit, oneway, st)
   }
+
+
 }
 
 

@@ -4,6 +4,7 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, 
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import com.vividsolutions.jts.geom._
+import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 import it.agilelab.bigdata.gis.models.HereMapsStreetType.HereMapsStreetType
 
 object HereMapsStreetType extends Enumeration {
@@ -17,7 +18,7 @@ object HereMapsStreet{
 
 }
 
-case class HereMapsStreet(lineString: LineString, street: String, city: String, county: String, state: String, country: String, speedLimit: Int, bidirected: Boolean, length: Double, streetType: HereMapsStreetType) extends Geometry(lineString.getFactory) {
+case class HereMapsStreet(lineString: Geometry, street: String, city: String, county: String, state: String, country: String, speedLimit: Int, bidirected: Boolean, length: Double, streetType: HereMapsStreetType) extends Geometry(lineString.getFactory) {
 
     override def toString() = {
         s"""Line:${lineString.toString()}
@@ -48,7 +49,7 @@ case class HereMapsStreet(lineString: LineString, street: String, city: String, 
         if (isEmpty)
             new Envelope
         else
-            lineString.getCoordinateSequence().expandEnvelope(new Envelope)
+            getCoordinateSequence().expandEnvelope(new Envelope)
 
     }
 
@@ -60,7 +61,7 @@ case class HereMapsStreet(lineString: LineString, street: String, city: String, 
         var i: Int = 0
         var j: Int = 0
         while (i < getNumPoints && j < s.getNumPoints) {
-            val comparison: Int = lineString.getCoordinateSequence().getCoordinate(i).compareTo(s.lineString.getCoordinateSequence.getCoordinate(j))
+            val comparison: Int = getCoordinateSequence().getCoordinate(i).compareTo(s.getCoordinateSequence.getCoordinate(j))
             if (comparison != 0) return comparison
             i += 1
             j += 1
@@ -76,7 +77,11 @@ case class HereMapsStreet(lineString: LineString, street: String, city: String, 
 
     override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
         val s: HereMapsStreet = o.asInstanceOf[HereMapsStreet]
-        return comp.compare(lineString.getCoordinateSequence(), s.lineString.getCoordinateSequence())
+        return comp.compare(getCoordinateSequence(), s.getCoordinateSequence())
+    }
+
+    def getCoordinateSequence() = {
+        new CoordinateArraySequence(getCoordinates)
     }
 
     override def getCoordinates: Array[Coordinate] = lineString.getCoordinates
