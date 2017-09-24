@@ -6,6 +6,7 @@ import it.agilelab.bigdata.gis.models.OSMStreet;
 import it.agilelab.bigdata.gis.spatialList.*;
 import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem;
 import org.junit.Test;
+import scala.Function1;
 import scala.collection.JavaConversions.*;
 
 import java.util.ArrayList;
@@ -128,6 +129,10 @@ public class LoaderTest {
         ShapeLoader loader = new ShapeLoader();
         ArrayList<String> paths = new ArrayList<String>();
         paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\nord-est-latest-free.shp\\gis.osm_roads_free_1.shp");
+        /*paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\nord-ovest-latest-free.shp\\gis.osm_roads_free_1.shp");
+        paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\sud-latest-free.shp\\gis.osm_roads_free_1.shp");
+        paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\centro-latest-free.shp\\gis.osm_roads_free_1.shp");
+        paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\isole-latest-free.shp\\gis.osm_roads_free_1.shp");*/
 
 
         GeometryList<OSMStreet> lineStringList = loader.loadIndex(scala.collection.JavaConversions.asScalaIterator(paths.iterator()).toSeq());

@@ -3,7 +3,7 @@ package it.agilelab.bigdata.gis.loader
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
 import it.agilelab.bigdata.gis.enums.IndexType
-import it.agilelab.bigdata.gis.models.{HereMapsStreet, HereMapsStreetType}
+import it.agilelab.bigdata.gis.models.{HereMapsStreet, HereMapsStreetType, OSMStreet, OSMStreetType}
 import it.agilelab.bigdata.gis.spatialList._
 
 import scala.io.Source
@@ -34,49 +34,36 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
 
   val sridFactory8003 = new GeometryFactory(new PrecisionModel(), 8003, CoordinateArraySequenceFactory.instance())
 
-  override def loadIndex(sources: String*): GeometryList[HereMapsStreet] = {
-    var i=0
-    val streetList: Iterator[HereMapsStreet] = sources.foldLeft(Seq.empty[HereMapsStreet].toIterator)((acc, source) => acc ++ loadFile(source).map(e => {
+  protected def streetMapping(fields: Array[AnyRef],line: Geometry): HereMapsStreet = {
 
-      if(i % 10000 == 0){
-        println("loaded "+i+" lines")
-      }
+    val fields2 = fields.map(_.toString)
 
-      val lr: LineString = e._2.asInstanceOf[LineString]
-      val fields = e._1.map(_.toString)
-      val streetType: String = fields(4)
-      val st = streetType match {
-        case "\"1\"" => HereMapsStreetType.Motorway
-        case "\"2\"" => HereMapsStreetType.ExtraUrban
-        case "\"3\"" => HereMapsStreetType.Area1_Large
-        case "\"4\"" => HereMapsStreetType.Area2_Medium
-        case "\"5\"" => HereMapsStreetType.Area3_Small
-        case _ => HereMapsStreetType.Unknown
-      }
+    val streetType: String = fields2(4)
+    val st = streetType match {
+      case "\"1\"" => HereMapsStreetType.Motorway
+      case "\"2\"" => HereMapsStreetType.ExtraUrban
+      case "\"3\"" => HereMapsStreetType.Area1_Large
+      case "\"4\"" => HereMapsStreetType.Area2_Medium
+      case "\"5\"" => HereMapsStreetType.Area3_Small
+      case _ => HereMapsStreetType.Unknown
+    }
 
-      val length: Double = fields(8).replace(',', '.').toDouble
-      var bidirected: Boolean = false
-      if (fields(10) == "\"Y\"") bidirected = true
-      val street: String = fields(11)
-      val city: String = fields(12)
-      val county: String = fields(13)
-      val state: String = fields(14)
-      val country: String = fields(15)
-      val fromSpeed: Integer = fields(16).toInt
-      val toSpeed: Integer = fields(17).toInt
-      i += 1
+    val length: Double = fields2(8).replace(',', '.').toDouble
+    var bidirected: Boolean = false
+    if (fields2(10) == "\"Y\"") bidirected = true
+    val street: String = fields2(11)
+    val city: String = fields2(12)
+    val county: String = fields2(13)
+    val state: String = fields2(14)
+    val country: String = fields2(15)
+    val fromSpeed: Integer = fields2(16).toInt
+    val toSpeed: Integer = fields2(17).toInt
 
-      HereMapsStreet(lr, street, city, county, state, country, Math.max(fromSpeed, toSpeed), bidirected, length, st)
-
-    }))
-
-    val streetL = streetList.toList
-    println("starting to build index")
-    val streetIndex = new GeometryList[HereMapsStreet](streetL)
-    streetIndex.buildIndex(IndexType.RTREE)
-    println("index built")
-    streetIndex
+    HereMapsStreet(line, street, city, county, state, country, Math.max(fromSpeed, toSpeed), bidirected, length, st)
   }
+
+
+
 
   override def loadFile(source: String): Iterator[(Array[AnyRef],Geometry)] = {
 

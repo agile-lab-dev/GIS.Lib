@@ -21,7 +21,7 @@ object OSMStreet{
 
 }
 
-case class OSMStreet(lineString: MultiLineString, street: String, code: String, isBridge: Boolean, isTunnel: Boolean, speedLimit: Int, bidirected: Boolean, streetType: OSMStreetType) extends Geometry(lineString.getFactory) {
+case class OSMStreet(lineString: Geometry, street: String, code: String, isBridge: Boolean, isTunnel: Boolean, speedLimit: Int, bidirected: Boolean, streetType: OSMStreetType) extends Geometry(lineString.getFactory) {
 
     override def toString() = {
         s"""Line:${lineString.toString()}
@@ -29,6 +29,9 @@ case class OSMStreet(lineString: MultiLineString, street: String, code: String, 
            |SpeedLimit:${speedLimit}
            |Bidirected:${bidirected}
            |StreetType:${streetType}
+           |code:${code}
+           |isBridge:${isBridge}
+           |isTunnel:${isTunnel}
          """.stripMargin
     }
 
@@ -101,4 +104,23 @@ case class OSMStreet(lineString: MultiLineString, street: String, code: String, 
     override def equalsExact(other: Geometry, tolerance: Double): Boolean = lineString.equalsExact(other, tolerance)
 
     override def getNumPoints: Int = lineString.getNumPoints
+
+    import OSMStreetType._
+
+    def isForCar = !isNotForCar
+
+    def isNotForCar = streetType match {
+        case Cycleway => true
+        case _ => isForPedestrian
+    }
+
+
+    def isForPedestrian = streetType match {
+        case Pedestrian | Footway | Steps => true
+        case _ => false
+    }
+
+
+
+
 }
