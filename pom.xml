@@ -12,7 +12,6 @@
         </repository>
     </repositories>
 
-
     <name>${project.groupId}:${project.artifactId}</name>
 	<description>Geospatial Library based on JTS</description>
 	<url></url>
@@ -81,7 +80,27 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	</dependencies>
+
+        <dependency>
+            <groupId>com.graphhopper</groupId>
+            <artifactId>graphhopper-reader-osm</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.graphhopper</groupId>
+            <artifactId>graphhopper-map-matching-core</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.github.scala-incubator.io/scala-io-file_2.11 -->
+        <dependency>
+            <groupId>com.github.scala-incubator.io</groupId>
+            <artifactId>scala-io-file_2.11</artifactId>
+            <version>0.4.3-1</version>
+        </dependency>
+
+    </dependencies>
 	
 	<build>
         <sourceDirectory>src/main/java</sourceDirectory>
