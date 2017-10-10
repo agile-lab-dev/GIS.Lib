@@ -81,6 +81,8 @@
 			</exclusions>
 		</dependency>
 
+        <!-- GraphHopper dependencies -->
+
         <dependency>
             <groupId>com.graphhopper</groupId>
             <artifactId>graphhopper-reader-osm</artifactId>
@@ -99,6 +101,15 @@
             <artifactId>scala-io-file_2.11</artifactId>
             <version>0.4.3-1</version>
         </dependency>
+
+        <!-- Scala Test -->
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.11</artifactId>
+            <version>3.0.4</version>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 	
