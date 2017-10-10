@@ -66,6 +66,7 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
   val algoOptions: AlgorithmOptions = new AlgorithmOptions(algorithm, weighting)
   println("MAX_VISITED_NODES: " + algoOptions.getMaxVisitedNodes)
   val mapMatching: MapMatching = new MapMatching(hopperOSM, algoOptions)
+  mapMatching.setMeasurementErrorSigma(50)
 
 
   def matchingRoute(gpsPoints: java.util.List[GPXEntry]): MatchedRoute = {
