@@ -41,6 +41,7 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
   hopperOSM.setEncodingManager(new EncodingManager(encoder))
   val weighting = new GenericWeighting(encoder, new PMap())
   hopperOSM.getCHFactoryDecorator.addWeighting(weighting)
+
   //We disable the contraction hierarchies post processing. It seems to be mandatory in order to do map matching
   hopperOSM.getCHFactoryDecorator.setEnabled(false)
 
@@ -49,7 +50,6 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
     hopperOSM.load(graphLocation)
   }
   else{
-
     //We assume that there already is a stored graph in the folder. We delete those files
     val path: Path = Path.fromString(graphLocation)
     //If false then method will throw an exception when encountering a file that cannot be deleted.  Otherwise it will continue
@@ -64,10 +64,8 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
 
   val algorithm: String = Parameters.Algorithms.DIJKSTRA_BI
   val algoOptions: AlgorithmOptions = new AlgorithmOptions(algorithm, weighting)
-  println("MAX_VISITED_NODES: " + algoOptions.getMaxVisitedNodes)
   val mapMatching: MapMatching = new MapMatching(hopperOSM, algoOptions)
   mapMatching.setMeasurementErrorSigma(50)
-
 
   def matchingRoute(gpsPoints: java.util.List[GPXEntry]): MatchedRoute = {
 
