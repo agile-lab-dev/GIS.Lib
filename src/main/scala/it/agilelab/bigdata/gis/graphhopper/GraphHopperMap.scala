@@ -1,6 +1,6 @@
 package it.agilelab.bigdata.gis.graphhopper
 
-import com.graphhopper.matching.{EdgeMatch, MapMatching, MatchResult}
+import com.graphhopper.matching.{EdgeMatch, GPXExtension, MapMatching, MatchResult}
 
 import scalax.file.Path
 import com.graphhopper.reader.osm.GraphHopperOSM
@@ -66,6 +66,8 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
   val algoOptions: AlgorithmOptions = new AlgorithmOptions(algorithm, weighting)
   val mapMatching: MapMatching = new MapMatching(hopperOSM, algoOptions)
   mapMatching.setMeasurementErrorSigma(50)
+  //mapMatching.setMeasurementErrorSigma(20)
+
 
   def matchingRoute(gpsPoints: java.util.List[GPXEntry]): MatchedRoute = {
 
@@ -80,7 +82,9 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
 
     val routeTypesKm = mappedEdges.groupBy(_._1).map(x => (x._1, x._2.map(_._2).sum))
 
-    MatchedRoute(length, time, routeTypesKm)
+    val points: Seq[GPXEntry] = edges.flatMap(_.getGpxExtensions).map(_.getEntry)
+
+    MatchedRoute(points, length, time, routeTypesKm)
 
   }
 
