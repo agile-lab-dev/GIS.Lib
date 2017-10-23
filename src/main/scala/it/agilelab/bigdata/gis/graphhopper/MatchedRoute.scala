@@ -10,7 +10,7 @@ import scala.util.Try
 case class MatchedRoute(points: Seq[GPXEntry],length: Double, time: Long, routes: Map[String, Double]) {
 
   def getKmType(s: String): Try[Double] = {
-    Try(routes(s))
+    Try.apply(routes(s))
   }
 
 
