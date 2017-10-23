@@ -7,6 +7,8 @@ import com.graphhopper.reader.osm.GraphHopperOSM
 import com.graphhopper.routing.AlgorithmOptions
 import com.graphhopper.routing.util.{CarFlagEncoder, DataFlagEncoder, EncodingManager}
 import com.graphhopper.routing.weighting.{FastestWeighting, GenericWeighting, ShortestWeighting}
+import com.graphhopper.storage.index.QueryResult
+import com.graphhopper.util.shapes.GHPoint3D
 import com.graphhopper.util.{GPXEntry, PMap, Parameters}
 
 import scala.collection.JavaConversions._
@@ -82,7 +84,9 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
 
     val routeTypesKm = mappedEdges.groupBy(_._1).map(x => (x._1, x._2.map(_._2).sum))
 
-    val points: Seq[GPXEntry] = edges.flatMap(_.getGpxExtensions).map(_.getEntry)
+    val snappedPoints = edges.flatMap(_.getGpxExtensions).map(x => (x.getQueryResult.getSnappedPoint, x.getEntry.getTime))
+
+    val points = snappedPoints.map(x =>  new GPXEntry(x._1.lat, x._1.lon, x._1.ele, x._2))
 
     MatchedRoute(points, length, time, routeTypesKm)
 
