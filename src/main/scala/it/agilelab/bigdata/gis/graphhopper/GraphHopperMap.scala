@@ -1,5 +1,8 @@
 package it.agilelab.bigdata.gis.graphhopper
 
+import java.util.Locale
+
+import com.graphhopper.{GHRequest, GHResponse, PathWrapper}
 import com.graphhopper.matching.{EdgeMatch, GPXExtension, MapMatching, MatchResult}
 
 import scalax.file.Path
@@ -9,7 +12,7 @@ import com.graphhopper.routing.util.{CarFlagEncoder, DataFlagEncoder, EncodingMa
 import com.graphhopper.routing.weighting.{FastestWeighting, GenericWeighting, ShortestWeighting}
 import com.graphhopper.storage.index.QueryResult
 import com.graphhopper.util.shapes.GHPoint3D
-import com.graphhopper.util.{GPXEntry, PMap, Parameters}
+import com.graphhopper.util.{GPXEntry, PMap, Parameters, PointList}
 
 import scala.collection.JavaConversions._
 import scala.collection.immutable
@@ -89,6 +92,39 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
     val points = snappedPoints.map(x =>  new GPXEntry(x._1.lat, x._1.lon, x._1.ele, x._2))
 
     MatchedRoute(points, length, time, routeTypesKm)
+
+  }
+
+  def extendRoute(gpsPoints: java.util.List[GPXEntry]): Seq[(Double, Double)] = {
+
+    gpsPoints.sliding(2).flatMap( x => {
+
+    val req = new GHRequest(x)
+      .setVehicle("generic")
+      .setLocale(Locale.ITALY)
+
+    val rsp: GHResponse = hopperOSM.route(req)
+
+    //First check for errors
+    if(rsp.hasErrors){
+      // handle them!
+      val errors = rsp.getErrors
+      var i = 0
+      errors.foreach{
+        err =>
+          println("Error #" + i + " " + err.getMessage )
+          i+=1
+      }
+      throw new RuntimeException
+    }
+
+    // use the best path, see the GHResponse class for more possibilities.
+    val path: PathWrapper = rsp.getBest
+
+    // points, distance in meters and time in millis of the full path
+    path.getPoints.map(x => (x.lat,x.lon)).toSeq
+
+    }).toSeq
 
   }
 
