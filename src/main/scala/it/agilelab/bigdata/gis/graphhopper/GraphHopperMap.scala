@@ -97,13 +97,13 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
   }
 
   @throws(classOf[RuntimeException])
-  def extendRoute(gpsPoints: Seq[GPXEntry]): Seq[(Double, Double)] = {
+  def extendRoute(gpsPoints: Seq[GPXEntry]): Seq[GPXEntry] = {
 
-   gpsPoints.map(x => new GHPoint(x.lat, x.lon))
+   gpsPoints.map(x => (new GHPoint(x.lat, x.lon), x.getTime))
       .sliding(2).toList
       .flatMap( x => {
 
-        val req = new GHRequest(x)
+        val req = new GHRequest(x.map(_._1))
           .setVehicle("generic")
           .setLocale(Locale.ITALY)
 
@@ -122,14 +122,23 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
         // use the best path, see the GHResponse class for more possibilities.
         val path: PathWrapper = rsp.getBest
 
-        // points, distance in meters and time in millis of the full path
-        path.getPoints.map(x => (x.lat,x.lon)).toSeq
+        val numAddedPoints: Int = path.getPoints.getSize
 
-      }).toSeq
+        val finalTime: Long = x.map(_._2).reverse.head
+
+        val initialTime: Long = x.map(_._2).head
+
+        val timeTaken: Long = finalTime - initialTime
+
+        val steps: Seq[Long] = (0 until numAddedPoints-1).map(x => initialTime + x*timeTaken/numAddedPoints)
+
+        path.getPoints.take(numAddedPoints-1).zip(steps)
+          .map( x => new GPXEntry( x._1.lat, x._1.lon, x._2))
+
+      })
 
   }
 
 
 
 }
-
