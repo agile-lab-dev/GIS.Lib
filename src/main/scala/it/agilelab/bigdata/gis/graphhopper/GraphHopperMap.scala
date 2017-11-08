@@ -1,5 +1,6 @@
 package it.agilelab.bigdata.gis.graphhopper
 
+import java.util
 import java.util.Locale
 
 import com.graphhopper.{GHRequest, GHResponse, PathWrapper}
@@ -11,7 +12,7 @@ import com.graphhopper.routing.AlgorithmOptions
 import com.graphhopper.routing.util.{CarFlagEncoder, DataFlagEncoder, EncodingManager}
 import com.graphhopper.routing.weighting.{FastestWeighting, GenericWeighting, ShortestWeighting}
 import com.graphhopper.storage.index.QueryResult
-import com.graphhopper.util.shapes.GHPoint3D
+import com.graphhopper.util.shapes.GHPoint
 import com.graphhopper.util.{GPXEntry, PMap, Parameters, PointList}
 
 import scala.collection.JavaConversions._
@@ -95,36 +96,36 @@ class GraphHopperMap(val graphLocation: String, val fileString: String) {
 
   }
 
-  def extendRoute(gpsPoints: java.util.List[GPXEntry]): Seq[(Double, Double)] = {
+  @throws(classOf[RuntimeException])
+  def extendRoute(gpsPoints: Seq[GPXEntry]): Seq[(Double, Double)] = {
 
-    gpsPoints.sliding(2).flatMap( x => {
+   gpsPoints.map(x => new GHPoint(x.lat, x.lon))
+      .sliding(2).toList
+      .flatMap( x => {
 
-    val req = new GHRequest(x)
-      .setVehicle("generic")
-      .setLocale(Locale.ITALY)
+        val req = new GHRequest(x)
+          .setVehicle("generic")
+          .setLocale(Locale.ITALY)
 
-    val rsp: GHResponse = hopperOSM.route(req)
+        val rsp: GHResponse = hopperOSM.route(req)
 
-    //First check for errors
-    if(rsp.hasErrors){
-      // handle them!
-      val errors = rsp.getErrors
-      var i = 0
-      errors.foreach{
-        err =>
-          println("Error #" + i + " " + err.getMessage )
-          i+=1
-      }
-      throw new RuntimeException
-    }
+        //First check for errors
+        if(rsp.hasErrors){
+          // handle them!
+          val errors = rsp.getErrors.toSeq
+          val message = errors.map( err =>
+              s"Error #${errors.indexOf(err)}: ${err.getMessage}"
+          ).mkString("\n")
+          throw new RuntimeException(message)
+        }
 
-    // use the best path, see the GHResponse class for more possibilities.
-    val path: PathWrapper = rsp.getBest
+        // use the best path, see the GHResponse class for more possibilities.
+        val path: PathWrapper = rsp.getBest
 
-    // points, distance in meters and time in millis of the full path
-    path.getPoints.map(x => (x.lat,x.lon)).toSeq
+        // points, distance in meters and time in millis of the full path
+        path.getPoints.map(x => (x.lat,x.lon)).toSeq
 
-    }).toSeq
+      }).toSeq
 
   }
 
