@@ -34,24 +34,26 @@ object GraphHopperMap {
 
   //Create the actual graph to be queried
   def init(graphLocation: String): GraphHopperOSM = {
-    if (hopperOSM == null) hopperOSM = new GraphHopperOSM
+    if (hopperOSM == null) {
+      hopperOSM = new GraphHopperOSM
 
-    //Check if the graphLocation is a directory
-    val dir: Path = Path.fromString(graphLocation)
-    if (!dir.isDirectory) throw new IllegalArgumentException("Expected a directory as graph's location")
+      //Check if the graphLocation is a directory
+      val dir: Path = Path.fromString(graphLocation)
+      if (!dir.isDirectory) throw new IllegalArgumentException("Expected a directory as graph's location")
 
-    //Set the the elevation flag to true to include 3d dimension
-    hopperOSM.setElevation(true)
+      //Set the the elevation flag to true to include 3d dimension
+      hopperOSM.setElevation(true)
 
-    //We use Generic Weighting with the DataFlagEncoder
-    hopperOSM.setEncodingManager(new EncodingManager(encoder))
-    hopperOSM.getCHFactoryDecorator.addWeighting(weighting)
+      //We use Generic Weighting with the DataFlagEncoder
+      hopperOSM.setEncodingManager(new EncodingManager(encoder))
+      hopperOSM.getCHFactoryDecorator.addWeighting(weighting)
 
-    //We disable the contraction hierarchies post processing. It seems to be mandatory in order to do map matching
-    hopperOSM.getCHFactoryDecorator.setEnabled(false)
+      //We disable the contraction hierarchies post processing. It seems to be mandatory in order to do map matching
+      hopperOSM.getCHFactoryDecorator.setEnabled(false)
 
-    //If no new map is specified, load from the resource folder
-    hopperOSM.load(graphLocation)
+      //If no new map is specified, load from the resource folder
+      hopperOSM.load(graphLocation)
+    }
     hopperOSM
   }
 
