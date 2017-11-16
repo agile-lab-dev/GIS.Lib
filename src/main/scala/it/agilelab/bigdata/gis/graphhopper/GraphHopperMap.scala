@@ -27,13 +27,11 @@ import scala.collection.JavaConversions._
 object GraphHopperMap {
 
   private var hopperOSM: GraphHopperOSM = _
-  val encoder = new DataFlagEncoder
-  val weighting = new GenericWeighting(encoder, new PMap())
-  val algorithm: String = Parameters.Algorithms.DIJKSTRA_BI
-  val algoOptions: AlgorithmOptions = new AlgorithmOptions(algorithm, weighting)
+  private var encoder: DataFlagEncoder = _
+  private var weighting: GenericWeighting = _
 
   //Create the actual graph to be queried
-  def init(graphLocation: String): GraphHopperOSM = {
+  def init(graphLocation: String) = {
     if (hopperOSM == null) {
       hopperOSM = new GraphHopperOSM
 
@@ -44,8 +42,11 @@ object GraphHopperMap {
       //Set the the elevation flag to true to include 3d dimension
       hopperOSM.setElevation(true)
 
+
       //We use Generic Weighting with the DataFlagEncoder
+      encoder = new DataFlagEncoder
       hopperOSM.setEncodingManager(new EncodingManager(encoder))
+      weighting = new GenericWeighting(encoder, new PMap())
       hopperOSM.getCHFactoryDecorator.addWeighting(weighting)
 
       //We disable the contraction hierarchies post processing. It seems to be mandatory in order to do map matching
@@ -54,12 +55,19 @@ object GraphHopperMap {
       //If no new map is specified, load from the resource folder
       hopperOSM.load(graphLocation)
     }
+  }
+
+  def graphGetter: GraphHopperOSM ={
     hopperOSM
   }
 
 
   def matchingRoute(gpsPoints: java.util.List[GPXEntry]): MatchedRoute = {
 
+    if (hopperOSM == null) throw new IllegalAccessException("Cannot perform map matching without a graph! Call init method first")
+
+    val algorithm: String = Parameters.Algorithms.DIJKSTRA_BI
+    val algoOptions: AlgorithmOptions = new AlgorithmOptions(algorithm, weighting)
     val mapMatching: MapMatching = new MapMatching(hopperOSM, algoOptions)
     mapMatching.setMeasurementErrorSigma(50)
     //mapMatching.setMeasurementErrorSigma(20)
@@ -85,6 +93,8 @@ object GraphHopperMap {
 
   @throws(classOf[RuntimeException])
   def extendRoute(gpsPoints: Seq[GPXEntry]): Seq[GPXEntry] = {
+
+   if (hopperOSM == null) throw new IllegalAccessException("Cannot calculate route extension without a graph! Call init method first")
 
    gpsPoints.map(x => (new GHPoint(x.lat, x.lon), x.getTime))
       .sliding(2).toList
