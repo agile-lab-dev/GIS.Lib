@@ -61,7 +61,9 @@ object GraphHopperMap {
     hopperOSM
   }
 
-
+  //map matching method is prone to runtime exception not easily managed
+  @throws(classOf[RuntimeException])
+  @throws(classOf[IllegalAccessException])
   def matchingRoute(gpsPoints: java.util.List[GPXEntry]): MatchedRoute = {
 
     if (hopperOSM == null) throw new IllegalAccessException("Cannot perform map matching without a graph! Call init method first")
@@ -92,6 +94,7 @@ object GraphHopperMap {
   }
 
   @throws(classOf[RuntimeException])
+  @throws(classOf[IllegalAccessException])
   def extendRoute(gpsPoints: Seq[GPXEntry]): Seq[GPXEntry] = {
 
    if (hopperOSM == null) throw new IllegalAccessException("Cannot calculate route extension without a graph! Call init method first")
