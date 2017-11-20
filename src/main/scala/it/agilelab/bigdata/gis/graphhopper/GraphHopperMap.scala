@@ -100,8 +100,8 @@ object GraphHopperMap {
    if (hopperOSM == null) throw new IllegalAccessException("Cannot calculate route extension without a graph! Call init method first")
 
    gpsPoints.map(x => (new GHPoint(x.lat, x.lon), x.getTime))
-      .sliding(2).toList
-      .flatMap( x => {
+      .sliding(2)
+      .map( x => {
 
         val req = new GHRequest(x.map(_._1))
           .setVehicle("generic")
@@ -124,9 +124,9 @@ object GraphHopperMap {
 
         val numAddedPoints: Int = path.getPoints.getSize
 
-        val finalTime: Long = x.map(_._2).reverse.head
+        val finalTime: Long = x.seq.map(_._2).reverse.head
 
-        val initialTime: Long = x.map(_._2).head
+        val initialTime: Long = x.seq.map(_._2).head
 
         val timeTaken: Long = finalTime - initialTime
 
@@ -135,7 +135,7 @@ object GraphHopperMap {
         path.getPoints.take(numAddedPoints-1).zip(steps)
           .map( x => new GPXEntry( x._1.lat, x._1.lon, x._2))
 
-      })
+      }).flatten.toSeq :+ gpsPoints.reverse.head
 
   }
 
