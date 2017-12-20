@@ -6,11 +6,8 @@ import it.agilelab.bigdata.gis.models.OSMStreet;
 import it.agilelab.bigdata.gis.spatialList.*;
 import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem;
 import org.junit.Test;
-import scala.Function1;
-import scala.collection.JavaConversions.*;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -126,7 +123,7 @@ public class LoaderTest {
     public void testShapeLoading() throws Exception {
         long start = System.currentTimeMillis();
 
-        ShapeLoader loader = new ShapeLoader();
+        OSMStreetShapeLoader loader = new OSMStreetShapeLoader();
         ArrayList<String> paths = new ArrayList<String>();
         paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\nord-est-latest-free.shp\\gis.osm_roads_free_1.shp");
         /*paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\nord-ovest-latest-free.shp\\gis.osm_roads_free_1.shp");
