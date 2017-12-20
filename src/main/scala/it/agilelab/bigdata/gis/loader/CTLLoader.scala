@@ -34,7 +34,7 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
 
   val sridFactory8003 = new GeometryFactory(new PrecisionModel(), 8003, CoordinateArraySequenceFactory.instance())
 
-  protected def streetMapping(fields: Array[AnyRef],line: Geometry): HereMapsStreet = {
+  protected def objectMapping(fields: Array[AnyRef], line: Geometry): HereMapsStreet = {
 
     val fields2 = fields.map(_.toString)
 
