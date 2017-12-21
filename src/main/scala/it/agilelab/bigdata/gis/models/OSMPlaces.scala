@@ -21,30 +21,28 @@ object OSMSPlace{
 
 }
 
-case class OSMPlace(lineString: Geometry, street: String, code: String, isBridge: Boolean, isTunnel: Boolean, speedLimit: Int, bidirected: Boolean, streetType: OSMStreetType) extends Geometry(lineString.getFactory) {
+case class OSMPlace(polygon: Geometry, name: String, placeType: String, firstField: String, secondField: Int, fourthField: Long) extends Geometry(polygon.getFactory) {
 
   override def toString() = {
-    s"""Line:${lineString.toString()}
-       |Street:${street}
-       |SpeedLimit:${speedLimit}
-       |Bidirected:${bidirected}
-       |StreetType:${streetType}
-       |code:${code}
-       |isBridge:${isBridge}
-       |isTunnel:${isTunnel}
-         """.stripMargin
+    s"""Line:${polygon.toString()}
+       |Name:$name
+       |PlaceType:$placeType
+       |FirstField:$firstField
+       |SecondField:$secondField
+       |FourthField:$fourthField
+       """.stripMargin
   }
 
   /** As seen from class Street, the missing signatures are as follows.
     *  For convenience, these are usable as stub implementations.
     */
-  def apply(filter: CoordinateFilter) = lineString.apply(filter)
+  def apply(filter: CoordinateFilter) = polygon.apply(filter)
 
-  def apply(filter: CoordinateSequenceFilter)  = lineString.apply(filter)
+  def apply(filter: CoordinateSequenceFilter)  = polygon.apply(filter)
 
-  def apply(filter: GeometryFilter) = lineString.apply(filter)
+  def apply(filter: GeometryFilter) = polygon.apply(filter)
 
-  def apply(filter: GeometryComponentFilter) = lineString.apply(filter)
+  def apply(filter: GeometryComponentFilter) = polygon.apply(filter)
 
   def getCoordinateSequence() = {
     new CoordinateArraySequence(getCoordinates)
@@ -58,10 +56,10 @@ case class OSMPlace(lineString: Geometry, street: String, code: String, isBridge
 
   }
 
-  override def getBoundary: Geometry = lineString.getBoundary
+  override def getBoundary: Geometry = polygon.getBoundary
 
   override def compareToSameClass(o: scala.Any): Int = {
-    val s: OSMStreet = o.asInstanceOf[OSMStreet]
+    val s: OSMPlace = o.asInstanceOf[OSMPlace]
     // MD - optimized implementation
     var i: Int = 0
     var j: Int = 0
@@ -85,42 +83,25 @@ case class OSMPlace(lineString: Geometry, street: String, code: String, isBridge
     return comp.compare(getCoordinateSequence(), s.getCoordinateSequence())
   }
 
-  override def getCoordinates: Array[Coordinate] = lineString.getCoordinates
+  override def getCoordinates: Array[Coordinate] = polygon.getCoordinates
 
-  override def getDimension: Int = lineString.getDimension
+  override def getDimension: Int = polygon.getDimension
 
-  override def getGeometryType: String = lineString.getGeometryType
+  override def getGeometryType: String = polygon.getGeometryType
 
-  override def getBoundaryDimension: Int = lineString.getBoundaryDimension
+  override def getBoundaryDimension: Int = polygon.getBoundaryDimension
 
-  override def getCoordinate: Coordinate = lineString.getCoordinate
+  override def getCoordinate: Coordinate = polygon.getCoordinate
 
-  override def isEmpty: Boolean = lineString.isEmpty
+  override def isEmpty: Boolean = polygon.isEmpty
 
-  override def normalize(): Unit = lineString.normalize()
+  override def normalize(): Unit = polygon.normalize()
 
-  override def reverse(): Geometry = lineString.reverse()
+  override def reverse(): Geometry = polygon.reverse()
 
-  override def equalsExact(other: Geometry, tolerance: Double): Boolean = lineString.equalsExact(other, tolerance)
+  override def equalsExact(other: Geometry, tolerance: Double): Boolean = polygon.equalsExact(other, tolerance)
 
-  override def getNumPoints: Int = lineString.getNumPoints
-
-  import OSMStreetType._
-
-  def isForCar = !isNotForCar
-
-  def isNotForCar = streetType match {
-    case Cycleway => true
-    case _ => isForPedestrian
-  }
-
-
-  def isForPedestrian = streetType match {
-    case Pedestrian | Footway | Steps => true
-    case _ => false
-  }
-
-
+  override def getNumPoints: Int = polygon.getNumPoints
 
 
 }
