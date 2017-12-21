@@ -134,9 +134,9 @@ object ShapeFileReader {
   */
   def readMultiLineFeatures(path: String): Seq[(jts.MultiLineString, util.List[AnyRef])] = {
 
-    val a = readSimpleFeatures(path)
-
-    a.flatMap { ft => ft.geom[jts.MultiLineString].map(e => (e, ft.getAttributes)) }
+    readSimpleFeatures(path)
+      .flatMap { ft => ft.geom[jts.MultiLineString]
+      .map(e => (e, ft.getAttributes)) }
 
   }
 
@@ -148,20 +148,18 @@ object ShapeFileReader {
 
         .flatMap { ft => ft.geom[jts.MultiLineString].map(MultiLineFeature(_, ft.attribute[D](dataField))) }
 
+*/
 
+  def readMultiPolygonFeatures(path: String): Seq[(jts.MultiPolygon, util.List[AnyRef])] = {
 
-    def readMultiPolygonFeatures(path: String): Seq[MultiPolygonFeature[Map[String,Object]]] =
+   readSimpleFeatures(path)
+      .flatMap { ft => ft.geom[jts.MultiPolygon].map(mp => (mp, ft.getAttributes)) }
+  }
+  /*
+      def readMultiPolygonFeatures[D](path: String, dataField: String): Seq[MultiPolygonFeature[D]] =
 
-      readSimpleFeatures(path)
+        readSimpleFeatures(path)
 
-        .flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attributeMap)) }
-
-
-
-    def readMultiPolygonFeatures[D](path: String, dataField: String): Seq[MultiPolygonFeature[D]] =
-
-      readSimpleFeatures(path)
-
-        .flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attribute[D](dataField))) }
-  */
+          .flatMap { ft => ft.geom[jts.MultiPolygon].map(MultiPolygonFeature(_, ft.attribute[D](dataField))) }
+    */
 }
