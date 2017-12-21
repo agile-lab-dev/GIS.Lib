@@ -2,15 +2,20 @@ package it.agilelab.bigdata.gis.loader
 
 import java.io.{File, FilenameFilter}
 
+import com.vividsolutions.jts.algorithm.locate.IndexedPointInAreaLocator
+import com.vividsolutions.jts.geom
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
 import it.agilelab.bigdata.gis.models.{OSMPlace, OSMStreet}
+import it.agilelab.bigdata.gis.spatialList.GeometryList
 import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem
+
+import scala.collection.immutable
 
 object ShpLoaderTest extends App {
 
   val path = "/home/stefano/Documents/IntesaSmartCareCore/maps"
 
-  println("[GISServer] Loading OSM file into GeometryList...")
+  println("[GISLib] Loading OSM file into GeometryList...")
 
   val loader  = new OSMPlaceShapeLoader()
   //val loader  = new OSMStreetShapeLoader()
@@ -20,17 +25,19 @@ object ShpLoaderTest extends App {
     override def accept(dir: File, name: String): Boolean = name.endsWith(".shp")
     }
   )
-  val shpFiles: Array[String] = subFolders.flatMap(subFolder =>
-    subFolder.listFiles(new FilenameFilter {
-      override def accept(dir: File, name: String): Boolean = name.endsWith("places_a_free_1.shp")
+  val shpFiles: Array[String] = subFolders.flatMap( subFolder =>
+    subFolder.listFiles( new FilenameFilter {
+      override def accept(dir: File, name: String): Boolean = name.endsWith("places_free_1.shp") || name.endsWith("places_a_free_1.shp")
     })
   ).map(_.getAbsolutePath)
-  val geometryList = loader.loadIndex(shpFiles: _*)
-  println("[GISServer] Done loading OSM file into GeometryList!")
 
-  val latitude = 40.21344
+  val geometryList: GeometryList[OSMPlace] = loader.loadIndex(shpFiles: _*)
 
-  val longitude = 9.342532
+  println("[GISLib] Done loading OSM file into GeometryList!")
+
+  val latitude = 39.832223
+
+  val longitude = 18.341623
 
   val fact = new GeometryFactory()
   val queryPoint: Point = fact.createPoint(new Coordinate(longitude, latitude))
@@ -39,11 +46,12 @@ object ShpLoaderTest extends App {
     geometryList,
     queryPoint,
     1)
-  println("Result: " + queryResult.toString)
-  println("First Result: " + queryResult.headOption)
+  val list: Seq[OSMPlace] =  queryResult.seq
+  println("Results:")
+  list.foreach{
+    x =>
+      println(x.toString())
 
-
-
-
+  }
 
 }

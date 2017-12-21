@@ -76,12 +76,11 @@ object ShapeFileReader {
 
 
 
-  def readPointFeatures(path: String): Seq[jts.Point] =
+  def readPointFeatures(path: String): Seq[(jts.Point, util.List[AnyRef])] = {
 
     readSimpleFeatures(path)
-
-      .flatMap { ft => ft.geom[jts.Point] }
-
+      .flatMap { ft => ft.geom[jts.Point].map(e => (e, ft.getAttributes)) }
+  }
 
 
   def readLineFeatures(path: String): Seq[jts.LineString] =
@@ -115,15 +114,16 @@ object ShapeFileReader {
         .flatMap { ft => ft.geom[jts.Polygon].map(PolygonFeature(_, ft.attribute[D](dataField))) }
   */
 
-  /*
-    def readMultiPointFeatures(path: String): Seq[MultiPointFeature[Map[String,Object]]] =
+
+    def readMultiPointFeatures(path: String): Seq[(jts.MultiPoint, util.List[AnyRef])] =
 
       readSimpleFeatures(path)
 
-        .flatMap { ft => ft.geom[jts.MultiPoint].map(MultiPointFeature(_, ft.attributeMap)) }
+        .flatMap { ft => ft.geom[jts.MultiPoint]
+          .map(e => (e, ft.getAttributes)) }
 
 
-
+  /*
     def readMultiPointFeatures[D](path: String, dataField: String): Seq[MultiPointFeature[D]] =
 
       readSimpleFeatures(path)

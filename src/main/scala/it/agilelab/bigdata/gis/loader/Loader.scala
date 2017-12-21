@@ -18,13 +18,13 @@ trait Loader[T <: Geometry] {
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): T
 
-  def buildIndex( streets: Iterator[T] ): GeometryList[T] = {
-    val streetL = streets.toList
+  def buildIndex( objects: Iterator[T] ): GeometryList[T] = {
+    val objectL = objects.toList
     println("starting to build index")
-    val streetIndex = new GeometryList[T](streetL)
-    streetIndex.buildIndex(IndexType.RTREE)
+    val objectIndex = new GeometryList[T](objectL)
+    objectIndex.buildIndex(IndexType.RTREE)
     println("index built")
-    streetIndex
+    objectIndex
   }
 
   def loadObjects(sources: String*): Iterator[T] = {
