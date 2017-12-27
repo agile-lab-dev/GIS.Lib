@@ -3,13 +3,13 @@ package it.agilelab.bigdata.gis.loader
 import java.io.{File, FilenameFilter}
 
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
-import it.agilelab.bigdata.gis.models.{OSMPlace, OSMStreet, partialAddress}
+import it.agilelab.bigdata.gis.models.{OSMPlace, OSMStreet, PartialAddress}
 import it.agilelab.bigdata.gis.spatialList.GeometryList
 import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem
 
 object RGManager {
 
-  val placesLoader  = new OSMPlaceShapeLoader()
+  val placesLoader  = new OSMPlaceShapeLoader
   val roadsLoader = new OSMStreetShapeLoader
 
   var subFolders: Array[File] = _
@@ -58,7 +58,7 @@ object RGManager {
 
   }
   
-  def reverseGeocode(latitude: Double, longitude: Double) : partialAddress = {
+  def reverseGeocode(latitude: Double, longitude: Double) : PartialAddress = {
     val fact = new GeometryFactory()
     val queryPoint: Point = fact.createPoint(new Coordinate(longitude, latitude))
 
@@ -78,8 +78,8 @@ object RGManager {
       placesList.filter( y => y.polygon.contains(x))
     }).getOrElse(Seq.empty[OSMPlace])
 
-    if (candidates.isEmpty) partialAddress(roadsList.map(_.street), placesList.headOption.map(_.name))
-    else partialAddress(roadsList.map(_.street), candidates.headOption.map(_.name))
+    if (candidates.isEmpty) PartialAddress(roadsList.map(_.street).getOrElse(""), placesList.headOption.map(_.name).getOrElse(""))
+    else PartialAddress(roadsList.map(_.street).getOrElse(""), candidates.headOption.map(_.name).getOrElse(""))
 
   }
 
