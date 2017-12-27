@@ -8,6 +8,8 @@ import java.net.URL
 import java.io.File
 import java.util
 
+import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, MultiPolygon, Point, Polygon}
+
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 
@@ -82,6 +84,27 @@ object ShapeFileReader {
       .flatMap { ft => ft.geom[jts.Point].map(e => (e, ft.getAttributes)) }
   }
 
+  def readPointFeaturesToPolygon(path: String): Seq[(jts.Polygon, util.List[AnyRef])] = {
+
+    val points: Seq[(Point, util.List[AnyRef])] = readSimpleFeatures(path)
+      .flatMap { ft => ft.geom[jts.Point].map(e => (e, ft.getAttributes)) }
+
+    val fact = new GeometryFactory()
+
+    points.map{ x => {
+      val coordinate = x._1.getCoordinate
+      val newLineRing = Array(new Coordinate(coordinate.x - 0.0001, coordinate.y, coordinate.z),
+        new Coordinate(coordinate.x, coordinate.y - 0.0001, coordinate.z),
+        new Coordinate(coordinate.x + 0.0001, coordinate.y, coordinate.z),
+        new Coordinate(coordinate.x, coordinate.y + 0.0001, coordinate.z),
+        new Coordinate(coordinate.x - 0.0001, coordinate.y, coordinate.z) )
+
+      (fact.createPolygon(newLineRing), x._2)
+      }
+    }.filter(x => !x._2(3).toString.equals("suburb") && !x._2(3).toString.equals("farm"))
+
+  }
+
 
   def readLineFeatures(path: String): Seq[jts.LineString] =
 
@@ -99,11 +122,11 @@ object ShapeFileReader {
   */
 
 
-  def readPolygonFeatures(path: String): Seq[jts.Polygon] =
+  def readPolygonFeatures(path: String): Seq[(jts.Polygon, util.List[AnyRef])] =
 
     readSimpleFeatures(path)
 
-      .flatMap { ft => ft.geom[jts.Polygon] }
+      .flatMap { ft => ft.geom[jts.Polygon].map(e => (e, ft.getAttributes)) }
 
 
   /*
@@ -154,6 +177,7 @@ object ShapeFileReader {
 
    readSimpleFeatures(path)
       .flatMap { ft => ft.geom[jts.MultiPolygon].map(mp => (mp, ft.getAttributes)) }
+      .filter(x => !x._2(3).toString.equals("suburb") && !x._2(3).toString.equals("farm"))
   }
   /*
       def readMultiPolygonFeatures[D](path: String, dataField: String): Seq[MultiPolygonFeature[D]] =
