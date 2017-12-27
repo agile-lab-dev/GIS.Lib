@@ -9,7 +9,6 @@ import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem
 
 object RGManager {
 
-  val path = "/home/stefano/Documents/IntesaSmartCareCore/maps"
   val placesLoader  = new OSMPlaceShapeLoader()
   val roadsLoader = new OSMStreetShapeLoader
 
@@ -20,7 +19,7 @@ object RGManager {
   def init(filesLocation: String) = {
     if(subFolders == null){
       //val loader  = new OSMStreetShapeLoader()
-      val folder: File = new File(path)
+      val folder: File = new File(filesLocation)
       subFolders = folder.listFiles(
         new FilenameFilter {
           override def accept(dir: File, name: String): Boolean = name.endsWith(".shp")
