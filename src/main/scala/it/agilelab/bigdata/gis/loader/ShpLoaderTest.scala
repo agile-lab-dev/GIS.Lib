@@ -35,9 +35,18 @@ object ShpLoaderTest extends App {
 
   println("[GISLib] Done loading OSM file into GeometryList!")
 
-  val latitude = 39.832223
+  /*val latitude = 39.832223
 
-  val longitude = 18.341623
+  val longitude = 18.341623*/
+
+  /*val latitude = 45.821003
+
+  val longitude = 6.950784*/
+
+  val latitude = 45.473273
+  val longitude = 9.164086
+
+
 
   val fact = new GeometryFactory()
   val queryPoint: Point = fact.createPoint(new Coordinate(longitude, latitude))

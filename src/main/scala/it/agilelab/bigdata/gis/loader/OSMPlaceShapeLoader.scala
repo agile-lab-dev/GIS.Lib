@@ -36,7 +36,7 @@ class OSMPlaceShapeLoader() extends Loader[OSMPlace]{
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
 
     if (source.endsWith("places_a_free_1.shp")) ShapeFileReader.readMultiPolygonFeatures(source).map(e => (e._2.toArray, e._1)).toIterator
-    else if (source.endsWith("places_free_1.shp")) ShapeFileReader.readPointFeatures(source).map(e => (e._2.toArray, e._1)).toIterator
+    else if (source.endsWith("places_free_1.shp")) ShapeFileReader.readPointFeaturesToPolygon(source).map(e => (e._2.toArray, e._1)).toIterator
     else Iterator.empty
 
   }
