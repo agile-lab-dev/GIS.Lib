@@ -3,7 +3,7 @@ package it.agilelab.bigdata.gis.loader
 import java.io.{File, FilenameFilter}
 
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
-import it.agilelab.bigdata.gis.models.{OSMPlace, OSMStreet, partialAddress}
+import it.agilelab.bigdata.gis.models.{OSMPlace, OSMStreet, PartialAddress}
 import it.agilelab.bigdata.gis.spatialList.GeometryList
 import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem
 
@@ -79,8 +79,8 @@ object ShpLoaderTest extends App {
     placesList.filter( y => y.polygon.contains(x))
   }).getOrElse(Seq.empty[OSMPlace])
 
-  val res: partialAddress = if (candidates.isEmpty) partialAddress(roadsList.map(_.street), placesList.headOption.map(_.name))
-  else partialAddress(roadsList.map(_.street), candidates.headOption.map(_.name))
+  val res: PartialAddress = if (candidates.isEmpty) PartialAddress(roadsList.map(_.street).getOrElse(""), placesList.headOption.map(_.name).getOrElse(""))
+  else PartialAddress(roadsList.map(_.street).getOrElse(""), candidates.headOption.map(_.name).getOrElse(""))
 
 
   println("Result of reverse-geocoding operation: " + res.toString)

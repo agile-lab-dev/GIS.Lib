@@ -62,29 +62,20 @@ object RGManager {
     val fact = new GeometryFactory()
     val queryPoint: Point = fact.createPoint(new Coordinate(longitude, latitude))
 
-    val placesResult: Seq[OSMPlace] = KNNQueryMem.SpatialKnnQuery(
-      placesGeometryList,
-      queryPoint,
-      10)
-    val placesList: Seq[OSMPlace] =  placesResult.seq
-
     val roadsResult: Seq[OSMStreet] = KNNQueryMem.SpatialKnnQuery(
       roadsGeometryList,
       queryPoint,
       1)
-    val roadsList: Option[OSMStreet] =  roadsResult.seq.headOption
+    val road: Option[OSMStreet] =  roadsResult.seq.headOption
 
-    val candidates: Seq[OSMPlace] = roadsList.map(x => {
-      placesList.filter( y => y.polygon.contains(x))
-    }).getOrElse(Seq.empty[OSMPlace])
+    val placesResult: Seq[OSMPlace] = KNNQueryMem.SpatialKnnQuery(
+      placesGeometryList,
+      queryPoint,
+      1)
+    val place: Option[OSMPlace] =  placesResult.seq.headOption
 
-    if (candidates.isEmpty) PartialAddress(roadsList.map(_.street).getOrElse(""), placesList.headOption.map(_.name).getOrElse(""))
-    else PartialAddress(roadsList.map(_.street).getOrElse(""), candidates.headOption.map(_.name).getOrElse(""))
+    PartialAddress(road.map(_.street).getOrElse(""),place.map(_.name).getOrElse(""))
 
   }
-
-
-
-
 
 }
