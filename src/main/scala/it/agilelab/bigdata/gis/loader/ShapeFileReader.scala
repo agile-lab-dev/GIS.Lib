@@ -93,15 +93,15 @@ object ShapeFileReader {
 
     points.map{ x => {
       val coordinate = x._1.getCoordinate
-      val newLineRing = Array(new Coordinate(coordinate.x - 0.0001, coordinate.y, coordinate.z),
-        new Coordinate(coordinate.x, coordinate.y - 0.0001, coordinate.z),
-        new Coordinate(coordinate.x + 0.0001, coordinate.y, coordinate.z),
-        new Coordinate(coordinate.x, coordinate.y + 0.0001, coordinate.z),
-        new Coordinate(coordinate.x - 0.0001, coordinate.y, coordinate.z) )
+      val newLineRing = Array(new Coordinate(coordinate.x - 0.001, coordinate.y, coordinate.z),
+        new Coordinate(coordinate.x, coordinate.y - 0.001, coordinate.z),
+        new Coordinate(coordinate.x + 0.001, coordinate.y, coordinate.z),
+        new Coordinate(coordinate.x, coordinate.y + 0.001, coordinate.z),
+        new Coordinate(coordinate.x - 0.001, coordinate.y, coordinate.z) )
 
       (fact.createPolygon(newLineRing), x._2)
       }
-    }.filter(x => !x._2(3).toString.equals("suburb") && !x._2(3).toString.equals("farm"))
+    }.filter(x => !x._2(3).toString.equals("suburb") && !x._2(3).toString.equals("farm") && !x._2(3).toString.equals("locality"))
 
   }
 
