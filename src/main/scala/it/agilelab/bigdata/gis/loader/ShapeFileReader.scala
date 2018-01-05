@@ -101,7 +101,7 @@ object ShapeFileReader {
 
       (fact.createPolygon(newLineRing), x._2)
       }
-    }.filter(x => !x._2(3).toString.equals("suburb") && !x._2(3).toString.equals("farm") && !x._2(3).toString.equals("locality"))
+    }.filter(x => !x._2(3).toString.equals("suburb") && !x._2(3).toString.equals("farm") && !x._2(3).toString.equals("locality") && !x._2(3).toString.equals("island") && !x._2(3).toString.equals("hamlet") && !x._2(3).toString.equals("region") && !x._2(3).toString.equals("village"))
 
   }
 
@@ -177,7 +177,8 @@ object ShapeFileReader {
 
    readSimpleFeatures(path)
       .flatMap { ft => ft.geom[jts.MultiPolygon].map(mp => (mp, ft.getAttributes)) }
-      .filter(x => !x._2(3).toString.equals("suburb") && !x._2(3).toString.equals("farm"))
+      .filter(x => !x._2(3).toString.equals("suburb") && !x._2(3).toString.equals("farm") && !x._2(3).toString.equals("locality") && !x._2(3).toString.equals("island") && !x._2(3).toString.equals("hamlet") && !x._2(3).toString.equals("region") && !x._2(3).toString.equals("village"))
+
   }
   /*
       def readMultiPolygonFeatures[D](path: String, dataField: String): Seq[MultiPolygonFeature[D]] =

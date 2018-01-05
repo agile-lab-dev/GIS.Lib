@@ -1,21 +1,13 @@
 package it.agilelab.bigdata.gis.models
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
-import java.util.zip.{GZIPInputStream, GZIPOutputStream}
-
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
-import it.agilelab.bigdata.gis.models.OSMStreetType.OSMStreetType
 
-case class OSMPlace(polygon: Geometry, name: String, placeType: String, firstField: String, secondField: Int, fourthField: Long) extends Geometry(polygon.getFactory) {
+case class OSMBoundary(polygon: Geometry, name: String) extends Geometry(polygon.getFactory) {
 
   override def toString() = {
     s"""Line:${polygon.toString()}
        |Name:$name
-       |PlaceType:$placeType
-       |FirstField:$firstField
-       |SecondField:$secondField
-       |FourthField:$fourthField
        """.stripMargin
   }
 
@@ -45,7 +37,7 @@ case class OSMPlace(polygon: Geometry, name: String, placeType: String, firstFie
   override def getBoundary: Geometry = polygon.getBoundary
 
   override def compareToSameClass(o: scala.Any): Int = {
-    val s: OSMPlace = o.asInstanceOf[OSMPlace]
+    val s: OSMBoundary = o.asInstanceOf[OSMBoundary]
     // MD - optimized implementation
     var i: Int = 0
     var j: Int = 0
