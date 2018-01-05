@@ -1,37 +1,17 @@
 package it.agilelab.bigdata.gis
 
-import it.agilelab.bigdata.gis.loader.{RGManager, RGManagerV2}
+import it.agilelab.bigdata.gis.loader.RGManagerV2
 import it.agilelab.bigdata.gis.models.PartialAddress
 import org.scalatest.FunSuite
 
-class RGManagerTest extends FunSuite{
+class RGManagerV2Test extends FunSuite{
 
-  val path = "/home/stefano/IdeaProjects/Agile.GIS.Server/data"
+  val path2 = "/home/stefano/IdeaProjects/Agile.GIS.Server/data"
+  RGManagerV2.init(path2)
 
-  RGManager.init(path)
+  test("RGManager second version (loading boundaries)"){
 
-  test("General test"){
-
-    val answer = RGManager.reverseGeocode(39.832223, 18.341623)
-
-    assert(!answer.city.isEmpty && answer.street.isEmpty)
-
-  }
-
-  test("Small polygon fine-tuning"){
-
-    val answer = RGManager.reverseGeocode(39.832931, 18.341869)
-
-    println(answer.city)
-    println(answer.street)
-
-    assert(!answer.city.isEmpty && !answer.street.isEmpty)
-
-  }
-
-  test("Filtering non useful places"){
-
-    val answer = RGManager.reverseGeocode(44.402321, 8.953425)
+    val answer = RGManagerV2.reverseGeocode(45.605247, 8.710839)
 
     println(answer.city)
     println(answer.street)
@@ -63,26 +43,26 @@ class RGManagerTest extends FunSuite{
       (46.485170, 10.310192),
       (45.048958, 11.785429))
 
-    val RGAddresses: Seq[PartialAddress] = points.map(x => RGManager.reverseGeocode(x._1, x._2))
+    val RGAddresses: Seq[PartialAddress] = points.map(x => RGManagerV2.reverseGeocode(x._1, x._2))
 
-    val realAddresses = Seq(PartialAddress("Via Lungomare Anglona", "SÃ²ssu/Sorso"),
-      PartialAddress("Via Roma","Udine"),
+    val realAddresses = Seq(PartialAddress("Via Lungomare Anglona", "Castelsardo"),
+      PartialAddress("Via Roma","Pavia di Udine"),
       PartialAddress("Via Muri Bianchi", "Cittadella"),
       PartialAddress("Contrada Forche", "Alcamo"),
-      PartialAddress("Viale 16 Aprile", "Poggio a Caiano"),
+      PartialAddress("Viale 16 Aprile", "Prato"),
       PartialAddress("Via Giuseppe Garibaldi", "Lecce"),
       PartialAddress("Corso Trapani", "Torino"),
       PartialAddress("Via Casilina Nord", "Cassino"),
       PartialAddress("Via 4 Novembre", "Merate"),
-      PartialAddress("Via Madonna del Salvatore", "Arluno"),
+      PartialAddress("Via Madonna del Salvatore", "Vittuone"),
       PartialAddress("Via delle Mimose", "Torre del Greco"),
       PartialAddress("Via Gaetano Amati", "Venaria Reale"),
       PartialAddress("Via Amerigo Vespucci", "Cesano Boscone"),
       PartialAddress("Via Carlo Forlanini", "Desio"),
       PartialAddress("Via Marino Marini", "Pistoia"),
-      PartialAddress("SP52", "Cardano al Campo"),
+      PartialAddress("SP52", "Lonate Pozzolo"),
       PartialAddress("Viale Marchese di Villabianca", "Palermo"),
-      PartialAddress("Via Nazionale", "Schlanders - Silandro"),
+      PartialAddress("Via Nazionale", "Valdidentro"),
       PartialAddress("Viale Porta Po", "Rovigo")
     )
 

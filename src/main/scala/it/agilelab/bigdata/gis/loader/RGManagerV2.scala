@@ -3,17 +3,17 @@ package it.agilelab.bigdata.gis.loader
 import java.io.{File, FilenameFilter}
 
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
-import it.agilelab.bigdata.gis.models.{OSMPlace, OSMStreet, PartialAddress}
+import it.agilelab.bigdata.gis.models.{OSMBoundary, OSMPlace, OSMStreet, PartialAddress}
 import it.agilelab.bigdata.gis.spatialList.GeometryList
 import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem
 
-object RGManager {
+object RGManagerV2 {
 
-  val placesLoader  = new OSMPlaceShapeLoader
+  val boundariesLoader  = new OSMAdministrativeBoundariesLoader
   val roadsLoader = new OSMStreetShapeLoader
 
   var subFolders: Array[File] = _
-  var placesGeometryList: GeometryList[OSMPlace] = _
+  var boundariesGeometryList: GeometryList[OSMBoundary] = _
   var roadsGeometryList: GeometryList[OSMStreet] = _
 
   def init(filesLocation: String) = {
@@ -26,19 +26,19 @@ object RGManager {
         }
       )
     }
-    if (placesGeometryList == null) {
+    if (boundariesGeometryList == null) {
 
-      println("[GISLib] Loading OSM places file into GeometryList...")
+      println("[GISLib] Loading OSM boundaries file into GeometryList...")
 
-      val placesShpFiles = subFolders.flatMap(subFolder =>
+      val boundariesShpFiles = subFolders.flatMap(subFolder =>
         subFolder.listFiles(new FilenameFilter {
-          override def accept(dir: File, name: String): Boolean = /*name.endsWith("places_free_1.shp") ||*/ name.endsWith("places_a_free_1.shp")
+          override def accept(dir: File, name: String): Boolean = name.endsWith("AL8.shp")
         })
       ).map(_.getAbsolutePath)
 
-      placesGeometryList = placesLoader.loadIndex(placesShpFiles: _*)
+      boundariesGeometryList = boundariesLoader.loadIndex(boundariesShpFiles: _*)
 
-      println("[GISLib] Done loading OSM places file into GeometryList!")
+      println("[GISLib] Done loading OSM boundaries file into GeometryList!")
 
     }
     if (roadsGeometryList == null) {
@@ -57,7 +57,7 @@ object RGManager {
     }
 
   }
-  
+
   def reverseGeocode(latitude: Double, longitude: Double) : PartialAddress = {
     val fact = new GeometryFactory()
     val queryPoint: Point = fact.createPoint(new Coordinate(longitude, latitude))
@@ -68,14 +68,15 @@ object RGManager {
       1)
     val road: Option[OSMStreet] =  roadsResult.seq.headOption
 
-    val placesResult: Seq[OSMPlace] = KNNQueryMem.SpatialKnnQuery(
-      placesGeometryList,
+    val placesResult: Seq[OSMBoundary] = KNNQueryMem.SpatialKnnQuery(
+      boundariesGeometryList,
       queryPoint,
-      1)
-    val place: Option[OSMPlace] =  placesResult.seq.headOption
+      10)
+    val place: Option[OSMBoundary] =  placesResult.map(x => (x,x.polygon.distance(queryPoint))).reduceOption((A, B)=> if(A._2 < B._2) A else B).map(_._1)
 
     PartialAddress(road.map(_.street).getOrElse(""),place.map(_.name).getOrElse(""))
 
   }
+
 
 }
