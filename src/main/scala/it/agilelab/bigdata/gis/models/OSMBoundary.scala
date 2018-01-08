@@ -1,15 +1,23 @@
 package it.agilelab.bigdata.gis.models
 
+import javax.swing.plaf.synth.Region
+
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
-case class OSMBoundary(polygon: Geometry, name: String) extends Geometry(polygon.getFactory) {
+case class OSMBoundary(polygon: Geometry, city: Option[String], county: Option[String], region: Option[String], country: Option[String], boundaryType: String) extends Geometry(polygon.getFactory) {
 
   override def toString() = {
-    s"""Line:${polygon.toString()}
-       |Name:$name
+    s"""Line: ${polygon.toString}
+       |City: ${city.map(_.toString)}
+       |County: ${county.map(_.toString)}
+       |Region: ${region.map(_.toString)}
+       |Country: ${country.map(_.toString)}
        """.stripMargin
   }
+
+
+  def isAddressDefined = city.isDefined && county.isDefined && region.isDefined && country.isDefined
 
   /** As seen from class Street, the missing signatures are as follows.
     *  For convenience, these are usable as stub implementations.
