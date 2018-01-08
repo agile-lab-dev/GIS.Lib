@@ -45,29 +45,33 @@ class RGManagerV2Test extends FunSuite{
 
     val RGAddresses: Seq[PartialAddress] = points.map(x => RGManagerV2.reverseGeocode(x._1, x._2))
 
-    val realAddresses = Seq(PartialAddress("Via Lungomare Anglona", "Castelsardo"),
-      PartialAddress("Via Roma","Pavia di Udine"),
-      PartialAddress("Via Muri Bianchi", "Cittadella"),
-      PartialAddress("Contrada Forche", "Alcamo"),
-      PartialAddress("Viale 16 Aprile", "Prato"),
-      PartialAddress("Via Giuseppe Garibaldi", "Lecce"),
-      PartialAddress("Corso Trapani", "Torino"),
-      PartialAddress("Via Casilina Nord", "Cassino"),
-      PartialAddress("Via 4 Novembre", "Merate"),
-      PartialAddress("Via Madonna del Salvatore", "Vittuone"),
-      PartialAddress("Via delle Mimose", "Torre del Greco"),
-      PartialAddress("Via Gaetano Amati", "Venaria Reale"),
-      PartialAddress("Via Amerigo Vespucci", "Cesano Boscone"),
-      PartialAddress("Via Carlo Forlanini", "Desio"),
-      PartialAddress("Via Marino Marini", "Pistoia"),
-      PartialAddress("SP52", "Lonate Pozzolo"),
-      PartialAddress("Viale Marchese di Villabianca", "Palermo"),
-      PartialAddress("Via Nazionale", "Valdidentro"),
-      PartialAddress("Viale Porta Po", "Rovigo")
+    val realAddresses = Seq(PartialAddress("Via Lungomare Anglona", "Castelsardo", "Sassari", "Sardegna", "Italia"),
+      PartialAddress("Via Roma","Pavia di Udine", "Udine", "Friuli Venezia Giulia", "Italia"),
+      PartialAddress("Via Muri Bianchi", "Cittadella", "Padova", "Veneto", "Italia"),
+      PartialAddress("Contrada Forche", "Alcamo", "Trapani", "Sicilia", "Italia"),
+      PartialAddress("Viale 16 Aprile", "Prato", "Prato", "Toscana", "Italia"),
+      PartialAddress("Via Giuseppe Garibaldi", "Lecce", "Lecce", "Puglia", "Italia"),
+      PartialAddress("Corso Trapani", "Torino", "Torino", "Piemonte", "Italia"),
+      PartialAddress("Via Casilina Nord", "Cassino", "Frosinone", "Lazio", "Italia"),
+      PartialAddress("Via 4 Novembre", "Merate", "Lecco", "Lombardia", "Italia"),
+      PartialAddress("Via Madonna del Salvatore", "Vittuone", "Milano", "Lombardia", "Italia"),
+      PartialAddress("Via delle Mimose", "Torre del Greco", "Napoli", "Campania", "Italia"),
+      PartialAddress("Via Gaetano Amati", "Venaria Reale", "Torino", "Piemonte", "Italia"),
+      PartialAddress("Via Amerigo Vespucci", "Cesano Boscone", "Milano", "Lombardia", "Italia"),
+      PartialAddress("Via Carlo Forlanini", "Desio", "Monza e della Brianza", "Lombardia", "Italia"),
+      PartialAddress("Via Marino Marini", "Pistoia", "Pistoia", "Toscana", "Italia"),
+      PartialAddress("SP52", "Lonate Pozzolo", "Varese", "Lombardia", "Italia"),
+      PartialAddress("Viale Marchese di Villabianca", "Palermo", "Palermo", "Sicilia", "Italia"),
+      PartialAddress("Via Nazionale", "Valdidentro", "Sondrio", "Lombardia", "Italia"),
+      PartialAddress("Viale Porta Po", "Rovigo", "Rovigo", "Veneto", "Italia")
     )
 
     assert(RGAddresses.map(_.city) == realAddresses.map(_.city))
+    assert(RGAddresses.map(_.county) == realAddresses.map(_.county))
+    assert(RGAddresses.map(_.region) == realAddresses.map(_.region))
+    assert(RGAddresses.map(_.country) == realAddresses.map(_.country))
 
+    //assert(RGAddresses.map(_.street) == realAddresses.map(_.street))
 
   }
 

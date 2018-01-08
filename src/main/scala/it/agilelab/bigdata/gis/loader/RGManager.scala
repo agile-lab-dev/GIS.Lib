@@ -74,7 +74,7 @@ object RGManager {
       1)
     val place: Option[OSMPlace] =  placesResult.seq.headOption
 
-    PartialAddress(road.map(_.street).getOrElse(""),place.map(_.name).getOrElse(""))
+    PartialAddress(road.map(_.street).getOrElse(""),place.map(_.name).getOrElse(""), "", "", "")
 
   }
 
