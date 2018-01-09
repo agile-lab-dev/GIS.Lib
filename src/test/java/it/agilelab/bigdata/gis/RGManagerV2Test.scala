@@ -1,17 +1,17 @@
 package it.agilelab.bigdata.gis
 
-import it.agilelab.bigdata.gis.loader.RGManagerV2
+import it.agilelab.bigdata.gis.loader.ReverseGeocodingManager
 import it.agilelab.bigdata.gis.models.PartialAddress
 import org.scalatest.FunSuite
 
 class RGManagerV2Test extends FunSuite{
 
   val path2 = "/home/stefano/IdeaProjects/Agile.GIS.Server/data"
-  RGManagerV2.init(path2)
+  ReverseGeocodingManager.init(path2)
 
   test("RGManager second version (loading boundaries)"){
 
-    val answer = RGManagerV2.reverseGeocode(45.605247, 8.710839)
+    val answer = ReverseGeocodingManager.reverseGeocode(45.995920, 13.304883)
 
     println(answer.city)
     println(answer.street)
@@ -43,25 +43,25 @@ class RGManagerV2Test extends FunSuite{
       (46.485170, 10.310192),
       (45.048958, 11.785429))
 
-    val RGAddresses: Seq[PartialAddress] = points.map(x => RGManagerV2.reverseGeocode(x._1, x._2))
+    val RGAddresses: Seq[PartialAddress] = points.map(x => ReverseGeocodingManager.reverseGeocode(x._1, x._2))
 
-    val realAddresses = Seq(PartialAddress("Via Lungomare Anglona", "Castelsardo", "Sassari", "Sardegna", "Italia"),
+    val realAddresses = Seq(PartialAddress("Via Colle di Frigiano", "Castelsardo", "Sassari", "Sardegna", "Italia"),
       PartialAddress("Via Roma","Pavia di Udine", "Udine", "Friuli Venezia Giulia", "Italia"),
       PartialAddress("Via Muri Bianchi", "Cittadella", "Padova", "Veneto", "Italia"),
-      PartialAddress("Contrada Forche", "Alcamo", "Trapani", "Sicilia", "Italia"),
-      PartialAddress("Viale 16 Aprile", "Prato", "Prato", "Toscana", "Italia"),
+      PartialAddress("Via Porta Palermo", "Alcamo", "Trapani", "Sicilia", "Italia"),
+      PartialAddress("Via 16 Aprile", "Prato", "Prato", "Toscana", "Italia"),
       PartialAddress("Via Giuseppe Garibaldi", "Lecce", "Lecce", "Puglia", "Italia"),
-      PartialAddress("Corso Trapani", "Torino", "Torino", "Piemonte", "Italia"),
-      PartialAddress("Via Casilina Nord", "Cassino", "Frosinone", "Lazio", "Italia"),
-      PartialAddress("Via 4 Novembre", "Merate", "Lecco", "Lombardia", "Italia"),
-      PartialAddress("Via Madonna del Salvatore", "Vittuone", "Milano", "Lombardia", "Italia"),
-      PartialAddress("Via delle Mimose", "Torre del Greco", "Napoli", "Campania", "Italia"),
+      PartialAddress("Piazza Rivoli", "Torino", "Torino", "Piemonte", "Italia"),
+      PartialAddress("Via Casilina", "Cassino", "Frosinone", "Lazio", "Italia"),
+      PartialAddress("Via 4 novembre", "Merate", "Lecco", "Lombardia", "Italia"),
+      PartialAddress("Rotonda Pilota Lorenzo Bandini", "Vittuone", "Milano", "Lombardia", "Italia"),
+      PartialAddress("Via Enrico de Nicola", "Torre del Greco", "Napoli", "Campania", "Italia"),
       PartialAddress("Via Gaetano Amati", "Venaria Reale", "Torino", "Piemonte", "Italia"),
       PartialAddress("Via Amerigo Vespucci", "Cesano Boscone", "Milano", "Lombardia", "Italia"),
       PartialAddress("Via Carlo Forlanini", "Desio", "Monza e della Brianza", "Lombardia", "Italia"),
       PartialAddress("Via Marino Marini", "Pistoia", "Pistoia", "Toscana", "Italia"),
-      PartialAddress("SP52", "Lonate Pozzolo", "Varese", "Lombardia", "Italia"),
-      PartialAddress("Viale Marchese di Villabianca", "Palermo", "Palermo", "Sicilia", "Italia"),
+      PartialAddress("Via per Tornavento", "Lonate Pozzolo", "Varese", "Lombardia", "Italia"),
+      PartialAddress("Via Marchese di Villabianca", "Palermo", "Palermo", "Sicilia", "Italia"),
       PartialAddress("Via Nazionale", "Valdidentro", "Sondrio", "Lombardia", "Italia"),
       PartialAddress("Viale Porta Po", "Rovigo", "Rovigo", "Veneto", "Italia")
     )
@@ -71,7 +71,7 @@ class RGManagerV2Test extends FunSuite{
     assert(RGAddresses.map(_.region) == realAddresses.map(_.region))
     assert(RGAddresses.map(_.country) == realAddresses.map(_.country))
 
-    //assert(RGAddresses.map(_.street) == realAddresses.map(_.street))
+    assert(RGAddresses.map(_.street) == realAddresses.map(_.street))
 
   }
 

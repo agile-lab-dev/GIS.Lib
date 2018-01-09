@@ -38,6 +38,11 @@ class OSMStreetShapeLoader() extends Loader[OSMStreet]{
     lines
   }
 
+
+  override protected def filterInvalidObjects(obj: OSMStreet) = {
+    obj.street.trim != ""
+  }
+
   protected def objectMapping(fields: Array[AnyRef],line: Geometry): OSMStreet = {
     val streetType: String = if(fields(3) != null) fields(3).toString else ""
     val st = streetType match {

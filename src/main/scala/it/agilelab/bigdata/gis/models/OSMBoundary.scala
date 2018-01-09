@@ -5,10 +5,24 @@ import javax.swing.plaf.synth.Region
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
-case class OSMBoundary(polygon: Geometry, city: Option[String], county: Option[String], region: Option[String], country: Option[String], boundaryType: String) extends Geometry(polygon.getFactory) {
+case class OSMBoundary(multiPolygon: Geometry,
+                       city: Option[String],
+                       county: Option[String],
+                       region: Option[String],
+                       country: Option[String],
+                       boundaryType: String)
+  extends MultiPolygon(
+    {
+      val length = multiPolygon.getNumGeometries
+      (0 until length).map{
+        x => multiPolygon.getGeometryN(x).asInstanceOf[Polygon]
+      }
+    }.toArray,
+    multiPolygon.getFactory
+  ) {
 
   override def toString() = {
-    s"""Line: ${polygon.toString}
+    s"""Line: ${multiPolygon.toString}
        |City: ${city.map(_.toString)}
        |County: ${county.map(_.toString)}
        |Region: ${region.map(_.toString)}
@@ -22,13 +36,13 @@ case class OSMBoundary(polygon: Geometry, city: Option[String], county: Option[S
   /** As seen from class Street, the missing signatures are as follows.
     *  For convenience, these are usable as stub implementations.
     */
-  def apply(filter: CoordinateFilter) = polygon.apply(filter)
-
-  def apply(filter: CoordinateSequenceFilter)  = polygon.apply(filter)
-
-  def apply(filter: GeometryFilter) = polygon.apply(filter)
-
-  def apply(filter: GeometryComponentFilter) = polygon.apply(filter)
+//  def apply(filter: CoordinateFilter) = multiPolygon.apply(filter)
+//
+//  def apply(filter: CoordinateSequenceFilter)  = multiPolygon.apply(filter)
+//
+//  def apply(filter: GeometryFilter) = multiPolygon.apply(filter)
+//
+//  def apply(filter: GeometryComponentFilter) = multiPolygon.apply(filter)
 
   def getCoordinateSequence() = {
     new CoordinateArraySequence(getCoordinates)
@@ -42,7 +56,7 @@ case class OSMBoundary(polygon: Geometry, city: Option[String], county: Option[S
 
   }
 
-  override def getBoundary: Geometry = polygon.getBoundary
+  override def getBoundary: Geometry = multiPolygon.getBoundary
 
   override def compareToSameClass(o: scala.Any): Int = {
     val s: OSMBoundary = o.asInstanceOf[OSMBoundary]
@@ -69,25 +83,25 @@ case class OSMBoundary(polygon: Geometry, city: Option[String], county: Option[S
     return comp.compare(getCoordinateSequence(), s.getCoordinateSequence())
   }
 
-  override def getCoordinates: Array[Coordinate] = polygon.getCoordinates
+  override def getCoordinates: Array[Coordinate] = multiPolygon.getCoordinates
 
-  override def getDimension: Int = polygon.getDimension
+  override def getDimension: Int = multiPolygon.getDimension
 
-  override def getGeometryType: String = polygon.getGeometryType
+  override def getGeometryType: String = multiPolygon.getGeometryType
 
-  override def getBoundaryDimension: Int = polygon.getBoundaryDimension
+  override def getBoundaryDimension: Int = multiPolygon.getBoundaryDimension
 
-  override def getCoordinate: Coordinate = polygon.getCoordinate
+  override def getCoordinate: Coordinate = multiPolygon.getCoordinate
 
-  override def isEmpty: Boolean = polygon.isEmpty
+  override def isEmpty: Boolean = multiPolygon.isEmpty
 
-  override def normalize(): Unit = polygon.normalize()
+  override def normalize(): Unit = multiPolygon.normalize()
 
-  override def reverse(): Geometry = polygon.reverse()
+  override def reverse(): Geometry = multiPolygon.reverse()
 
-  override def equalsExact(other: Geometry, tolerance: Double): Boolean = polygon.equalsExact(other, tolerance)
+  override def equalsExact(other: Geometry, tolerance: Double): Boolean = multiPolygon.equalsExact(other, tolerance)
 
-  override def getNumPoints: Int = polygon.getNumPoints
+  override def getNumPoints: Int = multiPolygon.getNumPoints
 
 
 }

@@ -21,10 +21,26 @@ object OSMStreet{
 
 }
 
-case class OSMStreet(lineString: Geometry, street: String, code: String, isBridge: Boolean, isTunnel: Boolean, speedLimit: Int, bidirected: Boolean, streetType: OSMStreetType) extends Geometry(lineString.getFactory) {
+case class OSMStreet(multiLineString: Geometry,
+                     street: String,
+                     code: String,
+                     isBridge: Boolean,
+                     isTunnel: Boolean,
+                     speedLimit: Int,
+                     bidirected: Boolean,
+                     streetType: OSMStreetType)
+  extends MultiLineString(
+      {
+          val length = multiLineString.getNumGeometries
+          (0 until length).map{
+              x => multiLineString.getGeometryN(x).asInstanceOf[LineString]
+          }
+      }.toArray,
+      multiLineString.getFactory
+  ) {
 
     override def toString() = {
-        s"""Line:${lineString.toString()}
+        s"""Line:${multiLineString.toString()}
            |Street:${street}
            |SpeedLimit:${speedLimit}
            |Bidirected:${bidirected}
@@ -38,13 +54,13 @@ case class OSMStreet(lineString: Geometry, street: String, code: String, isBridg
     /** As seen from class Street, the missing signatures are as follows.
       *  For convenience, these are usable as stub implementations.
       */
-    def apply(filter: CoordinateFilter) = lineString.apply(filter)
-
-    def apply(filter: CoordinateSequenceFilter)  = lineString.apply(filter)
-
-    def apply(filter: GeometryFilter) = lineString.apply(filter)
-
-    def apply(filter: GeometryComponentFilter) = lineString.apply(filter)
+//    def apply(filter: CoordinateFilter) = multiLineString.apply(filter)
+//
+//    def apply(filter: CoordinateSequenceFilter)  = multiLineString.apply(filter)
+//
+//    def apply(filter: GeometryFilter) = multiLineString.apply(filter)
+//
+//    def apply(filter: GeometryComponentFilter) = multiLineString.apply(filter)
 
     def getCoordinateSequence() = {
       new CoordinateArraySequence(getCoordinates)
@@ -58,7 +74,7 @@ case class OSMStreet(lineString: Geometry, street: String, code: String, isBridg
 
     }
 
-    override def getBoundary: Geometry = lineString.getBoundary
+    override def getBoundary: Geometry = multiLineString.getBoundary
 
     override def compareToSameClass(o: scala.Any): Int = {
         val s: OSMStreet = o.asInstanceOf[OSMStreet]
@@ -85,25 +101,27 @@ case class OSMStreet(lineString: Geometry, street: String, code: String, isBridg
         return comp.compare(getCoordinateSequence(), s.getCoordinateSequence())
     }
 
-    override def getCoordinates: Array[Coordinate] = lineString.getCoordinates
+    override def getCoordinates: Array[Coordinate] = multiLineString.getCoordinates
 
-    override def getDimension: Int = lineString.getDimension
+    override def getDimension: Int = multiLineString.getDimension
 
-    override def getGeometryType: String = lineString.getGeometryType
+    override def getGeometryType: String = multiLineString.getGeometryType
 
-    override def getBoundaryDimension: Int = lineString.getBoundaryDimension
+    override def getBoundaryDimension: Int = multiLineString.getBoundaryDimension
 
-    override def getCoordinate: Coordinate = lineString.getCoordinate
+    override def getCoordinate: Coordinate = multiLineString.getCoordinate
 
-    override def isEmpty: Boolean = lineString.isEmpty
+    override def isEmpty: Boolean = multiLineString.isEmpty
 
-    override def normalize(): Unit = lineString.normalize()
+    override def normalize(): Unit = multiLineString.normalize()
 
-    override def reverse(): Geometry = lineString.reverse()
+    override def reverse(): Geometry = multiLineString.reverse()
 
-    override def equalsExact(other: Geometry, tolerance: Double): Boolean = lineString.equalsExact(other, tolerance)
+    override def equalsExact(other: Geometry, tolerance: Double): Boolean = multiLineString.equalsExact(other, tolerance)
 
-    override def getNumPoints: Int = lineString.getNumPoints
+    override def getNumPoints: Int = multiLineString.getNumPoints
+
+
 
     import OSMStreetType._
 
