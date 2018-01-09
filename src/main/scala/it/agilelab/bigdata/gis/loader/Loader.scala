@@ -18,8 +18,10 @@ trait Loader[T <: Geometry] {
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): T
 
+  protected def filterInvalidObjects(obj: T): Boolean = true
+
   def buildIndex( objects: Iterator[T] ): GeometryList[T] = {
-    val objectL = objects.toList
+    val objectL = objects.toList.filter(filterInvalidObjects)
     println("starting to build index")
     val objectIndex= new GeometryList[T](objectL)
     objectIndex.buildIndex(IndexType.RTREE)

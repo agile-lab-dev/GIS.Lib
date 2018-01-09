@@ -42,7 +42,6 @@ object KNNQueryMem extends Serializable {
 	        if(spatialList.index == null) {
 	            throw new NullPointerException("Need to invoke buildIndex() first, indexedCollectionNoId is null");
 	        }
-					val fact = new GeometryFactory()
 					val tmp = KnnJudgementUsingIndexS.invoke(spatialList.index, queryCenter,k)
 					val result = tmp.sorted(new GeometryDistanceOrdering(queryCenter)).take(k)
 					result.map(r => r.asInstanceOf[T]).toList

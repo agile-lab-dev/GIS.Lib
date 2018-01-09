@@ -7,7 +7,7 @@ import it.agilelab.bigdata.gis.models.{OSMBoundary, OSMStreet, PartialAddress}
 import it.agilelab.bigdata.gis.spatialList.GeometryList
 import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem
 
-object RGManagerV2 {
+object ReverseGeocodingManager {
 
   val boundariesLoader  = new OSMAdministrativeBoundariesLoader
   val roadsLoader = new OSMStreetShapeLoader
@@ -42,7 +42,7 @@ object RGManagerV2 {
       val countiesWithRegions = counties.map{ x => {
           //For the sake of simplicity we rely on the fact that the interiorPoint is always contained in the polygon and
           // that a point of a county is inside only one region
-          val candidate_regions = regions.filter(y => x.polygon.getInteriorPoint.coveredBy(y.polygon))
+          val candidate_regions = regions.filter(y => x.multiPolygon.getInteriorPoint.coveredBy(y.multiPolygon))
           x.copy(region = candidate_regions.headOption.map(_.region.get))
         }
       }
@@ -50,7 +50,7 @@ object RGManagerV2 {
       val citiesWithCountiesRegions = cities.map{ x => {
         //For the sake of simplicity we rely on the fact that the interiorPoint is always contained in the polygon and
         // that a point of a city is inside only one county
-          val candidate_counties = countiesWithRegions.filter(y => x.polygon.getInteriorPoint.coveredBy(y.polygon))
+          val candidate_counties = countiesWithRegions.filter(y => x.multiPolygon.getInteriorPoint.coveredBy(y.multiPolygon))
           x.copy(county = candidate_counties.headOption.map(_.county.get), region = candidate_counties.headOption.map(_.region.get))
         }
       }
@@ -84,18 +84,17 @@ object RGManagerV2 {
     val roadsResult: Seq[OSMStreet] = KNNQueryMem.SpatialKnnQuery(
       roadsGeometryList,
       queryPoint,
-      1)
+      10)
     val road: Option[OSMStreet] =  roadsResult.seq.headOption
 
     val placesResult: Seq[OSMBoundary] = KNNQueryMem.SpatialKnnQuery(
       boundariesGeometryList,
       queryPoint,
       10)
-    val place: Option[OSMBoundary] =  placesResult.map(x => (x,x.polygon.distance(queryPoint))).reduceOption((A, B)=> if(A._2 < B._2) A else B).map(_._1)
+    val place: Option[OSMBoundary] =  placesResult.headOption//map(x => (x,x.multiPolygon.distance(queryPoint))).reduceOption((A, B)=> if(A._2 < B._2) A else B).map(_._1)
 
     PartialAddress(road.map(_.street).getOrElse(""), place.map(_.city.getOrElse("")).getOrElse(""), place.map(_.county.getOrElse("")).getOrElse(""), place.map(_.region.getOrElse("")).getOrElse(""), place.map(_.country.getOrElse("")).getOrElse(""))
 
   }
-
 
 }
