@@ -22,13 +22,13 @@ object OSMStreet{
 }
 
 case class OSMStreet(multiLineString: Geometry,
-                     street: String,
-                     code: String,
-                     isBridge: Boolean,
-                     isTunnel: Boolean,
-                     speedLimit: Int,
-                     bidirected: Boolean,
-                     streetType: OSMStreetType)
+                     street: Option[String],
+                     code: Option[String],
+                     isBridge: Option[Boolean],
+                     isTunnel: Option[Boolean],
+                     speedLimit: Option[Int],
+                     bidirected: Option[Boolean],
+                     streetType: Option[OSMStreetType])
   extends MultiLineString(
       {
           val length = multiLineString.getNumGeometries
@@ -41,13 +41,13 @@ case class OSMStreet(multiLineString: Geometry,
 
     override def toString() = {
         s"""Line:${multiLineString.toString()}
-           |Street:${street}
-           |SpeedLimit:${speedLimit}
-           |Bidirected:${bidirected}
-           |StreetType:${streetType}
-           |code:${code}
-           |isBridge:${isBridge}
-           |isTunnel:${isTunnel}
+           |Street:${street.map(_.toString)}
+           |SpeedLimit:${speedLimit.map(_.toString)}
+           |Bidirected:${bidirected.map(_.toString)}
+           |StreetType:${streetType.map(_.toString)}
+           |code:${code.map(_.toString)}
+           |isBridge:${isBridge.map(_.toString)}
+           |isTunnel:${isTunnel.map(_.toString)}
          """.stripMargin
     }
 

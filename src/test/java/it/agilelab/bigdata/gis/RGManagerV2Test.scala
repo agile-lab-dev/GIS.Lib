@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis
 
 import it.agilelab.bigdata.gis.loader.ReverseGeocodingManager
-import it.agilelab.bigdata.gis.models.PartialAddress
+import it.agilelab.bigdata.gis.models.Address
 import org.scalatest.FunSuite
 
 class RGManagerV2Test extends FunSuite{
@@ -43,27 +43,27 @@ class RGManagerV2Test extends FunSuite{
       (46.485170, 10.310192),
       (45.048958, 11.785429))
 
-    val RGAddresses: Seq[PartialAddress] = points.map(x => ReverseGeocodingManager.reverseGeocode(x._1, x._2))
+    val RGAddresses: Seq[Address] = points.map(x => ReverseGeocodingManager.reverseGeocode(x._1, x._2, true))
 
-    val realAddresses = Seq(PartialAddress("Via Colle di Frigiano", "Castelsardo", "Sassari", "Sardegna", "Italia"),
-      PartialAddress("Via Roma","Pavia di Udine", "Udine", "Friuli Venezia Giulia", "Italia"),
-      PartialAddress("Via Muri Bianchi", "Cittadella", "Padova", "Veneto", "Italia"),
-      PartialAddress("Via Porta Palermo", "Alcamo", "Trapani", "Sicilia", "Italia"),
-      PartialAddress("Via 16 Aprile", "Prato", "Prato", "Toscana", "Italia"),
-      PartialAddress("Via Giuseppe Garibaldi", "Lecce", "Lecce", "Puglia", "Italia"),
-      PartialAddress("Piazza Rivoli", "Torino", "Torino", "Piemonte", "Italia"),
-      PartialAddress("Via Casilina", "Cassino", "Frosinone", "Lazio", "Italia"),
-      PartialAddress("Via 4 novembre", "Merate", "Lecco", "Lombardia", "Italia"),
-      PartialAddress("Rotonda Pilota Lorenzo Bandini", "Vittuone", "Milano", "Lombardia", "Italia"),
-      PartialAddress("Via Enrico de Nicola", "Torre del Greco", "Napoli", "Campania", "Italia"),
-      PartialAddress("Via Gaetano Amati", "Venaria Reale", "Torino", "Piemonte", "Italia"),
-      PartialAddress("Via Amerigo Vespucci", "Cesano Boscone", "Milano", "Lombardia", "Italia"),
-      PartialAddress("Via Carlo Forlanini", "Desio", "Monza e della Brianza", "Lombardia", "Italia"),
-      PartialAddress("Via Marino Marini", "Pistoia", "Pistoia", "Toscana", "Italia"),
-      PartialAddress("Via per Tornavento", "Lonate Pozzolo", "Varese", "Lombardia", "Italia"),
-      PartialAddress("Via Marchese di Villabianca", "Palermo", "Palermo", "Sicilia", "Italia"),
-      PartialAddress("Via Nazionale", "Valdidentro", "Sondrio", "Lombardia", "Italia"),
-      PartialAddress("Viale Porta Po", "Rovigo", "Rovigo", "Veneto", "Italia")
+    val realAddresses = Seq(Address(Some("Via Colle di Frigiano"), Some("Castelsardo"), Some("Sassari"), Some("Sardegna"), Some("Italia")),
+      Address(Some("Via Roma"), Some("Pavia di Udine"), Some("Udine"), Some("Friuli Venezia Giulia"), Some("Italia")),
+      Address(Some("Via Muri Bianchi"), Some("Cittadella"), Some("Padova"), Some("Veneto"), Some("Italia") ),
+      Address(Some("Via Porta Palermo"), Some("Alcamo"), Some("Trapani"), Some("Sicilia"), Some("Italia") ),
+      Address(Some("Via 16 Aprile"), Some("Prato"), Some("Prato"), Some("Toscana"), Some("Italia") ),
+      Address(Some("Via Giuseppe Garibaldi"), Some("Lecce"), Some("Lecce"), Some("Puglia"), Some("Italia") ),
+      Address(Some("Piazza Rivoli"), Some("Torino"), Some("Torino"), Some("Piemonte"), Some("Italia") ),
+      Address(Some("Via Casilina"), Some("Cassino"), Some("Frosinone"), Some("Lazio"), Some("Italia") ),
+      Address(Some("Via 4 novembre"), Some("Merate"), Some("Lecco"), Some("Lombardia"), Some("Italia") ),
+      Address(Some("Via Milano"), Some("Vittuone"), Some("Milano"), Some("Lombardia"), Some("Italia") ),
+      Address(Some("Via Enrico de Nicola"), Some("Torre del Greco"), Some("Napoli"), Some("Campania"), Some("Italia") ),
+      Address(Some("Via Gaetano Amati"), Some("Venaria Reale"), Some("Torino"), Some("Piemonte"), Some("Italia") ),
+      Address(Some("Via Amerigo Vespucci"), Some("Cesano Boscone"), Some("Milano"), Some("Lombardia"), Some("Italia") ),
+      Address(Some("Via Carlo Forlanini"), Some("Desio"), Some("Monza e della Brianza"), Some("Lombardia"), Some("Italia") ),
+      Address(Some("Via Marino Marini"), Some("Pistoia"), Some("Pistoia"), Some("Toscana"), Some("Italia") ),
+      Address(Some("Via per Tornavento"), Some("Lonate Pozzolo"), Some("Varese"), Some("Lombardia"), Some("Italia") ),
+      Address(Some("Via Marchese di Villabianca"), Some("Palermo"), Some("Palermo"), Some("Sicilia"), Some("Italia") ),
+      Address(Some("Via Nazionale"), Some("Valdidentro"), Some("Sondrio"), Some("Lombardia"), Some("Italia") ),
+      Address(Some("Viale Porta Po"), Some("Rovigo"), Some("Rovigo"), Some("Veneto"), Some("Italia") )
     )
 
     assert(RGAddresses.map(_.city) == realAddresses.map(_.city))

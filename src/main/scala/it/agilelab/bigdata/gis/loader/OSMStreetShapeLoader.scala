@@ -10,12 +10,13 @@ import java.util
 
 import com.vividsolutions.jts.geom.{Geometry, LineString, MultiLineString}
 import it.agilelab.bigdata.gis.enums.IndexType
-import it.agilelab.bigdata.gis.models._
+import it.agilelab.bigdata.gis.models.{OSMStreetType, _}
 import it.agilelab.bigdata.gis.spatialList.GeometryList
 import org.opengis.feature.Attribute
 
 import scala.collection.mutable
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 
 object OSMStreetShapeLoader{
@@ -39,13 +40,9 @@ class OSMStreetShapeLoader() extends Loader[OSMStreet]{
   }
 
 
-  override protected def filterInvalidObjects(obj: OSMStreet) = {
-    obj.street.trim != ""
-  }
-
   protected def objectMapping(fields: Array[AnyRef],line: Geometry): OSMStreet = {
-    val streetType: String = if(fields(3) != null) fields(3).toString else ""
-    val st = streetType match {
+    val streetType = Try(if(fields(3) != null) fields(3).toString else "").toOption
+    val st: Option[OSMStreetType.Value] = streetType.map{
       case "motorway" => OSMStreetType.Motorway
       case "secondary" => OSMStreetType.Secondary
       case "unclassified" => OSMStreetType.Unclassified
@@ -69,12 +66,12 @@ class OSMStreetShapeLoader() extends Loader[OSMStreet]{
     //val length: Double = fields(8).replace(',', '.').toDouble
     //var bidirected: Boolean = false
     //if (fields(5) == 1) bidirected = true
-    val street: String = if(fields(4) != null) fields(4).toString else ""
-    val code: String = if(fields(5) != null) fields(5).toString else ""
-    val oneway: Boolean = if(fields(6).toString == "F") false else true
-    val isTunnel: Boolean = if(fields(10).toString == "F") false else true
-    val isBridge: Boolean = if(fields(9).toString == "F") false else true
-    val speedlimit: Int = if(fields(7).toString.toInt != 0) fields(7).toString.toInt else 0
+    val street = Try(fields(4).toString).toOption
+    val code = Try(fields(5).toString).toOption
+    val oneway = Try(if(fields(6).toString == "F") false else true).toOption
+    val isTunnel = Try(if(fields(10).toString == "F") false else true).toOption
+    val isBridge = Try(if(fields(9).toString == "F") false else true).toOption
+    val speedlimit = Try(if(fields(7).toString.toInt != 0) fields(7).toString.toInt else 0).toOption
     //val toSpeed: Integer = fields(6).toInt
 
 

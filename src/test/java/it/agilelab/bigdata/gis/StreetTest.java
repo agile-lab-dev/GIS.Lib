@@ -5,6 +5,8 @@ import com.vividsolutions.jts.geom.*;
 import it.agilelab.bigdata.gis.models.OSMStreet;
 import it.agilelab.bigdata.gis.models.OSMStreetType;
 import org.junit.Test;
+import scala.Option;
+import scala.Some;
 
 import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Int;
 import static junit.framework.TestCase.assertTrue;
@@ -19,15 +21,15 @@ public class StreetTest {
 
         GeometryFactory fact=new GeometryFactory();
         Point queryPoint = fact.createPoint(new Coordinate(45, 45));
-        OSMStreet street = new OSMStreet(queryPoint, "strada scaravaglio", "prova", true, true, 80, true, OSMStreetType.Footway());
+        OSMStreet street = new OSMStreet(queryPoint, new Some("strada scaravaglio"), new Some("prova"), new Some(true), new Some(true), new Some(80), new Some(true), new Some(OSMStreetType.Footway()));
         Boolean res1 = street.isForCar();
         assertTrue(res1 == false);
 
-        street = new OSMStreet(queryPoint, "strada scaravaglio", "prova", true, true, 80, true, OSMStreetType.Cycleway());
+        street = new OSMStreet(queryPoint, new Some("strada scaravaglio"), new Some("prova"), new Some(true), new Some(true), new Some(80), new Some(true), new Some(OSMStreetType.Cycleway()));
         res1 = street.isForCar();
         assertTrue(res1 == false);
 
-        street = new OSMStreet(queryPoint, "strada scaravaglio", "prova", true, true, 80, true, OSMStreetType.Primary());
+        street = new OSMStreet(queryPoint, new Some("strada scaravaglio"), new Some("prova"), new Some(true), new Some(true), new Some(80), new Some(true), new Some(OSMStreetType.Primary()));
         res1 = street.isForCar();
         assertTrue(res1 == true);
 

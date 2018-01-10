@@ -175,9 +175,8 @@ object ShapeFileReader {
 
   def readMultiPolygonFeatures(path: String): Seq[(jts.MultiPolygon, util.List[AnyRef])] = {
 
-   val a = readSimpleFeatures(path)
+   readSimpleFeatures(path)
       .flatMap { ft => ft.geom[jts.MultiPolygon].map(mp => (mp, ft.getAttributes)) }
-   a
   }
   /*
       def readMultiPolygonFeatures[D](path: String, dataField: String): Seq[MultiPolygonFeature[D]] =
