@@ -3,7 +3,7 @@ package it.agilelab.bigdata.gis.loader
 import java.io.{File, FilenameFilter}
 
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
-import it.agilelab.bigdata.gis.models.{OSMBoundary, OSMStreet, PartialAddress}
+import it.agilelab.bigdata.gis.models.{Address, OSMBoundary, OSMStreet}
 import it.agilelab.bigdata.gis.spatialList.GeometryList
 import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem
 
@@ -77,7 +77,7 @@ object ReverseGeocodingManager {
 
   }
 
-  def reverseGeocode(latitude: Double, longitude: Double) : PartialAddress = {
+  def reverseGeocode(latitude: Double, longitude: Double, filterEmptyStreets: Boolean = false) : Address = {
     val fact = new GeometryFactory()
     val queryPoint: Point = fact.createPoint(new Coordinate(longitude, latitude))
 
@@ -85,15 +85,18 @@ object ReverseGeocodingManager {
       roadsGeometryList,
       queryPoint,
       10)
-    val road: Option[OSMStreet] =  roadsResult.seq.headOption
+
+    //If filterEmptyStreets is enabled then we filter out all the not defined and empty streets
+    val road: Option[OSMStreet] =  roadsResult
+      .find(p => !filterEmptyStreets || (p.street.isDefined && !p.street.get.trim.equals("")))
 
     val placesResult: Seq[OSMBoundary] = KNNQueryMem.SpatialKnnQuery(
       boundariesGeometryList,
       queryPoint,
       10)
-    val place: Option[OSMBoundary] =  placesResult.headOption//map(x => (x,x.multiPolygon.distance(queryPoint))).reduceOption((A, B)=> if(A._2 < B._2) A else B).map(_._1)
+    val place: Option[OSMBoundary] =  placesResult.headOption
 
-    PartialAddress(road.map(_.street).getOrElse(""), place.map(_.city.getOrElse("")).getOrElse(""), place.map(_.county.getOrElse("")).getOrElse(""), place.map(_.region.getOrElse("")).getOrElse(""), place.map(_.country.getOrElse("")).getOrElse(""))
+    Address(road, place)
 
   }
 
