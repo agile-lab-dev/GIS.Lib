@@ -1,21 +1,8 @@
 package it.agilelab.bigdata.gis.loader
 
-import org.geotools.data.simple._
-import org.opengis.feature.simple._
-import org.geotools.data.shapefile._
-import com.vividsolutions.jts.{geom => jts}
-import java.net.URL
-import java.io.File
-import java.util
-
 import com.vividsolutions.jts.geom._
-import it.agilelab.bigdata.gis.enums.IndexType
 import it.agilelab.bigdata.gis.models._
 import it.agilelab.bigdata.gis.spatialList.GeometryList
-import org.opengis.feature.Attribute
-
-import scala.collection.mutable
-import scala.collection.JavaConversions._
 
 
 object OSMPlaceShapeLoader{

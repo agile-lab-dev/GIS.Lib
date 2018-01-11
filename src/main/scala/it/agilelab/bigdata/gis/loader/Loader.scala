@@ -1,13 +1,9 @@
 package it.agilelab.bigdata.gis.loader
 
 import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
 import it.agilelab.bigdata.gis.enums.IndexType
-import it.agilelab.bigdata.gis.models.{HereMapsStreet, OSMStreet, OSMStreetType}
 import it.agilelab.bigdata.gis.spatialList.GeometryList
 
-import scala.io.Source
-import scala.util.Try
 
 /**
   * Created by paolo on 25/01/2017.
@@ -20,10 +16,10 @@ trait Loader[T <: Geometry] {
 
   def buildIndex( objects: Iterator[T] ): GeometryList[T] = {
     val objectL = objects.toList
-    println("starting to build index")
+    println("[GISLib] Starting to build R-Tree")
     val objectIndex= new GeometryList[T](objectL)
     objectIndex.buildIndex(IndexType.RTREE)
-    println("index built")
+    println("[GISLib] R-Tree built")
     objectIndex
   }
 
@@ -32,11 +28,6 @@ trait Loader[T <: Geometry] {
 
     val lines: Iterator[T] = sources.foldLeft(Seq.empty[T].toIterator)( (acc, source) => acc ++ loadFile(source).map(e => {
 
-
-      if(i % 10000 == 0){
-        println("loaded "+i+" lines")
-      }
-
       val lr: Geometry = e._2
       val fields = e._1
 
@@ -44,6 +35,7 @@ trait Loader[T <: Geometry] {
       objectMapping(fields, lr)
     }))
 
+    println(s"[GisLib Loaded $i lines]")
     lines
   }
 
