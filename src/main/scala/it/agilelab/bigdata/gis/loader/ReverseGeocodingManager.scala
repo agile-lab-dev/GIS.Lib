@@ -36,8 +36,8 @@ object ReverseGeocodingManager {
       val countiesFile: String = path + "/World_AL6.shp"
       val citiesFile: String = path + "/World_AL8.shp"
       val regions: Seq[OSMBoundary] = boundariesLoader.loadObjects(regionsFile).toSeq
-      val counties = boundariesLoader.loadObjects(countiesFile).toSeq
-      val cities = boundariesLoader.loadObjects(citiesFile).toSeq
+      val counties: Seq[OSMBoundary] = boundariesLoader.loadObjects(countiesFile).toSeq
+      val cities: Seq[OSMBoundary] = boundariesLoader.loadObjects(citiesFile).toSeq
 
       val countiesWithRegions = counties.map{ x => {
           //For the sake of simplicity we rely on the fact that the interiorPoint is always contained in the polygon and
