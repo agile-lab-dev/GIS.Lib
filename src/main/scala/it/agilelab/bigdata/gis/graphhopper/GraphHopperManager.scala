@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
   * the other one for extend a sequence of points through routing (extendRoute)
   *
   */
-object GraphHopperMap {
+object GraphHopperManager {
 
   private var hopperOSM: GraphHopperOSM = _
   private var encoder: DataFlagEncoder = _
