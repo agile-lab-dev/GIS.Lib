@@ -24,18 +24,15 @@ trait Loader[T <: Geometry] {
   }
 
   def loadObjects(sources: String*): Iterator[T] = {
-    var i = 0
 
     val lines: Iterator[T] = sources.foldLeft(Seq.empty[T].toIterator)( (acc, source) => acc ++ loadFile(source).map(e => {
 
       val lr: Geometry = e._2
       val fields = e._1
 
-      i += 1
       objectMapping(fields, lr)
     }))
 
-    println(s"[GisLib Loaded $i lines]")
     lines
   }
 
