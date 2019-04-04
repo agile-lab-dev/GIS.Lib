@@ -5,6 +5,7 @@ import java.util.PriorityQueue
 import com.vividsolutions.jts.geom.{Geometry, Point}
 import com.vividsolutions.jts.index.SpatialIndex
 import com.vividsolutions.jts.index.strtree.{GeometryItemDistance, STRtree}
+import it.agilelab.bigdata.gis.core.knnJudgement.GeometryDistanceComparator
 
 /**
   * Created by paolo on 25/01/2017.
