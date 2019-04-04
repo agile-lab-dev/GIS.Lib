@@ -12,9 +12,9 @@ import com.vividsolutions.jts.geom.{Envelope, Geometry, GeometryFactory}
 import com.vividsolutions.jts.index.SpatialIndex
 import com.vividsolutions.jts.index.quadtree.Quadtree
 import com.vividsolutions.jts.index.strtree.STRtree
+import it.agilelab.bigdata.gis.core.model.IndexType
 import it.agilelab.bigdata.gis.core.model.geometry.Circle
 import it.agilelab.bigdata.gis.core.utils.{XMaxComparator, XMinComparator, YMaxComparator, YMinComparator}
-import it.agilelab.bigdata.gis.enums.IndexType
 
 
 // TODO: Auto-generated Javadoc
@@ -70,7 +70,12 @@ abstract class SpatialList extends Serializable{
 	 */
 	def buildIndex(indexType: IndexType): Unit = {
 
-		val rt = if (indexType == IndexType.RTREE) new STRtree() else new Quadtree()
+		val rt =
+      indexType match {
+        case IndexType.RTREE => new STRtree()
+        case IndexType.QUADTREE => new Quadtree()
+      }
+
 		val geometryFactory = new GeometryFactory();
 		this.rawSpatialCollection.foreach(spatialObject => {
 

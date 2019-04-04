@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis.core.loader
 
 import com.vividsolutions.jts.geom._
-import it.agilelab.bigdata.gis.enums.IndexType
+import it.agilelab.bigdata.gis.core.model.IndexType
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 
