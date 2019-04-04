@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis
 
-import it.agilelab.bigdata.gis.loader.ReverseGeocodingManager
-import it.agilelab.bigdata.gis.models.Address
+import it.agilelab.bigdata.gis.domain.loader.ReverseGeocodingManager
+import it.agilelab.bigdata.gis.domain.models.Address
 import org.scalatest.FunSuite
 
 class RGManagerV2Test extends FunSuite{

@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis.core.managers
 import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.bigdata.gis.core.model.output.OutputModel
-import it.agilelab.bigdata.gis.spatialList.GeometryList
+import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 /**
   * @author andreaL
