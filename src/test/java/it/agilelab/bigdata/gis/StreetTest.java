@@ -2,13 +2,11 @@ package it.agilelab.bigdata.gis;
 
 
 import com.vividsolutions.jts.geom.*;
-import it.agilelab.bigdata.gis.models.OSMStreet;
-import it.agilelab.bigdata.gis.models.OSMStreetType;
+import it.agilelab.bigdata.gis.domain.models.OSMStreet;
+import it.agilelab.bigdata.gis.domain.models.OSMStreetType;
 import org.junit.Test;
-import scala.Option;
 import scala.Some;
 
-import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Int;
 import static junit.framework.TestCase.assertTrue;
 
 /**
