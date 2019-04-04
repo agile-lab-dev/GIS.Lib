@@ -2,8 +2,10 @@ package it.agilelab.bigdata.gis.loader
 
 
 import com.vividsolutions.jts.geom.{Geometry, MultiLineString}
+import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.models.{OSMStreetType, _}
 import it.agilelab.bigdata.gis.spatialList.GeometryList
+
 import scala.util.Try
 
 

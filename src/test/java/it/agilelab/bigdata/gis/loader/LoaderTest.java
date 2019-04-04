@@ -7,6 +7,7 @@ import it.agilelab.bigdata.gis.spatialList.*;
 import it.agilelab.bigdata.gis.spatialOperator.KNNQueryMem;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -58,7 +59,6 @@ public class LoaderTest {
         long start = System.currentTimeMillis();
 
 
-
         CTLLoader loader = new CTLLoader(7);
         ArrayList<String> paths = new ArrayList<String>();
         paths.add("C:\\Users\\paolo\\Desktop\\data\\out2.ctl");
@@ -68,24 +68,6 @@ public class LoaderTest {
         long end = System.currentTimeMillis();
         System.out.println("time: "+(end-start) + " ms");
 
-
-      /*  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(lineStringList);
-        oos.close();
-        System.out.println(baos.size());
-*/
-
-
-        //48.865078, 2.329587
-        //3 Rue d'Alger
-        //75001 Paris, Francia
-
-
-        //48.890957, 2.302972
-        //48.877937, 2.404142
-        //48.831760, 2.398175
-        //48.828021, 2.285949
 
         GeometryFactory fact=new GeometryFactory();
 
@@ -105,11 +87,7 @@ public class LoaderTest {
             double nextx = minx + r.nextDouble()*deltax;
 
             Point queryPoint = fact.createPoint(new Coordinate(nextx, nexty));
-            //long start2 = System.currentTimeMillis();
             HereMapsStreet queryResult = KNNQueryMem.SpatialKnnQueryJava(lineStringList, queryPoint, 1, true).get(0);
-            //long end2 = System.currentTimeMillis();
-            //System.out.println("time: "+(end2-start2) + " ms");
-            //System.out.println(queryResult.toString());
 
         }
 
@@ -125,48 +103,26 @@ public class LoaderTest {
 
         OSMStreetShapeLoader loader = new OSMStreetShapeLoader();
         ArrayList<String> paths = new ArrayList<String>();
-        paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\nord-est-latest-free.shp\\gis.osm_roads_free_1.shp");
-        /*paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\nord-ovest-latest-free.shp\\gis.osm_roads_free_1.shp");
-        paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\sud-latest-free.shp\\gis.osm_roads_free_1.shp");
-        paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\centro-latest-free.shp\\gis.osm_roads_free_1.shp");
-        paths.add("C:\\Users\\paolo\\Documents\\data\\GIS\\isole-latest-free.shp\\gis.osm_roads_free_1.shp");*/
+        paths.add("src/test/resources/sud-190403-free.shp//gis_osm_roads_free_1.shp");
 
-
-        GeometryList<OSMStreet> lineStringList = loader.loadIndex(scala.collection.JavaConversions.asScalaIterator(paths.iterator()).toSeq());
+        GeometryList<OSMStreet> lineStringList =
+            loader.loadIndex(scala.collection.JavaConversions.asScalaIterator(paths.iterator()).toSeq());
         long end = System.currentTimeMillis();
         System.out.println("time: "+(end-start) + " ms");
 
-
-      /*  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(lineStringList);
-        oos.close();
-        System.out.println(baos.size());
-*/
-
-
-        //48.865078, 2.329587
-        //3 Rue d'Alger
-        //75001 Paris, Francia
-
-
-        //48.890957, 2.302972
-        //48.877937, 2.404142
-        //48.831760, 2.398175
-        //48.828021, 2.285949
-
         GeometryFactory fact=new GeometryFactory();
 
-        double minx = 7.60;
-        double maxx = 7.70;
-        double miny = 45.00;
-        double maxy = 45.15;
+        double minx = 16.00;
+        double maxx = 16.10;
+        double miny = 40.66;
+        double maxy = 40.76;
 
         double deltax = maxx-minx;
         double deltay = maxy-miny;
         Random r = new Random();
 
         long start1 = System.currentTimeMillis();
+
         for(int i=0; i<1000; i++){
 
             double nexty = miny + r.nextDouble()*deltay;
@@ -175,15 +131,40 @@ public class LoaderTest {
             System.out.println("point: " + nextx + " - " + nexty);
 
             Point queryPoint = fact.createPoint(new Coordinate(nextx, nexty));
-            //long start2 = System.currentTimeMillis();
             OSMStreet queryResult = KNNQueryMem.SpatialKnnQueryJava(lineStringList, queryPoint, 1, true).get(0);
-            //long end2 = System.currentTimeMillis();
-            //System.out.println("time: "+(end2-start2) + " ms");
-            System.out.println(queryResult.toString());
+
+            if(queryResult.street().isDefined() && !queryResult.street().get().isEmpty())
+                System.out.println(queryResult.street());
 
         }
 
         long end1 = System.currentTimeMillis();
         System.out.println("time: "+(end1-start1) + " ms");
+
+        assert(true);
+    }
+
+
+    @Test
+    public void testReverseGeocoding() {
+
+        OSMStreetShapeLoader loader = new OSMStreetShapeLoader();
+        ArrayList<String> paths = new ArrayList<String>();
+
+        paths.add("src/test/resources/sud-190403-free.shp//gis_osm_roads_free_1.shp");
+
+        GeometryList<OSMStreet> lineStringList =
+                loader.loadIndex(scala.collection.JavaConversions.asScalaIterator(paths.iterator()).toSeq());
+
+        GeometryFactory fact=new GeometryFactory();
+
+        Double x = 16.01505D;
+        Double y = 40.69412D;
+
+        Point queryPoint = fact.createPoint(new Coordinate(x, y));
+        OSMStreet queryResult = KNNQueryMem.SpatialKnnQueryJava(lineStringList, queryPoint, 1, true).get(0);
+
+        assert(queryResult.street().get().equals("Via Sandro Pertini"));
+
     }
 }
