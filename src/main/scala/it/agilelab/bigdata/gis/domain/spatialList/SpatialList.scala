@@ -12,9 +12,9 @@ import com.vividsolutions.jts.geom.{Envelope, Geometry, GeometryFactory}
 import com.vividsolutions.jts.index.SpatialIndex
 import com.vividsolutions.jts.index.quadtree.Quadtree
 import com.vividsolutions.jts.index.strtree.STRtree
+import it.agilelab.bigdata.gis.core.model.geometry.Circle
 import it.agilelab.bigdata.gis.core.utils.{XMaxComparator, XMinComparator, YMaxComparator, YMinComparator}
 import it.agilelab.bigdata.gis.enums.IndexType
-import it.agilelab.bigdata.gis.geometryObjects.Circle
 
 
 // TODO: Auto-generated Javadoc
@@ -124,10 +124,10 @@ abstract class SpatialList extends Serializable{
 								val maxXEnvelope = this.rawSpatialCollection.max(new XMaxComparator());
 								val maxYEnvelope = this.rawSpatialCollection.max(new YMaxComparator());
 								this._boundary = new Array[Double](0)
-								this._boundary = this._boundary.:+(minXEnvelope.asInstanceOf[Circle].getMBR().getMinX());
-								this._boundary = this._boundary.:+(minYEnvelope.asInstanceOf[Circle].getMBR().getMinY());
-								this._boundary = this._boundary.:+(maxXEnvelope.asInstanceOf[Circle].getMBR().getMaxX());
-								this._boundary = this._boundary.:+(maxYEnvelope.asInstanceOf[Circle].getMBR().getMaxY());
+								this._boundary = this._boundary.:+(minXEnvelope.asInstanceOf[Circle].getMBR.getMinX());
+								this._boundary = this._boundary.:+(minYEnvelope.asInstanceOf[Circle].getMBR.getMinY());
+								this._boundary = this._boundary.:+(maxXEnvelope.asInstanceOf[Circle].getMBR.getMaxX());
+								this._boundary = this._boundary.:+(maxYEnvelope.asInstanceOf[Circle].getMBR.getMaxY());
 							}
 							else if (castError.getMessage().contains("Envelope")) {
 								val minXEnvelope = this.rawSpatialCollection.min(new XMinComparator());
