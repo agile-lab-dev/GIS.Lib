@@ -1,6 +1,7 @@
 package it.agilelab.bigdata.gis.loader
 
 import com.vividsolutions.jts.geom.Geometry
+import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.models.OSMBoundary
 import it.agilelab.bigdata.gis.spatialList.GeometryList
 

@@ -18,7 +18,6 @@ class RGManagerV2Test extends FunSuite{
 
     assert(!answer.city.isEmpty && !answer.street.isEmpty)
 
-
   }
 
   test("General report validation"){

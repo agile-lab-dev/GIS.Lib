@@ -2,6 +2,7 @@ package it.agilelab.bigdata.gis.loader
 
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
+import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.enums.IndexType
 import it.agilelab.bigdata.gis.models.{HereMapsStreet, HereMapsStreetType, OSMStreet, OSMStreetType}
 import it.agilelab.bigdata.gis.spatialList._
