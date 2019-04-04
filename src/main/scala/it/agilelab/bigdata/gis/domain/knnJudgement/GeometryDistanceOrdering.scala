@@ -1,6 +1,7 @@
 package it.agilelab.bigdata.gis.domain.knnJudgement
 
 import com.vividsolutions.jts.geom.Point
+import it.agilelab.bigdata.gis.core.knnJudgement.GeometryDistanceComparator
 
 /**
   * Created by paolo on 25/01/2017.

@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Random;
-
+import scala.collection.JavaConversions;
 /**
  * Created by paolo on 25/01/2017.
  */
@@ -105,7 +105,9 @@ public class LoaderTest {
         paths.add("src/test/resources/sud-190403-free.shp//gis_osm_roads_free_1.shp");
 
         GeometryList<OSMStreet> lineStringList =
-            loader.loadIndex(scala.collection.JavaConversions.asScalaIterator(paths.iterator()).toSeq());
+            loader
+                .loadIndex(JavaConversions.asScalaIterator(paths.iterator())
+                .toSeq());
         long end = System.currentTimeMillis();
         System.out.println("time: "+(end-start) + " ms");
 
@@ -153,7 +155,9 @@ public class LoaderTest {
         paths.add("src/test/resources/sud-190403-free.shp//gis_osm_roads_free_1.shp");
 
         GeometryList<OSMStreet> lineStringList =
-                loader.loadIndex(scala.collection.JavaConversions.asScalaIterator(paths.iterator()).toSeq());
+                loader
+                        .loadIndex(JavaConversions.asScalaIterator(paths.iterator())
+                        .toSeq());
 
         GeometryFactory fact=new GeometryFactory();
 
