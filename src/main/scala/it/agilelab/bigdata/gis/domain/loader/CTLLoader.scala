@@ -3,8 +3,7 @@ package it.agilelab.bigdata.gis.domain.loader
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
 import it.agilelab.bigdata.gis.core.loader.Loader
-import it.agilelab.bigdata.gis.enums.IndexType
-import it.agilelab.bigdata.gis.domain.models.{HereMapsStreet, HereMapsStreetType, OSMStreet, OSMStreetType}
+import it.agilelab.bigdata.gis.domain.models.{HereMapsStreet, HereMapsStreetType}
 import it.agilelab.bigdata.gis.domain.spatialList._
 
 import scala.io.Source
@@ -16,8 +15,8 @@ object CTLLoader{
 
   //Pay attention to side effects
 
-  var index: GeometryList[HereMapsStreet] = null
-  def getStreetIndex(path: String) = {
+  var index: GeometryList[HereMapsStreet] = _
+  def getStreetIndex(path: String): GeometryList[HereMapsStreet] = {
     if (index == null){
       index = new CTLLoader(7).loadIndex(path)
     }
@@ -33,7 +32,8 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
   val openStep = '('
   val closeStep = ')'
 
-  val sridFactory8003 = new GeometryFactory(new PrecisionModel(), 8003, CoordinateArraySequenceFactory.instance())
+  val sridFactory8003 =
+    new GeometryFactory(new PrecisionModel(), 8003, CoordinateArraySequenceFactory.instance())
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): HereMapsStreet = {
 
@@ -60,7 +60,17 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
     val fromSpeed: Integer = fields2(16).toInt
     val toSpeed: Integer = fields2(17).toInt
 
-    HereMapsStreet(line, street, city, county, state, country, Math.max(fromSpeed, toSpeed), bidirected, length, st)
+    HereMapsStreet(
+      line,
+      street,
+      city,
+      county,
+      state,
+      country,
+      Math.max(fromSpeed, toSpeed),
+      bidirected,
+      length,
+      st)
   }
 
 
@@ -79,7 +89,7 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
       } else {
 
         val fields: Array[String] = line.split(separator)
-        if(fields.size == 0){
+        if(fields.length == 0){
           println("bad splitting")
           Option.empty[(Array[AnyRef],LineString)]
         }else {
@@ -94,10 +104,11 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
 
   def buildGeometry(geoStr: String): Option[Geometry] = {
     val fields = parseGeometry(geoStr)
-    if(fields.size == 205){
+
+    if(fields.length == 205){
       Some(buildGeometry(fields))
     }else{
-      println(fields.size)
+      println(fields.length)
       None
     }
   }
@@ -139,8 +150,4 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
 
   }
 
-  def parseGeoField(geoStr: String) = {
-    val geoField = geoStr.substring(1,geoStr.size-2)
-    //val geoFields = geoField.split(geoSeparator,-1)
-  }
 }

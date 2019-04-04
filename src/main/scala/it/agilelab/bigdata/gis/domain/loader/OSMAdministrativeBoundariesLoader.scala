@@ -11,8 +11,8 @@ object OSMAdministrativeBoundariesLoader{
 
     //Pay attention to side effects
 
-    var index: GeometryList[OSMBoundary] = null
-    def getStreetIndex(path: String) = {
+    var index: GeometryList[OSMBoundary] = _
+    def getStreetIndex(path: String): GeometryList[OSMBoundary] = {
       if (index == null){
         index = new OSMAdministrativeBoundariesLoader().loadIndex(path)
       }
@@ -42,7 +42,7 @@ class OSMAdministrativeBoundariesLoader() extends Loader[OSMBoundary]{
 
   }
 
-  protected def normalizeCityName(name: AnyRef) = {
+  protected def normalizeCityName(name: AnyRef): Option[String] = {
     Try(
       name.toString.replace("it:","").replace(" (Italia)", "")
     ).toOption

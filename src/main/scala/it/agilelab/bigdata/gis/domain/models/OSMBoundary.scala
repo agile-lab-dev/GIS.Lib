@@ -1,7 +1,5 @@
 package it.agilelab.bigdata.gis.domain.models
 
-import javax.swing.plaf.synth.Region
-
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
@@ -21,7 +19,7 @@ case class OSMBoundary(multiPolygon: Geometry,
     multiPolygon.getFactory
   ) {
 
-  override def toString() = {
+  override def toString: String = {
     s"""Line: ${multiPolygon.toString}
        |City: ${city.map(_.toString)}
        |County: ${county.map(_.toString)}
@@ -31,7 +29,8 @@ case class OSMBoundary(multiPolygon: Geometry,
   }
 
 
-  def isAddressDefined = city.isDefined && county.isDefined && region.isDefined && country.isDefined
+  def isAddressDefined: Boolean =
+    city.isDefined && county.isDefined && region.isDefined && country.isDefined
 
   /** As seen from class Street, the missing signatures are as follows.
     *  For convenience, these are usable as stub implementations.
@@ -44,7 +43,7 @@ case class OSMBoundary(multiPolygon: Geometry,
 //
 //  def apply(filter: GeometryComponentFilter) = multiPolygon.apply(filter)
 
-  def getCoordinateSequence() = {
+  def getCoordinateSequence: CoordinateArraySequence = {
     new CoordinateArraySequence(getCoordinates)
   }
 
@@ -69,18 +68,15 @@ case class OSMBoundary(multiPolygon: Geometry,
       i += 1
       j += 1
     }
-    if (i < getNumPoints) {
-      return 1
-    }
-    if (j < s.getNumPoints) {
-      return -1
-    }
-    return 0
+
+    if (i < getNumPoints) 1
+    else if (j < s.getNumPoints) -1
+    else 0
   }
 
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
     val s: OSMStreet = o.asInstanceOf[OSMStreet]
-    return comp.compare(getCoordinateSequence(), s.getCoordinateSequence())
+    comp.compare(getCoordinateSequence, s.getCoordinateSequence)
   }
 
   override def getCoordinates: Array[Coordinate] = multiPolygon.getCoordinates

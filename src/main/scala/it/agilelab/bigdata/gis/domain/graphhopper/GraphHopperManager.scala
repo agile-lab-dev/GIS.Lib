@@ -2,19 +2,17 @@ package it.agilelab.bigdata.gis.domain.graphhopper
 
 import java.util.Locale
 
-import com.graphhopper.{GHRequest, GHResponse, PathWrapper}
 import com.graphhopper.matching.{EdgeMatch, MapMatching, MatchResult}
-
-
-import scalax.file.Path
 import com.graphhopper.reader.osm.GraphHopperOSM
 import com.graphhopper.routing.AlgorithmOptions
 import com.graphhopper.routing.util.{DataFlagEncoder, EncodingManager}
 import com.graphhopper.routing.weighting.GenericWeighting
 import com.graphhopper.util.shapes.GHPoint
 import com.graphhopper.util.{GPXEntry, PMap, Parameters}
+import com.graphhopper.{GHRequest, GHResponse, PathWrapper}
 
 import scala.collection.JavaConversions._
+import scalax.file.Path
 
 /**
   * @author Stefano Samele
@@ -31,7 +29,7 @@ object GraphHopperManager {
   private var weighting: GenericWeighting = _
 
   //Create the actual graph to be queried
-  def init(graphLocation: String) = {
+  def init(graphLocation: String): AnyVal = {
     if (hopperOSM == null) {
       hopperOSM = new GraphHopperOSM
 
@@ -99,43 +97,44 @@ object GraphHopperManager {
 
    if (hopperOSM == null) throw new IllegalAccessException("Cannot calculate route extension without a graph! Call init method first")
 
-   gpsPoints.map(x => (new GHPoint(x.lat, x.lon), x.getTime))
-      .sliding(2)
-      .map( x => {
+   gpsPoints
+     .map(x => (new GHPoint(x.lat, x.lon), x.getTime))
+     .sliding(2).flatMap(x => {
 
-        val req = new GHRequest(x.map(_._1))
-          .setVehicle("generic")
-          .setLocale(Locale.ITALY)
+     val req = new GHRequest(x.map(_._1))
+       .setVehicle("generic")
+       .setLocale(Locale.ITALY)
 
-        val rsp: GHResponse = hopperOSM.route(req)
+     val rsp: GHResponse = hopperOSM.route(req)
 
-        //First check for errors
-        if(rsp.hasErrors){
-          // handle them!
-          val errors = rsp.getErrors.toSeq
-          val message = errors.map( err =>
-              s"Error #${errors.indexOf(err)}: ${err.getMessage}"
-          ).mkString("\n")
-          throw new RuntimeException(message)
-        }
+     //First check for errors
+     if (rsp.hasErrors) {
+       // handle them!
+       val errors = rsp.getErrors.toSeq
+       val message = errors.map(err =>
+         s"Error #${errors.indexOf(err)}: ${err.getMessage}"
+       ).mkString("\n")
+       throw new RuntimeException(message)
+     }
 
-        // use the best path, see the GHResponse class for more possibilities.
-        val path: PathWrapper = rsp.getBest
+     // use the best path, see the GHResponse class for more possibilities.
+     val path: PathWrapper = rsp.getBest
 
-        val numAddedPoints: Int = path.getPoints.getSize
+     val numAddedPoints: Int = path.getPoints.getSize
 
-        val finalTime: Long = x.seq.map(_._2).reverse.head
+     val finalTime: Long = x.seq.map(_._2).reverse.head
 
-        val initialTime: Long = x.seq.map(_._2).head
+     val initialTime: Long = x.seq.map(_._2).head
 
-        val timeTaken: Long = finalTime - initialTime
+     val timeTaken: Long = finalTime - initialTime
 
-        val steps: Seq[Long] = (0 until numAddedPoints-1).map(x => initialTime + x*timeTaken/numAddedPoints)
+     val steps: Seq[Long] =
+       (0 until numAddedPoints - 1).map(x => initialTime + x * timeTaken / numAddedPoints)
 
-        path.getPoints.take(numAddedPoints-1).zip(steps)
-          .map( x => new GPXEntry( x._1.lat, x._1.lon, x._2))
+     path.getPoints.take(numAddedPoints - 1).zip(steps)
+       .map(x => new GPXEntry(x._1.lat, x._1.lon, x._2))
 
-      }).flatten.toSeq :+ gpsPoints.reverse.head
+   }).toSeq :+ gpsPoints.reverse.head
 
   }
 

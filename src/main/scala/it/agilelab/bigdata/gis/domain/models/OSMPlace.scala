@@ -1,36 +1,32 @@
 package it.agilelab.bigdata.gis.domain.models
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
-import java.util.zip.{GZIPInputStream, GZIPOutputStream}
-
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
-import it.agilelab.bigdata.gis.domain.models.OSMStreetType.OSMStreetType
 
 case class OSMPlace(polygon: Geometry, name: String, placeType: String, firstField: String, secondField: Int, fourthField: Long) extends Geometry(polygon.getFactory) {
 
-  override def toString() = {
-    s"""Line:${polygon.toString()}
-       |Name:$name
-       |PlaceType:$placeType
-       |FirstField:$firstField
-       |SecondField:$secondField
-       |FourthField:$fourthField
+  override def toString: String = {
+    s"""Line: ${polygon.toString}
+       |Name: $name
+       |PlaceType: $placeType
+       |FirstField: $firstField
+       |SecondField: $secondField
+       |FourthField: $fourthField
        """.stripMargin
   }
 
   /** As seen from class Street, the missing signatures are as follows.
     *  For convenience, these are usable as stub implementations.
     */
-  def apply(filter: CoordinateFilter) = polygon.apply(filter)
+  def apply(filter: CoordinateFilter): Unit = polygon.apply(filter)
 
-  def apply(filter: CoordinateSequenceFilter)  = polygon.apply(filter)
+  def apply(filter: CoordinateSequenceFilter): Unit = polygon.apply(filter)
 
-  def apply(filter: GeometryFilter) = polygon.apply(filter)
+  def apply(filter: GeometryFilter): Unit = polygon.apply(filter)
 
-  def apply(filter: GeometryComponentFilter) = polygon.apply(filter)
+  def apply(filter: GeometryComponentFilter): Unit = polygon.apply(filter)
 
-  def getCoordinateSequence() = {
+  def getCoordinateSequence: CoordinateArraySequence = {
     new CoordinateArraySequence(getCoordinates)
   }
 
@@ -55,18 +51,15 @@ case class OSMPlace(polygon: Geometry, name: String, placeType: String, firstFie
       i += 1
       j += 1
     }
-    if (i < getNumPoints) {
-      return 1
-    }
-    if (j < s.getNumPoints) {
-      return -1
-    }
-    return 0
+
+    if (i < getNumPoints)1
+    else if (j < s.getNumPoints) -1
+    else 0
   }
 
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
     val s: OSMStreet = o.asInstanceOf[OSMStreet]
-    return comp.compare(getCoordinateSequence(), s.getCoordinateSequence())
+    comp.compare(getCoordinateSequence, s.getCoordinateSequence)
   }
 
   override def getCoordinates: Array[Coordinate] = polygon.getCoordinates
