@@ -8,18 +8,14 @@ package it.agilelab.bigdata.gis.domain.spatialList
 
 import com.vividsolutions.jts.geom.Envelope
 
-
-// TODO: Auto-generated Javadoc
-
 /**
  * The Class RectangleRDD.
  */
 
 class RectangleList(rawData: List[Envelope]) extends SpatialList {
 
-
-	this.rawSpatialCollection = rawData
-	this.boundary();
-	this.totalNumberOfRecords = this.rawSpatialCollection.size
+	rawSpatialCollection = rawData
+	boundary()
+	totalNumberOfRecords = this.rawSpatialCollection.size
 
 }

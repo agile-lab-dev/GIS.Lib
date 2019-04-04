@@ -7,15 +7,10 @@
 package it.agilelab.bigdata.gis.domain.spatialList
 
 import java.io._
-import java.util.ArrayList
-import java.util.zip.{GZIPInputStream, GZIPOutputStream}
+import java.util
 
 import com.vividsolutions.jts.geom._
 import org.wololo.jts2geojson.GeoJSONWriter
-
-// TODO: Auto-generated Javadoc
-
-
 
 
 /**
@@ -23,41 +18,46 @@ import org.wololo.jts2geojson.GeoJSONWriter
  */
 class StreetList(polygonList: List[LineString]) extends SpatialList{
 
-    def this(lineList: ArrayList[Geometry]) = this( lineList.toArray().map(s => s.asInstanceOf[LineString]).toList )
+  def this(lineList: util.ArrayList[Geometry]) =
+    this( lineList.toArray().map(s => s.asInstanceOf[LineString]).toList )
 
-		this.rawSpatialCollection = polygonList
-    this.boundary();
-    this.totalNumberOfRecords = this.rawSpatialCollection.size;
+  rawSpatialCollection = polygonList
+  boundary()
+  totalNumberOfRecords = this.rawSpatialCollection.size
 
+  /**
+   * Save as geo JSON.
+   *
+   * @param outputLocation the output location
+   */
+  def saveAsGeoJSON(outputLocation: String ) {
 
+    val writer = new GeoJSONWriter()
+    val fw = new FileWriter(outputLocation, true)
 
-
-    /**
-     * Save as geo JSON.
-     *
-     * @param outputLocation the output location
-     */
-    def saveAsGeoJSON(outputLocation: String ) {
-        val writer = new GeoJSONWriter();
-        val fw = new FileWriter(outputLocation, true)
-        try{
-        this.rawSpatialCollection.foreach(spatialObject => {
-            val json = writer.write(spatialObject.asInstanceOf[Geometry])
-            val jsonstring = json.toString()
-            fw.write(jsonstring)
-        })}
-        finally fw.close()
+    try{
+      rawSpatialCollection.foreach(spatialObject => {
+        val json = writer.write(spatialObject.asInstanceOf[Geometry])
+        val jsonstring = json.toString
+        fw.write(jsonstring)
+      })
     }
+    finally fw.close()
+
+  }
     
-    /**
-     * Minimum bounding rectangle.
-     *
-     * @return the rectangle RDD
-     */
-    def MinimumBoundingRectangle(): RectangleList = {
-        val rectangleList = this.rawSpatialCollection.map(spatialObject => {
-            spatialObject.asInstanceOf[Geometry].getEnvelopeInternal()
-        })
-        new RectangleList(rectangleList);
-    }
+  /**
+    * Minimum bounding rectangle.
+    *
+    * @return the rectangle RDD
+    */
+  def MinimumBoundingRectangle(): RectangleList = {
+
+    val rectangleList = this.rawSpatialCollection.map(spatialObject => {
+      spatialObject.asInstanceOf[Geometry].getEnvelopeInternal
+    })
+    new RectangleList(rectangleList)
+
+  }
+
 }

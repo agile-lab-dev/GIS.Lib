@@ -1,8 +1,5 @@
 package it.agilelab.bigdata.gis.domain.models
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
-import java.util.zip.{GZIPInputStream, GZIPOutputStream}
-
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 import it.agilelab.bigdata.gis.domain.models.HereMapsStreetType.HereMapsStreetType
@@ -20,36 +17,36 @@ object HereMapsStreet{
 
 case class HereMapsStreet(lineString: Geometry, street: String, city: String, county: String, state: String, country: String, speedLimit: Int, bidirected: Boolean, length: Double, streetType: HereMapsStreetType) extends Geometry(lineString.getFactory) {
 
-    override def toString() = {
-        s"""Line:${lineString.toString()}
-           |Street:${street}
-           |City:${city}
-           |County:${county}
-           |State:${state}
-           |Country:${country}
-           |FromSpeed:${speedLimit}
-           |Bidirected:${bidirected}
-           |Length:${length}
-           |StreetType:${streetType}
+    override def toString: String = {
+        s"""Line: ${lineString.toString}
+           |Street: $street
+           |City: $city
+           |County: $county
+           |State: $state
+           |Country: $country
+           |FromSpeed: $speedLimit
+           |Bidirected: $bidirected
+           |Length: $length
+           |StreetType: $streetType
          """.stripMargin
     }
 
     /** As seen from class Street, the missing signatures are as follows.
       *  For convenience, these are usable as stub implementations.
       */
-    def apply(filter: CoordinateFilter) = lineString.apply(filter)
+    def apply(filter: CoordinateFilter): Unit = lineString.apply(filter)
 
-    def apply(filter: CoordinateSequenceFilter)  = lineString.apply(filter)
+    def apply(filter: CoordinateSequenceFilter): Unit = lineString.apply(filter)
 
-    def apply(filter: GeometryFilter) = lineString.apply(filter)
+    def apply(filter: GeometryFilter): Unit = lineString.apply(filter)
 
-    def apply(filter: GeometryComponentFilter) = lineString.apply(filter)
+    def apply(filter: GeometryComponentFilter): Unit = lineString.apply(filter)
 
     override def computeEnvelopeInternal(): Envelope = {
         if (isEmpty)
             new Envelope
         else
-            getCoordinateSequence().expandEnvelope(new Envelope)
+            getCoordinateSequence.expandEnvelope(new Envelope)
 
     }
 
@@ -61,26 +58,24 @@ case class HereMapsStreet(lineString: Geometry, street: String, city: String, co
         var i: Int = 0
         var j: Int = 0
         while (i < getNumPoints && j < s.getNumPoints) {
-            val comparison: Int = getCoordinateSequence().getCoordinate(i).compareTo(s.getCoordinateSequence.getCoordinate(j))
+            val comparison: Int =
+                getCoordinateSequence.getCoordinate(i).compareTo(s.getCoordinateSequence.getCoordinate(j))
             if (comparison != 0) return comparison
             i += 1
             j += 1
         }
-        if (i < getNumPoints) {
-            return 1
-        }
-        if (j < s.getNumPoints) {
-            return -1
-        }
-        return 0
+
+        if (i < getNumPoints) 1
+        else if (j < s.getNumPoints) -1
+        else 0
     }
 
     override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
         val s: HereMapsStreet = o.asInstanceOf[HereMapsStreet]
-        return comp.compare(getCoordinateSequence(), s.getCoordinateSequence())
+        comp.compare(getCoordinateSequence, s.getCoordinateSequence)
     }
 
-    def getCoordinateSequence() = {
+    def getCoordinateSequence: CoordinateArraySequence = {
         new CoordinateArraySequence(getCoordinates)
     }
 

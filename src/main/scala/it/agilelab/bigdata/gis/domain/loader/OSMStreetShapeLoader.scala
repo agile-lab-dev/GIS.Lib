@@ -13,8 +13,8 @@ object OSMStreetShapeLoader{
 
   //Pay attention to side effects
 
-  var index: GeometryList[OSMStreet] = null
-  def getStreetIndex(path: String) = {
+  var index: GeometryList[OSMStreet] = _
+  def getStreetIndex(path: String): GeometryList[OSMStreet] = {
     if (index == null){
       index = new OSMStreetShapeLoader().loadIndex(path)
     }

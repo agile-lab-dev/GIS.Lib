@@ -16,7 +16,7 @@ object ReverseGeocodingManager {
   var boundariesGeometryList: GeometryList[OSMBoundary] = _
   var roadsGeometryList: GeometryList[OSMStreet] = _
 
-  def init(filesLocation: String) = {
+  def init(filesLocation: String): Unit = {
     if(subFolders == null){
       //val loader  = new OSMStreetShapeLoader()
       val folder: File = new File(filesLocation)

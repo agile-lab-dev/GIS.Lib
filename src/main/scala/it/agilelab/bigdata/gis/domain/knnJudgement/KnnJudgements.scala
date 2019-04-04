@@ -13,9 +13,12 @@ import it.agilelab.bigdata.gis.core.knnJudgement.GeometryDistanceComparator
 object KnnJudgementUsingIndexS {
 
   def invoke(treeIndex: SpatialIndex, queryCenter: Point, k: Int) = {
-    if (treeIndex.isInstanceOf[STRtree])
-      treeIndex.asInstanceOf[STRtree].kNearestNeighbour(queryCenter.getEnvelopeInternal, queryCenter, new GeometryItemDistance, k)
-    else throw new Exception("[KnnJudgementUsingIndex][Call]QuadTree index doesn't support KNN search.")
+    treeIndex match {
+      case rtree: STRtree =>
+        rtree.kNearestNeighbour(queryCenter.getEnvelopeInternal, queryCenter, new GeometryItemDistance, k)
+      case _ =>
+        throw new Exception("[KnnJudgementUsingIndex][Call]QuadTree index doesn't support KNN search.")
+    }
   }
 
 }
@@ -23,30 +26,31 @@ object KnnJudgementUsingIndexS {
 
 object GeometryKnnJudgementS {
 
-  def invoke(input: Iterator[Object], queryCenter: Point, k: Int) = {
-    val pq: PriorityQueue[Geometry] = new PriorityQueue[Geometry](k, new GeometryDistanceComparator(queryCenter))
-    while (input.hasNext) if (pq.size < k) pq.offer(input.next.asInstanceOf[Geometry])
-    else {
-      val curpoint: Geometry = input.next.asInstanceOf[Geometry]
-      val distance: Double = curpoint.getCoordinate.distance(queryCenter.getCoordinate)
-      val largestDistanceInPriQueue: Double = pq.peek.getCoordinate.distance(queryCenter.getCoordinate)
-      if (largestDistanceInPriQueue > distance) {
-        pq.poll
-        pq.offer(curpoint)
+  def invoke(input: Iterator[Object], queryCenter: Point, k: Int): Array[Object] = {
+
+    val pq: PriorityQueue[Geometry] =
+      new PriorityQueue[Geometry](k, new GeometryDistanceComparator(queryCenter))
+
+    while (input.hasNext) {
+
+      if (pq.size < k) pq.offer(input.next.asInstanceOf[Geometry])
+      else {
+
+        val curpoint: Geometry = input.next.asInstanceOf[Geometry]
+        val distance: Double = curpoint.getCoordinate.distance(queryCenter.getCoordinate)
+        val largestDistanceInPriQueue: Double =
+          pq.peek.getCoordinate.distance(queryCenter.getCoordinate)
+
+        if (largestDistanceInPriQueue > distance) {
+          pq.poll
+          pq.offer(curpoint)
+        }
+
       }
     }
 
-    var res: Array[Object]= new Array[Object](k)
-    var i: Int = 0
-    while (i < k) {
-      {
-        res = res.:+(pq.poll)
-      }
-      {
-        i += 1; i - 1
-      }
-    }
-    res
+    (0 until k).foldLeft(Array.empty[Object])((acc, z) => acc :+ pq.poll)
+
   }
 
 }
