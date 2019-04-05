@@ -53,46 +53,46 @@ public class LoaderTest {
 
 
 
-    @Test
-    public void testFileLoading() throws Exception {
-        long start = System.currentTimeMillis();
-
-
-        CTLLoader loader = new CTLLoader(7);
-        ArrayList<String> paths = new ArrayList<String>();
-        paths.add("C:\\Users\\paolo\\Desktop\\data\\out2.ctl");
-
-        GeometryList<HereMapsStreet> lineStringList = loader.loadIndex(scala.collection.JavaConversions.asScalaIterator(paths.iterator()).toSeq());
-
-        long end = System.currentTimeMillis();
-        System.out.println("time: "+(end-start) + " ms");
-
-
-        GeometryFactory fact=new GeometryFactory();
-
-        double minx = 2.285949;
-        double maxx = 2.404142;
-        double miny = 48.828021;
-        double maxy = 48.890957;
-
-        double deltax = maxx-minx;
-        double deltay = maxy-miny;
-        Random r = new Random();
-
-        long start1 = System.currentTimeMillis();
-        for(int i=0; i<1000; i++){
-
-            double nexty = miny + r.nextDouble()*deltay;
-            double nextx = minx + r.nextDouble()*deltax;
-
-            Point queryPoint = fact.createPoint(new Coordinate(nextx, nexty));
-            HereMapsStreet queryResult = KNNQueryMem.SpatialKnnQueryJava(lineStringList, queryPoint, 1, true).get(0);
-
-        }
-
-        long end1 = System.currentTimeMillis();
-        System.out.println("time: "+(end1-start1) + " ms");
-    }
+//    @Test
+//    public void testFileLoading() throws Exception {
+//        long start = System.currentTimeMillis();
+//
+//
+//        CTLLoader loader = new CTLLoader(7);
+//        ArrayList<String> paths = new ArrayList<String>();
+//        paths.add("C:\\Users\\paolo\\Desktop\\data\\out2.ctl");
+//
+//        GeometryList<HereMapsStreet> lineStringList = loader.loadIndex(scala.collection.JavaConversions.asScalaIterator(paths.iterator()).toSeq());
+//
+//        long end = System.currentTimeMillis();
+//        System.out.println("time: "+(end-start) + " ms");
+//
+//
+//        GeometryFactory fact=new GeometryFactory();
+//
+//        double minx = 2.285949;
+//        double maxx = 2.404142;
+//        double miny = 48.828021;
+//        double maxy = 48.890957;
+//
+//        double deltax = maxx-minx;
+//        double deltay = maxy-miny;
+//        Random r = new Random();
+//
+//        long start1 = System.currentTimeMillis();
+//        for(int i=0; i<1000; i++){
+//
+//            double nexty = miny + r.nextDouble()*deltay;
+//            double nextx = minx + r.nextDouble()*deltax;
+//
+//            Point queryPoint = fact.createPoint(new Coordinate(nextx, nexty));
+//            HereMapsStreet queryResult = KNNQueryMem.SpatialKnnQueryJava(lineStringList, queryPoint, 1, true).get(0);
+//
+//        }
+//
+//        long end1 = System.currentTimeMillis();
+//        System.out.println("time: "+(end1-start1) + " ms");
+//    }
 
 
 
@@ -152,12 +152,12 @@ public class LoaderTest {
         OSMStreetShapeLoader loader = new OSMStreetShapeLoader();
         ArrayList<String> paths = new ArrayList<String>();
 
-        paths.add("src/test/resources/sud-190403-free.shp//gis_osm_roads_free_1.shp");
+        paths.add("src/test/resources/italy.shp/sud_gis_osm_roads_free_1.shp");
 
         GeometryList<OSMStreet> lineStringList =
-                loader
-                        .loadIndex(JavaConversions.asScalaIterator(paths.iterator())
-                        .toSeq());
+            loader
+                .loadIndex(JavaConversions.asScalaIterator(paths.iterator())
+                .toSeq());
 
         GeometryFactory fact=new GeometryFactory();
 
