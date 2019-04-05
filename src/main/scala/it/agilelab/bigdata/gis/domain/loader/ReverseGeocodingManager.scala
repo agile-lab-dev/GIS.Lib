@@ -32,9 +32,9 @@ object ReverseGeocodingManager {
 
       val path = subFolders.filter(f => f.getAbsolutePath.endsWith("italy.shp")).map(_.getAbsolutePath).head
 
-      val regionsFile: String = path.toString + "/World_AL4.shp"
-      val countiesFile: String = path + "/World_AL6.shp"
-      val citiesFile: String = path + "/World_AL8.shp"
+      val regionsFile: String = path.toString + "/Italy_AL4.shp"
+      val countiesFile: String = path + "/Italy_AL6.shp"
+      val citiesFile: String = path + "/Italy_AL8.shp"
       val regions: Seq[OSMBoundary] = boundariesLoader.loadObjects(regionsFile).toSeq
       val counties: Seq[OSMBoundary] = boundariesLoader.loadObjects(countiesFile).toSeq
       val cities: Seq[OSMBoundary] = boundariesLoader.loadObjects(citiesFile).toSeq
