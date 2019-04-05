@@ -55,7 +55,7 @@ object ReverseGeocodingManager {
         }
       }
 
-      boundariesGeometryList = boundariesLoader.buildIndex(citiesWithCountiesRegions.toIterator)
+      boundariesGeometryList = boundariesLoader.buildIndex(citiesWithCountiesRegions.toList)
 
       println("[GISLib] Done loading OSM boundaries file into GeometryList!")
 
