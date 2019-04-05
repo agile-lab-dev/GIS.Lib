@@ -31,19 +31,21 @@ abstract class SpatialList extends Serializable{
     var totalNumberOfRecords: Int = -1
     
     /** The boundary. */
-    private var _boundary = new Array[Double](4)
+    var _boundary = new Array[Double](4)
     
     /** The boundary envelope. */
-    private var boundaryEnvelope: Envelope  = _
+    var boundaryEnvelope: Envelope  = _
 
     /** The indexed Collection. */
     var indexedCollection: Map[Integer, Object] = _
     
-    /** The indexed raw RDD. */
+    /** The indexed raw. */
     var index: SpatialIndex = _
 
-    /** The raw spatial RDD. */
+    /** The raw spatial. */
     var rawSpatialCollection: List[Object] = _
+
+    var rawForBoundary: List[Object] = _
 
 	/** The grids. */
     var grids: List[Envelope] = _

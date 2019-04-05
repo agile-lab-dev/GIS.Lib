@@ -7,12 +7,9 @@
 package it.agilelab.bigdata.gis.domain.spatialList
 
 import java.io.FileWriter
-import java.util
 
 import com.vividsolutions.jts.geom.Geometry
 import org.wololo.jts2geojson.GeoJSONWriter
-
-import scala.collection.JavaConversions._
 
 // TODO: Auto-generated Javadoc
 
@@ -20,7 +17,6 @@ import scala.collection.JavaConversions._
  * The Class LineStringRDD.
  */
 class GeometryList[T <: Geometry](polygonList: List[T]) extends SpatialList{
-  def this(lineList: util.ArrayList[T]) = this( lineList.toList )
 
   rawSpatialCollection = polygonList
   boundary()

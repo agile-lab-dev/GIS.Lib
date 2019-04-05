@@ -7,7 +7,6 @@
 package it.agilelab.bigdata.gis.domain.spatialList
 
 import java.io._
-import java.util
 
 import com.vividsolutions.jts.geom._
 import org.wololo.jts2geojson.GeoJSONWriter
@@ -18,12 +17,10 @@ import org.wololo.jts2geojson.GeoJSONWriter
  */
 class StreetList(polygonList: List[LineString]) extends SpatialList{
 
-  def this(lineList: util.ArrayList[Geometry]) =
-    this( lineList.toArray().map(s => s.asInstanceOf[LineString]).toList )
-
   rawSpatialCollection = polygonList
-  boundary()
   totalNumberOfRecords = this.rawSpatialCollection.size
+
+  boundary()
 
   /**
    * Save as geo JSON.
