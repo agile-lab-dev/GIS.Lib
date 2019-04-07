@@ -19,7 +19,7 @@ trait RGManager[T1 <: Geometry, T2 <: OutputModel] {
   /**
     * Geometry list with all points and index
     */
-  protected var geometryList: GeometryList[T1]
+  var geometryList: GeometryList[T1]
 
   /**
     * Loads geo data into list
@@ -53,7 +53,7 @@ trait RGManager[T1 <: Geometry, T2 <: OutputModel] {
  */
 trait RGManager2[T1 <: Geometry, T2 <: Geometry, T3 <: OutputModel] extends RGManager[T1, T3] {
 
-  protected var geometryList2: GeometryList[T2]
+  var geometryList2: GeometryList[T2]
 
   def checkGeoList2: Boolean = geometryList2 != null
 
@@ -63,7 +63,7 @@ trait RGManager2[T1 <: Geometry, T2 <: Geometry, T3 <: OutputModel] extends RGMa
 
 trait RGManager3[T1 <: Geometry, T2 <: Geometry, T3 <: Geometry, T4 <: OutputModel] extends RGManager2[T1, T2, T4] {
 
-  protected var geometryList3: GeometryList[T3]
+  var geometryList3: GeometryList[T3]
 
   def checkGeoList3: Boolean = geometryList3 != null
 
