@@ -9,11 +9,7 @@ object HereMapsStreetType extends Enumeration {
     val Motorway, ExtraUrban, Area1_Large, Area2_Medium, Area3_Small, Unknown = Value
 }
 
-
-
-object HereMapsStreet{
-
-}
+object HereMapsStreet{}
 
 case class HereMapsStreet(lineString: Geometry, street: String, city: String, county: String, state: String, country: String, speedLimit: Int, bidirected: Boolean, length: Double, streetType: HereMapsStreetType) extends Geometry(lineString.getFactory) {
 

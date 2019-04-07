@@ -1,9 +1,3 @@
-/**
- * FILE: SpatialRDD.java
- * PATH: org.datasyslab.geospark.spatialRDD.SpatialRDD.java
- * Copyright (c) 2017 Arizona State University Data Systems Lab
- * All rights reserved.
- */
 package it.agilelab.bigdata.gis.domain.spatialList
 
 import java.io.Serializable
@@ -15,9 +9,6 @@ import com.vividsolutions.jts.index.strtree.STRtree
 import it.agilelab.bigdata.gis.core.model.IndexType
 import it.agilelab.bigdata.gis.core.model.geometry.Circle
 import it.agilelab.bigdata.gis.core.utils.{XMaxComparator, XMinComparator, YMaxComparator, YMinComparator}
-
-
-// TODO: Auto-generated Javadoc
 
 /**
  * The Class SpatialList.
@@ -93,8 +84,8 @@ abstract class SpatialList extends Serializable{
 		}
 
 		rt.query(new Envelope(0.0, 0.0, 0.0, 0.0))
-		this.index = rt
-		this.rawSpatialCollection = null
+		index = rt
+		rawSpatialCollection = null
 
 	}
 
