@@ -102,7 +102,7 @@ public class LoaderTest {
 
         OSMStreetShapeLoader loader = new OSMStreetShapeLoader();
         ArrayList<String> paths = new ArrayList<String>();
-        paths.add("src/test/resources/sud-190403-free.shp//gis_osm_roads_free_1.shp");
+        paths.add("src/test/resources/italy.shp/sud_gis_osm_roads_free_1.shp");
 
         GeometryList<OSMStreet> lineStringList =
             loader
