@@ -1,5 +1,7 @@
 package it.agilelab.bigdata.gis.domain.models
 
+import it.agilelab.bigdata.gis.core.model.output.OutputModel
+
 class GeometryMetadata(id: String)
 
 class Street(id: String, streetName: String, city: String, country: String, speedLimit: Int, bidirected: Boolean) extends GeometryMetadata(id)
@@ -15,4 +17,4 @@ object Address{
   }
 }
 
-case class Address(street: Option[String], city: Option[String], county: Option[String], region: Option[String], country: Option[String])
+case class Address(street: Option[String], city: Option[String], county: Option[String], region: Option[String], country: Option[String]) extends OutputModel
