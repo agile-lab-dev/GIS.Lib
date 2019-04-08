@@ -1,22 +1,22 @@
 package it.agilelab.bigdata.gis
 
-import it.agilelab.bigdata.gis.domain.loader.ReverseGeocodingManager
+import it.agilelab.bigdata.gis.domain.loader.OSMManager
 import it.agilelab.bigdata.gis.domain.models.Address
 import org.scalatest.FunSuite
 
 class RGManagerV2Test extends FunSuite{
-
+  val osmManager =  new OSMManager()
   val path2 = "src/test/resources/"
-  ReverseGeocodingManager.init(path2)
+  osmManager.init(path2)
 
   test("RGManager second version (loading boundaries)"){
 
-    val answer = ReverseGeocodingManager.reverseGeocode(45.995920, 13.304883)
+    val answer: Option[Address] = osmManager.reverseGeocode(45.995920, 13.304883)
 
-    println(answer.city)
-    println(answer.street)
+    println(answer.map(_.city))
+    println(answer.map(_.street))
 
-    assert(answer.city.isDefined && answer.street.isDefined)
+    assert(answer.map(_.city).isDefined && answer.map(_.street).isDefined)
 
   }
 
@@ -31,7 +31,7 @@ class RGManagerV2Test extends FunSuite{
       (40.666426, 16.605022)
     )
 
-    val result: Seq[Address] = points.map(x => ReverseGeocodingManager.reverseGeocode(x._1, x._2, true))
+    val result: Seq[Option[Address]] = points.map(x => osmManager.reverseGeocode(x._1, x._2, true))
 
     val realAddresses = Seq(
       Address(Some("Lungomare Augusto Ottaviano"), Some(""), Some("Catania"), Some("Sicily"), Some("Italia")),
@@ -50,9 +50,9 @@ class RGManagerV2Test extends FunSuite{
       println("Current:  " + current)
       println("Expected: " + expected)
 
-      assert(current.street.equals(expected.street))
-      assert(current.city.equals(expected.city))
-      assert(current.region.equals(expected.region))
+      assert(current.map(_.street).equals(expected.street))
+      assert(current.map(_.city).equals(expected.city))
+      assert(current.map(_.region).equals(expected.region))
 
     })
 
