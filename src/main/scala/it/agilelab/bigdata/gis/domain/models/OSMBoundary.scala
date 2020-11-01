@@ -8,7 +8,8 @@ case class OSMBoundary(multiPolygon: Geometry,
                        county: Option[String],
                        region: Option[String],
                        country: Option[String],
-                       boundaryType: String)
+                       boundaryType: String,
+                       env: Envelope)
   extends MultiPolygon(
     {
       val length = multiPolygon.getNumGeometries
@@ -99,5 +100,7 @@ case class OSMBoundary(multiPolygon: Geometry,
 
   override def getNumPoints: Int = multiPolygon.getNumPoints
 
-
+  def customCovers(other: OSMBoundary): Boolean = {
+    other.env.getMinX >= this.env.getMinX && other.env.getMaxX <= this.env.getMaxX && other.env.getMinY >= this.env.getMinY && other.env.getMaxY <= this.env.getMaxY
+  }
 }

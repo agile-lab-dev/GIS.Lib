@@ -94,4 +94,6 @@ case class HereMapsStreet(lineString: Geometry, street: String, city: String, co
     override def equalsExact(other: Geometry, tolerance: Double): Boolean = lineString.equalsExact(other, tolerance)
 
     override def getNumPoints: Int = lineString.getNumPoints
+
+
 }
