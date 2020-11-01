@@ -2,7 +2,7 @@ package it.agilelab.bigdata.gis.domain.spatialList
 
 import java.io.Serializable
 
-import com.vividsolutions.jts.geom.{Envelope, Geometry, GeometryFactory}
+import com.vividsolutions.jts.geom.{Coordinate, Envelope, Geometry, GeometryFactory}
 import com.vividsolutions.jts.index.SpatialIndex
 import com.vividsolutions.jts.index.quadtree.Quadtree
 import com.vividsolutions.jts.index.strtree.STRtree
@@ -105,16 +105,21 @@ abstract class SpatialList extends Serializable{
 
       case (minX: Geometry, minY: Geometry, maxX: Geometry, maxY: Geometry) =>
         (minX.getEnvelopeInternal.getMinX,
-          minY.getEnvelopeInternal.getMinY,
-          maxX.getEnvelopeInternal.getMaxX,
-          maxY.getEnvelopeInternal.getMaxY)
+        minY.getEnvelopeInternal.getMinY,
+        maxX.getEnvelopeInternal.getMaxX,
+        maxY.getEnvelopeInternal.getMaxY)
 
       case (minX: Circle, minY: Circle, maxX: Circle, maxY: Circle) =>
-        (minX.getMBR.getMinX, minY.getMBR.getMinY, maxX.getMBR.getMaxX, maxY.getMBR.getMaxY)
+          (minX.getMBR.getMinX,
+          minY.getMBR.getMinY,
+          maxX.getMBR.getMaxX,
+          maxY.getMBR.getMaxY)
 
       case (minX: Envelope, minY: Envelope, maxX: Envelope, maxY: Envelope) =>
-        (minX.getMinX, minY.getMinY, maxX.getMaxX, maxY.getMaxY)
-
+        (minX.getMinX,
+        minY.getMinY,
+        maxX.getMaxX,
+        maxY.getMaxY)
     }
 
     _boundary = new Array[Double](4)
@@ -127,5 +132,8 @@ abstract class SpatialList extends Serializable{
     boundaryEnvelope
   }
 
+  def contains(coordinate: Coordinate): Boolean = {
+    boundaryEnvelope.contains(coordinate)
+  }
 
 }

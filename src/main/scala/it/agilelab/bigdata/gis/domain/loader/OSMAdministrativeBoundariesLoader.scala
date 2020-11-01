@@ -1,7 +1,8 @@
 package it.agilelab.bigdata.gis.domain.loader
 
-import com.vividsolutions.jts.geom.Geometry
+import com.vividsolutions.jts.geom.{Geometry, MultiPolygon}
 import it.agilelab.bigdata.gis.core.loader.Loader
+import it.agilelab.bigdata.gis.domain.managers.{CountrySettings, PathManager}
 import it.agilelab.bigdata.gis.domain.models.OSMBoundary
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
@@ -9,36 +10,69 @@ import scala.util.Try
 
 object OSMAdministrativeBoundariesLoader{
 
-    //Pay attention to side effects
+  //Pay attention to side effects
 
-    var index: GeometryList[OSMBoundary] = _
-    def getStreetIndex(path: String): GeometryList[OSMBoundary] = {
-      if (index == null){
-        index = new OSMAdministrativeBoundariesLoader().loadIndex(path)
-      }
-      index
+  var index: GeometryList[OSMBoundary] = null
+  def getStreetIndex(path: String): GeometryList[OSMBoundary] = {
+    if (index == null){
+      index = new OSMAdministrativeBoundariesLoader().loadIndex(path)
     }
+    index
+  }
 
 }
 
 class OSMAdministrativeBoundariesLoader() extends Loader[OSMBoundary]{
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
-    ShapeFileReader.readMultiPolygonFeatures(source).map(e => (e._2.toArray, e._1)).toIterator
+    val countryName: String =
+      source
+        .split("/")
+        .reverse
+        .tail
+        .head
+
+    val res: Seq[(Array[AnyRef], MultiPolygon)] =
+      ShapeFileReader.readMultiPolygonFeatures(source).map(e => (e._2.toArray, e._1))
+
+    /*
+    We need to propagate the country name to the object mapping function, called after the current one.
+    This is a terrible hack. I'm gonna refactor it soon.
+     */
+
+    val resWithCountryNameInFields =
+      res.map(
+        pair => {
+          val fieldsWithCountryName = pair._1 :+ countryName
+          val multipolygon = pair._2
+          (fieldsWithCountryName, multipolygon)
+        }
+      )
+
+    resWithCountryNameInFields.toIterator
   }
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMBoundary = {
 
-    //field 8 contains the type of administrative level, field(3) the italian name except for 8th administrative level;
-    //For this level the italian name is stored in the 14th field.
+    val countryName = fields(15).toString
+    val countrySettings: CountrySettings = PathManager.getCountrySetting(countryName).clean
 
-    fields(8).toString match{
-      case "2" => OSMBoundary(line, None, None, None, Try(fields(3).toString).toOption, fields(5).toString )
-      case "4" => OSMBoundary(line, None, None, Try(fields(3).toString).toOption, Some("Italia"), fields(5).toString )
-      case "6" => OSMBoundary(line, None, Try(fields(3).toString).toOption, None, Some("Italia"), fields(5).toString )
-      case "8" => OSMBoundary(line, normalizeCityName(fields(14)), None, None, Some("Italia"), fields(5).toString )
-      case "3" => OSMBoundary(line, None, None, None, Try(fields(3).toString).toOption, fields(5).toString )
-      case _ => throw new IllegalArgumentException("Not recognized administrative level!")
-    }
+    val administrativeValue = fields(3).toString
+    val stringWithSpecialChars = new String(administrativeValue.getBytes("ISO-8859-1"), "UTF-8")
+    val administrativeLevel = fields(8).toString
+
+    val boundary: OSMBoundary =
+      if ( countrySettings.countrySuffixes.contains(administrativeLevel) )
+        OSMBoundary(line, None, None, None, Some(stringWithSpecialChars), administrativeLevel, line.getEnvelopeInternal )
+      else if ( countrySettings.regionSuffixes.contains(administrativeLevel) )
+        OSMBoundary(line, None, None, Some(stringWithSpecialChars), None, administrativeLevel, line.getEnvelopeInternal )
+      else if ( countrySettings.countySuffixes.contains(administrativeLevel) )
+        OSMBoundary(line, None, Some(stringWithSpecialChars), None, None, administrativeLevel, line.getEnvelopeInternal )
+      else if ( countrySettings.citySuffixes.contains(administrativeLevel) )
+        OSMBoundary(line, normalizeCityName(stringWithSpecialChars), None, None, None, administrativeLevel, line.getEnvelopeInternal )
+      else
+        throw new IllegalArgumentException("Not recognized administrative level!")
+
+    boundary
 
   }
 

@@ -6,7 +6,7 @@ import it.agilelab.bigdata.gis.domain.models.OSMStreetType.OSMStreetType
 
 object OSMStreetType extends Enumeration {
     type OSMStreetType = Value
-    val Motorway, Secondary, Unclassified, Tertiary, Primary_link, Primary, Track, Residential, Pedestrian, Trunk_Link, Motorway_Link, Footway, Service, Path, Cycleway, Track_Grade2, Steps = Value
+    val Motorway, Secondary, Trunk, Unclassified, Tertiary, Primary_link, Secondary_link, Tertiary_link, Living_street, Bus_guideway, Escape, Raceway, Road, Proposed, Construction, Bridleway, Primary, Track, Residential, Pedestrian, Trunk_Link, Motorway_Link, Footway, Service, Path, Cycleway, Track_Grade2, Steps = Value
 }
 
 object OSMStreet{}
