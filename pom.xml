@@ -88,6 +88,20 @@
         </dependency>
 
         <dependency>
+            <groupId>org.scalaz</groupId>
+            <artifactId>scalaz-core_2.11</artifactId>
+            <version>7.3.2</version>
+        </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/com.github.pureconfig/pureconfig -->
+        <dependency>
+            <groupId>com.github.pureconfig</groupId>
+            <artifactId>pureconfig_2.11</artifactId>
+            <version>0.12.1</version>
+        </dependency>
+
+        <dependency>
 			<groupId>org.datasyslab</groupId>
 			<artifactId>JTSplus</artifactId>
 			<version>0.1.0</version>
