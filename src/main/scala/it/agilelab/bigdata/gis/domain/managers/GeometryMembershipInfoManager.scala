@@ -24,7 +24,7 @@ class GeometryMembershipInfoManager private(categoriesInfo: Map[InputCategory, O
 
   def getGeoMembershipInfoOf(category: InputCategory, geometry: MultiPoint, strictMembership: Boolean = false): Seq[CategoryMembershipOutput] = {
     val shapes = setupCategory(category)
-    if (strictMembership && geometry.getCoordinates.par.exists(p =>
+    if (strictMembership && geometry.getCoordinates.exists(p =>
       shapes.forall(_.disjoint(geoFactory.createPoint(p))))) Seq()
     else findAll(shapes)(_.intersects(geometry))
   }

@@ -13,6 +13,9 @@ import scala.collection.JavaConversions._
 /**
   * @author andreaL
   */
+//Before run this test read Readme section `Test GraphHopper`,
+//download file `italy-latest.osm.pbf` and insert in test/resources/graphHopperSource/
+
 class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   Logger.getRootLogger.setLevel(Level.INFO)
   val logger: Logger = Logger.getLogger(getClass)

@@ -5,24 +5,24 @@ import it.agilelab.bigdata.gis.domain.managers.PathManager
 import it.agilelab.bigdata.gis.domain.models.OSMBoundary
 import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
 
-class ContainmentRelationBtwGeometriesSpec
-    extends FeatureSpec
-    with GivenWhenThen
-    with Matchers {
+class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen with Matchers {
 
-  feature("Check if a Point is Inside a Polygon") {
+  val coord_andorra_inside = new Coordinate(1.53402, 42.55658)
+  val coord_andorra_outside0 = new Coordinate(1.66921, 42.50555)
+  val coord_andorra_perimeter = new Coordinate(1.6690951, 42.5057918)
+  val coord_vaticano_inside = new Coordinate(12.45467, 41.90221)
+  val coord_toulouse = new Coordinate(1.648, 43.493)
 
+  feature("Issue#14 Check if a Point is Inside a Polygon - State of the art") {
     import Utils._
 
     scenario("a point is OUTSIDE a non-rectangular, concave polygon") {
 
       Given("Andorra country boundary")
-      val andorraCountryBoundary =
-        omsBoundariesSelector("andorra/Andorra_AL2.shp").head
-      //val _shapeReader = shapesReader("andorra/Andorra_AL2.shp").head
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
 
       And("a point is defined outside it")
-      val aPoint = gf.createPoint(new Coordinate(1.66921, 42.50555))
+      val aPoint = gf.createPoint(coord_andorra_outside0);
 
       Then("the 'covers' functionality exposed should verify it")
       andorraCountryBoundary.covers(aPoint) shouldBe false
@@ -31,47 +31,35 @@ class ContainmentRelationBtwGeometriesSpec
     scenario("a point is INSIDE a non-rectangular, concave polygon") {
 
       Given("Andorra country boundary")
-      val andorraCountryBoundary =
-        omsBoundariesSelector("andorra/Andorra_AL2.shp").head
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
 
       And("a point is defined inside it")
-      val aPoint = gf.createPoint(new Coordinate(1.53402, 42.55658))
+      val aPoint = gf.createPoint(coord_andorra_inside);
 
       Then("the 'covers' functionality exposed should verify it")
       andorraCountryBoundary.covers(aPoint) shouldBe true
     }
 
-    scenario(
-      "a point is PART OF THE PERIMETER of a non-rectangular, concave polygon"
-    ) {
+    scenario("a point is PART OF THE PERIMETER of a non-rectangular, concave polygon") {
       Given("Andorra country boundary")
-      val andorraCountryBoundary =
-        omsBoundariesSelector("andorra/Andorra_AL2.shp").head
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
 
       And("a point is defined inside it")
-      val aPoint = gf.createPoint(new Coordinate(1.6690951, 42.5057918))
+      val aPoint = gf.createPoint(coord_andorra_perimeter);
 
       Then("the 'covers' functionality exposed should verify it")
       andorraCountryBoundary.covers(aPoint) shouldBe true
-      And(
-        "the 'contains' functionality exposed should NOT verify it - it means the point resides on the border actually"
-      )
+      And("the 'contains' functionality exposed should NOT verify it - it means the point resides on the border actually")
       andorraCountryBoundary.contains(aPoint) shouldBe false
     }
 
-    scenario(
-      "a point is OUTSIDE, sitting in a 'hole' of a non-rectangular, concave polygon"
-    ) {
+    scenario("a point is OUTSIDE, sitting in a 'hole' of a non-rectangular, concave polygon") {
 
       Given("Lazio region boundary")
-      val lazioRegionBoundary = omsBoundariesSelector("italy/Italy_AL4.shp")
-        .filter(_.region.contains("Lazio"))
-        .head
+      val lazioRegionBoundary = omsBoundariesSelector("italy/Italy_AL4.shp").filter(_.region.contains("Lazio")).head
 
-      And(
-        "a point is defined somewhere in Vaticano country, that's inside Lazio's perimeter, but not part of its area"
-      )
-      val aPoint = gf.createPoint(new Coordinate(12.45467, 41.90221))
+      And("a point is defined somewhere in Vaticano country, that's inside Lazio's perimeter, but not part of its area")
+      val aPoint = gf.createPoint(coord_vaticano_inside);
 
       Then("the 'covers' functionality exposed should verify it")
       lazioRegionBoundary.covers(aPoint) shouldBe false
@@ -79,10 +67,41 @@ class ContainmentRelationBtwGeometriesSpec
 
   }
 
-  object Utils {
-    val omsBoundariesSelector: String => List[OSMBoundary] = (s: String) =>
-      new OSMAdministrativeBoundariesLoader().loadObjects(s"${PathManager.getInputPath}/$s")
-    val gf = new GeometryFactory()
+  feature("Issue#15 Check if a MultiPoint intersect a Polygon - State of the art") {
+    import Utils._
+
+    scenario("a multipoint is outside of a non-rectangular, concave polygon completely") {
+
+      Given("Andorra country boundary")
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
+
+      And("a 3-point line is defined outside it with neither intersections nor point inside it")
+      val coord_andorra_outside1 = new Coordinate(1.7024, 42.4278)
+      val coord_corse_inside = new Coordinate(9.3356, 42.2732)
+      val points = gf.createMultiPoint(Seq(coord_andorra_outside0, coord_andorra_outside1, coord_corse_inside).toArray);
+
+      Then("the 'intersect' functionality exposed should verify it")
+      andorraCountryBoundary.intersects(points) shouldBe false
+    }
+
+    scenario("a multipoint intersect a non-rectangular, concave polygon - a point is inside it at least") {
+
+      Given("Andorra country boundary")
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
+
+      And("a 3-point line intersect it, but with a points inside it at least")
+      val points = gf.createMultiPoint(Seq(coord_andorra_outside0, coord_andorra_inside, coord_toulouse).toArray);
+
+      Then("the 'intersect' functionality exposed should verify it")
+      andorraCountryBoundary.intersects(points) shouldBe true
+    }
+
   }
 
+}
+
+object Utils {
+  val omsBoundariesSelector: String => List[OSMBoundary] = (s: String) =>
+    new OSMAdministrativeBoundariesLoader().loadObjects(s"${PathManager.getInputPath}/$s")
+  val gf = new GeometryFactory()
 }
