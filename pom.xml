@@ -82,6 +82,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+
+        <dependency>
 			<groupId>org.datasyslab</groupId>
 			<artifactId>JTSplus</artifactId>
 			<version>0.1.0</version>
@@ -132,11 +138,6 @@
             <version>0.4.3-1</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.typesafe</groupId>
-            <artifactId>config</artifactId>
-            <version>1.2.1</version>
-        </dependency>
 
         <!-- Scala Test -->
         <dependency>
