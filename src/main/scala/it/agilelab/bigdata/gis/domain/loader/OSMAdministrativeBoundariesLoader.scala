@@ -22,7 +22,7 @@ object OSMAdministrativeBoundariesLoader{
 
 }
 
-class OSMAdministrativeBoundariesLoader() extends Loader[OSMBoundary]{
+class OSMAdministrativeBoundariesLoader extends Loader[OSMBoundary] {
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
     val countryName: String =
       source
@@ -34,7 +34,7 @@ class OSMAdministrativeBoundariesLoader() extends Loader[OSMBoundary]{
     val res: Seq[(Array[AnyRef], MultiPolygon)] =
       ShapeFileReader.readMultiPolygonFeatures(source).map(e => (e._2.toArray, e._1))
 
-    /*
+    /* fixme
     We need to propagate the country name to the object mapping function, called after the current one.
     This is a terrible hack. I'm gonna refactor it soon.
      */
