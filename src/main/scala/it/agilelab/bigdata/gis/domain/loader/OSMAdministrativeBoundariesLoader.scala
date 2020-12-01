@@ -1,5 +1,6 @@
 package it.agilelab.bigdata.gis.domain.loader
 
+import com.typesafe.config.{Config, ConfigFactory}
 import com.vividsolutions.jts.geom.{Geometry, MultiPolygon}
 import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.domain.managers.{CountrySettings, PathManager}
@@ -23,6 +24,9 @@ object OSMAdministrativeBoundariesLoader{
 }
 
 class OSMAdministrativeBoundariesLoader extends Loader[OSMBoundary] {
+
+  private val conf: Config = ConfigFactory.load().getConfig("boundary")
+
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
     val countryName: String =
       source
@@ -53,12 +57,12 @@ class OSMAdministrativeBoundariesLoader extends Loader[OSMBoundary] {
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMBoundary = {
 
-    val countryName = fields(15).toString
+    val countryName = fields.last.toString
     val countrySettings: CountrySettings = PathManager.getCountrySetting(countryName).clean
 
-    val administrativeValue = fields(3).toString
+    val administrativeValue = fields(Try(conf.getInt("administrative.value")).getOrElse(3)).toString
     val stringWithSpecialChars = new String(administrativeValue.getBytes("ISO-8859-1"), "UTF-8")
-    val administrativeLevel = fields(8).toString
+    val administrativeLevel = fields(Try(conf.getInt("administrative.level")).getOrElse(8)).toString
 
     val boundary: OSMBoundary =
       if ( countrySettings.countrySuffixes.contains(administrativeLevel) )
