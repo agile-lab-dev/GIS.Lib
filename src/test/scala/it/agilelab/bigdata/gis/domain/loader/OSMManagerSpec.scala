@@ -60,7 +60,31 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     viaAzziActual should be(viaAzziExpected)
   }
 
-/*-------------------------------*/
+  "Reverse geocoding on Italy - Sicily" should "work" in {
+    val lat = 37.5173075
+    val lon = 15.1052199
+
+    val piazzaEuropaActual: Address = osmManager.reverseGeocode(lat, lon)
+
+    val piazzaEuropaExpected: Address =
+      Address(
+        Some("Piazza Europa, 9"),
+        Some("Catania"),
+        Some("Catania"),
+        Some("Sicily"),
+        Some("Italy"),
+        None,
+        None,
+        None,
+        None,
+        Some("Unclassified"),
+        Some(31.87219775357211)
+      )
+
+    piazzaEuropaActual should be(piazzaEuropaExpected)
+  }
+
+  /*-------------------------------*/
 /*LOAD MAP TO REMOVE THIS COMMENT*/
 /*-------------------------------*/
 //  "Reverse geocoding on Belgium" should "work" in {
