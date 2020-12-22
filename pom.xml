@@ -111,6 +111,12 @@
             <groupId>org.geotools</groupId>
             <artifactId>gt-shapefile</artifactId>
             <version>17.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vividsolutions</groupId>
+                    <artifactId>jts</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 		<dependency>
@@ -119,8 +125,8 @@
 			<version>0.7.0</version>
 			<exclusions>
 				<exclusion>
-			<groupId>com.vividsolutions</groupId>
-			<artifactId>jts</artifactId>
+			        <groupId>com.vividsolutions</groupId>
+			        <artifactId>jts</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
