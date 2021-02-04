@@ -2,13 +2,9 @@ package it.agilelab.bigdata.gis.domain.models
 
 import it.agilelab.bigdata.gis.core.model.output.OutputModel
 
-class GeometryMetadata(id: String)
-
-class Street(id: String, streetName: String, city: String, country: String, speedLimit: Int, bidirected: Boolean) extends GeometryMetadata(id)
-
 object Address {
 
-  def apply(osmStreet: OSMStreetEnriched, osmBoundary: OSMBoundary, distanceAndNumber: (Double, Option[String])): Address = {
+  def apply(osmStreet: OSMStreetAndHouseNumber, osmBoundary: OSMBoundary, distanceAndNumber: (Double, Option[String])): Address = {
     Address(
       osmStreet.street,
       osmBoundary.city,
@@ -17,9 +13,9 @@ object Address {
       osmBoundary.country,
       None,
       distanceAndNumber._2,
+      osmStreet.speedLimit,
       None,
-      None,
-      osmStreet.streetType.map(_.toString),
+      osmStreet.streetType.map(_.value),
       Some(distanceAndNumber._1))
   }
 
@@ -31,8 +27,8 @@ object Address {
       osmBoundary.flatMap(_.region),
       osmBoundary.flatMap(_.country),
       None,
-      osmStreet.flatMap(_.streetType.map(_.toString)),
-      None)
+      osmStreet.flatMap(_.streetType.map(_.value)),
+      osmStreet.flatMap(_.speedLimit))
   }
 
 }

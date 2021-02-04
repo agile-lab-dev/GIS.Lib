@@ -40,14 +40,7 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
     val fields2 = fields.map(_.toString)
 
     val streetType: String = fields2(4)
-    val st = streetType match {
-      case "\"1\"" => HereMapsStreetType.Motorway
-      case "\"2\"" => HereMapsStreetType.ExtraUrban
-      case "\"3\"" => HereMapsStreetType.Area1_Large
-      case "\"4\"" => HereMapsStreetType.Area2_Medium
-      case "\"5\"" => HereMapsStreetType.Area3_Small
-      case _ => HereMapsStreetType.Unknown
-    }
+    val st = HereMapsStreetType.fromValue(streetType)
 
     val length: Double = fields2(8).replace(',', '.').toDouble
     var bidirected: Boolean = false
@@ -93,7 +86,7 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
           println("bad splitting")
           Option.empty[(Array[AnyRef],LineString)]
         }else {
-          val geometry = fields(geometryPosition).toString
+          val geometry = fields(geometryPosition)
           val lineString = buildGeometry(geometry)
           lineString.map(ls => (fields.map(_.asInstanceOf[AnyRef]), ls))
         }

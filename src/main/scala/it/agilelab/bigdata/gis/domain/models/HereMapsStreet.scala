@@ -2,11 +2,51 @@ package it.agilelab.bigdata.gis.domain.models
 
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
-import it.agilelab.bigdata.gis.domain.models.HereMapsStreetType.HereMapsStreetType
 
-object HereMapsStreetType extends Enumeration {
-    type HereMapsStreetType = Value
-    val Motorway, ExtraUrban, Area1_Large, Area2_Medium, Area3_Small, Unknown = Value
+trait HereMapsStreetType {
+    def value: String
+}
+
+object HereMapsStreetType {
+
+    case object MOTORWAY extends HereMapsStreetType {
+        lazy val value = "motorway"
+    }
+
+    case object MAIN extends HereMapsStreetType {
+        lazy val value = "main"
+    }
+
+    case object LOCAL_ACCESS extends HereMapsStreetType {
+        lazy val value = "local access"
+    }
+
+    case object RESIDENTIAL extends HereMapsStreetType {
+        lazy val value = "residential"
+    }
+
+    case object TRAIL extends HereMapsStreetType {
+        lazy val value = "trail"
+    }
+
+    case object TRUCK extends HereMapsStreetType {
+        lazy val value = "truck"
+    }
+
+    case object ND extends HereMapsStreetType {
+        lazy val value = "N.D"
+    }
+
+    def fromValue(v: String): HereMapsStreetType =
+        v.toLowerCase.trim match {
+            case "1" => MOTORWAY
+            case "2" => MAIN
+            case "3" => LOCAL_ACCESS
+            case "4" => RESIDENTIAL
+            case "5" => TRAIL
+            case "6" => TRUCK
+            case _ => ND
+        }
 }
 
 object HereMapsStreet{}
@@ -23,7 +63,7 @@ case class HereMapsStreet(lineString: Geometry, street: String, city: String, co
            |FromSpeed: $speedLimit
            |Bidirected: $bidirected
            |Length: $length
-           |StreetType: $streetType
+           |StreetType: ${streetType.value}
          """.stripMargin
     }
 
