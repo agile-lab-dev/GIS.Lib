@@ -32,26 +32,7 @@ class OSMStreetShapeLoader() extends Loader[OSMStreet]{
 
   protected def objectMapping(fields: Array[AnyRef],line: Geometry): OSMStreet = {
     val streetType = Try(if(fields(3) != null) fields(3).toString else "").toOption
-    val st: Option[OSMStreetType.Value] = streetType.map{
-      case "motorway" => OSMStreetType.Motorway
-      case "secondary" => OSMStreetType.Secondary
-      case "unclassified" => OSMStreetType.Unclassified
-      case "tertiary" => OSMStreetType.Tertiary
-      case "primary_link" => OSMStreetType.Primary_link
-      case "primary" => OSMStreetType.Primary
-      case "track" => OSMStreetType.Track
-      case "residential" => OSMStreetType.Residential
-      case "pedestrian" => OSMStreetType.Pedestrian
-      case "trunk_link" => OSMStreetType.Trunk_Link
-      case "motorway_link" => OSMStreetType.Motorway_Link
-      case "footway" => OSMStreetType.Footway
-      case "service" => OSMStreetType.Service
-      case "path" => OSMStreetType.Path
-      case "cycleway" => OSMStreetType.Cycleway
-      case "track_grade2" => OSMStreetType.Track_Grade2
-      case "steps" => OSMStreetType.Steps
-      case _ => OSMStreetType.Unclassified
-    }
+    val st: Option[OSMStreetType] = streetType.map(OSMStreetType.fromValue)
 
     //val length: Double = fields(8).replace(',', '.').toDouble
     //var bidirected: Boolean = false

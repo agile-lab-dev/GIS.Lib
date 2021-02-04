@@ -4,7 +4,7 @@ import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
 import it.agilelab.bigdata.gis.core.utils.{Logger, ObjectPickler}
 import it.agilelab.bigdata.gis.domain.managers.ManagerUtils.Path
 import it.agilelab.bigdata.gis.domain.managers.{IndexManager, ManagerUtils}
-import it.agilelab.bigdata.gis.domain.models.{Address, KnnResult, OSMBoundary, OSMStreetEnriched}
+import it.agilelab.bigdata.gis.domain.models.{Address, KnnResult, OSMBoundary, OSMStreetAndHouseNumber}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
@@ -15,7 +15,7 @@ class OSMManager extends Logger {
 
   var boundariesGeometryList: GeometryList[OSMBoundary] = _
   var regionGeometryList: GeometryList[OSMBoundary] = _
-  var roadsGeometryList: GeometryList[OSMStreetEnriched] = _
+  var roadsGeometryList: GeometryList[OSMStreetAndHouseNumber] = _
 
   /**
     * Initializes all geo lists
@@ -31,7 +31,7 @@ class OSMManager extends Logger {
       } else {
         val boundaries = ObjectPickler.unpickle[GeometryList[OSMBoundary]](paths.head)
         val regions = ObjectPickler.unpickle[GeometryList[OSMBoundary]](paths(1))
-        val streets = ObjectPickler.unpickle[GeometryList[OSMStreetEnriched]](paths(2))
+        val streets = ObjectPickler.unpickle[GeometryList[OSMStreetAndHouseNumber]](paths(2))
         (boundaries, regions, streets)
       }
 
@@ -46,13 +46,13 @@ class OSMManager extends Logger {
 
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(longitude, latitude))
 
-    val resultWithoutStreet: Option[(OSMBoundary, KnnResult)] =
+    val administrativeBoundaries: Option[(OSMBoundary, KnnResult)] =
       reverseGeocodeQueryingBoundaries(queryPoint, filterEmptyStreets, road_tol_meters, address_tol_meters)
 
-    val street: Option[OSMStreetEnriched] =
+    val street: Option[OSMStreetAndHouseNumber] =
       reverseGeocodeQueryingStreets(queryPoint, filterEmptyStreets, road_tol_meters, address_tol_meters)
 
-    makeAddress(resultWithoutStreet, street, queryPoint, address_tol_meters)
+    makeAddress(administrativeBoundaries, street, queryPoint, address_tol_meters)
   }
 
   private def reverseGeocodeQueryingBoundaries(queryPoint: Point, filterEmptyStreets: Boolean = false,
@@ -101,7 +101,7 @@ class OSMManager extends Logger {
   }
 
   private def reverseGeocodeQueryingStreets(queryPoint: Point, filterEmptyStreets: Boolean = false,
-                                            road_tol_meters: Double = 100.0, address_tol_meters: Double = 20.0): Option[OSMStreetEnriched] = {
+                                            road_tol_meters: Double = 100.0, address_tol_meters: Double = 20.0): Option[OSMStreetAndHouseNumber] = {
 
     if (roadsGeometryList != null) {
       val roadsResult =
@@ -114,7 +114,7 @@ class OSMManager extends Logger {
           )
 
       //If filterEmptyStreets is enabled then we filter out all the not defined and empty streets
-      val road: Option[OSMStreetEnriched] = roadsResult.find(p => !filterEmptyStreets || (p.street.isDefined && !p.street.get.trim.equals("")))
+      val road: Option[OSMStreetAndHouseNumber] = roadsResult.find(p => !filterEmptyStreets || (p.street.isDefined && !p.street.get.trim.equals("")))
 
       road
     } else {
@@ -123,7 +123,7 @@ class OSMManager extends Logger {
 
   }
 
-  private def makeAddress(place: Option[(OSMBoundary, KnnResult)], street: Option[OSMStreetEnriched],
+  private def makeAddress(place: Option[(OSMBoundary, KnnResult)], street: Option[OSMStreetAndHouseNumber],
                           queryPoint: Point, address_tol_meters: Double = 20.0): Address = {
 
     (place, street) match {

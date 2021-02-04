@@ -5,7 +5,7 @@ import java.io.File
 import it.agilelab.bigdata.gis.core.utils.Logger
 import it.agilelab.bigdata.gis.domain.loader.{OSMAdministrativeBoundariesLoader, OSMGenericStreetLoader}
 import it.agilelab.bigdata.gis.domain.managers.ManagerUtils.{BoundaryPathGroup, CountryPathSet, Path}
-import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMStreetEnriched}
+import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMStreetAndHouseNumber}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.managers.ManagerUtils.BoundariesPos.{CITIES, COUNTIES, COUNTRY, REGIONS}
 
@@ -16,7 +16,7 @@ object IndexManager extends Logger {
 
   case class IndexStuffs(regionIndex: Seq[OSMBoundary], cityIndex: Seq[OSMBoundary])
 
-  case class IndexSet(boundaries: GeometryList[OSMBoundary], regions: GeometryList[OSMBoundary], streets: GeometryList[OSMStreetEnriched])
+  case class IndexSet(boundaries: GeometryList[OSMBoundary], regions: GeometryList[OSMBoundary], streets: GeometryList[OSMStreetAndHouseNumber])
 
   /**
     * 2.shp identifica la Nazione [Country]
@@ -65,7 +65,7 @@ object IndexManager extends Logger {
     val roads: Seq[Path] = multiCountriesPathSet.flatMap(countryPathSet => countryPathSet.roads)
     val addresses: Seq[Path] = multiCountriesPathSet.flatMap(countryPathSet => countryPathSet.addressess)
 
-    val streetsGeometryList: GeometryList[OSMStreetEnriched] = createAddressesIndex(roads, addresses)
+    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads, addresses)
 
     //trigger garbage collector to remove the addressNumberGeometryList if still in memory
     System.gc()
@@ -138,7 +138,7 @@ object IndexManager extends Logger {
     * a sequence of OSMAddress to retrieve the candidate street number
     *
     */
-  def createAddressesIndex(roads: Seq[Path], addresses: Seq[Path]): GeometryList[OSMStreetEnriched] = {
+  def createAddressesIndex(roads: Seq[Path], addresses: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
 
     val countryName = roads.head.split("/").reverse.tail.head
 

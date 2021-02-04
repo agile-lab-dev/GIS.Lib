@@ -29,7 +29,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
         None,
         None,
         None,
-        Some("Residential"),
+        Some("residential"),
         Some(12.646825786646783)
       )
 
@@ -51,37 +51,13 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
         Some("Italy"),
         None,
         None,
+        Some(50),
         None,
-        None,
-        Some("Unclassified"),
+        Some("unclassified"),
         Some(31.87219775357211)
       )
 
     viaAzziActual should be(viaAzziExpected)
-  }
-
-  "Reverse geocoding on Italy - Sicily" should "work" in {
-    val lat = 37.5173075
-    val lon = 15.1052199
-
-    val piazzaEuropaActual: Address = osmManager.reverseGeocode(lat, lon)
-
-    val piazzaEuropaExpected: Address =
-      Address(
-        Some("Piazza Europa, 9"),
-        Some("Catania"),
-        Some("Catania"),
-        Some("Sicily"),
-        Some("Italy"),
-        None,
-        None,
-        None,
-        None,
-        Some("Unclassified"),
-        Some(31.87219775357211)
-      )
-
-    piazzaEuropaActual should be(piazzaEuropaExpected)
   }
 
   /*-------------------------------*/
@@ -104,7 +80,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 //        None,
 //        None,
 //        None,
-//        Some("Residential"),
+//        Some("residential"),
 //        Some(6.630406557226943)
 //      )
 //
@@ -127,7 +103,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 //        None,
 //        None,
 //        None,
-//        Some("Residential"),
+//        Some("residential"),
 //        Some(39.57283980671295)
 //      )
 //
@@ -342,7 +318,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 //        None,
 //        None,
 //        None,
-//        Some("Residential"),
+//        Some("residential"),
 //        Some(7.42446591656155)
 //      )
 //
@@ -415,7 +391,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 //        None,
 //        None,
 //        None,
-//        Some("Residential"),
+//        Some("residential"),
 //        Some(9.957508778968133)
 //      )
 //
@@ -486,7 +462,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 //        None,
 //        None,
 //        None,
-//        Some("Residential"),
+//        Some("residential"),
 //        Some(2.2912572461583207)
 //      )
 //
@@ -534,7 +510,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 //        None,
 //        None,
 //        None,
-//        Some("Residential"),
+//        Some("residential"),
 //        Some(26.93145840936392)
 //      )
 //
@@ -870,7 +846,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 //        None,
 //        None,
 //        None,
-//        Some("Residential"),
+//        Some("residential"),
 //        Some(30.077212204176767)
 //      )
 //
@@ -894,7 +870,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 //        None,
 //        None,
 //        None,
-//        Some("Residential"),
+//        Some("residential"),
 //        Some(39.22776000155658)
 //      )
 //

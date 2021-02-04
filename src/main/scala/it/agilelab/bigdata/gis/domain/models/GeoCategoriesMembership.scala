@@ -2,15 +2,13 @@ package it.agilelab.bigdata.gis.domain.models
 
 import com.vividsolutions.jts.geom.{Geometry, MultiPolygon, Polygon}
 
-case class OSMGeoCategory(label: String, geometa: OSMGeoMetadata, multiPolygon: Geometry) extends MultiPolygon(
-  {
+case class OSMGeoCategory(label: String, geometa: OSMGeoMetadata, multiPolygon: Geometry)
+  extends MultiPolygon({
     val length = multiPolygon.getNumGeometries
     (0 until length).map{
       x => multiPolygon.getGeometryN(x).asInstanceOf[Polygon]
     }
-    }.toArray,
-  multiPolygon.getFactory
-)
+  }.toArray, multiPolygon.getFactory)
 
 case class OSMGeoMetadata(map: Map[String, AnyRef], description: String)
 
