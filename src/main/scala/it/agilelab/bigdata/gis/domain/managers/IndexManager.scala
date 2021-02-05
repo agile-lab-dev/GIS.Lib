@@ -36,7 +36,7 @@ object IndexManager extends Logger {
         .map(PathManager.getCountryPathSet)
         .toSeq
 
-    logger.info("[GISLib] Loading OSM boundaries file into GeometryList...")
+    logger.info("Loading OSM boundaries file into GeometryList...")
 
     val boundariesLoader = new OSMAdministrativeBoundariesLoader
 
@@ -69,8 +69,6 @@ object IndexManager extends Logger {
 
     //trigger garbage collector to remove the addressNumberGeometryList if still in memory
     System.gc()
-
-
 
     IndexSet(boundariesGeometryList, regionGeometryList, streetsGeometryList)
   }
