@@ -29,6 +29,7 @@ object ConverterFromOSMToGraphHopperMap extends App {
   //We use Generic Weighting with the DataFlagEncoder
   val encoder = new CarFlagEncoderEnrich()
   hopperOSM.setEncodingManager(new EncodingManager(encoder))
+  hopperOSM.setElevation(true)
   val weighting = new FastestWeighting(encoder, new PMap())
   hopperOSM.getCHFactoryDecorator.addWeighting(weighting)
 

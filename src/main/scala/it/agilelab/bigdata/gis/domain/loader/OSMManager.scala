@@ -4,7 +4,7 @@ import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
 import it.agilelab.bigdata.gis.core.utils.{Logger, ObjectPickler}
 import it.agilelab.bigdata.gis.domain.managers.ManagerUtils.Path
 import it.agilelab.bigdata.gis.domain.managers.{IndexManager, ManagerUtils}
-import it.agilelab.bigdata.gis.domain.models.{Address, KnnResult, OSMBoundary, OSMStreetAndHouseNumber}
+import it.agilelab.bigdata.gis.domain.models.{ReverseGeocodingResponse, KnnResult, OSMBoundary, OSMStreetAndHouseNumber}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
@@ -42,7 +42,7 @@ class OSMManager extends Logger {
 
 
   def reverseGeocode(latitude: Double, longitude: Double, filterEmptyStreets: Boolean = false,
-                     road_tol_meters: Double = 100.0,  address_tol_meters: Double = 20.0) : Address = {
+                     road_tol_meters: Double = 100.0,  address_tol_meters: Double = 20.0) : ReverseGeocodingResponse = {
 
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(longitude, latitude))
 
@@ -124,12 +124,12 @@ class OSMManager extends Logger {
   }
 
   private def makeAddress(place: Option[(OSMBoundary, KnnResult)], street: Option[OSMStreetAndHouseNumber],
-                          queryPoint: Point, address_tol_meters: Double = 20.0): Address = {
+                          queryPoint: Point, address_tol_meters: Double = 20.0): ReverseGeocodingResponse = {
 
     (place, street) match {
 
       case (None, _) =>
-        Address(None, None)
+        ReverseGeocodingResponse(None, None)
 
       case (Some(topBoundaryWithKnnResult), None) =>
 
@@ -137,10 +137,10 @@ class OSMManager extends Logger {
           Some(topBoundaryWithKnnResult._1)
             .asInstanceOf[Option[OSMBoundary]]
 
-        Address(None, topPlace)
+        ReverseGeocodingResponse(None, topPlace)
 
       case (Some(topBoundaryWithKnnResult), Some(streetResult)) =>
-        Address(
+        ReverseGeocodingResponse(
           streetResult,
           topBoundaryWithKnnResult._1,
           streetResult.getDistanceAndNumber(queryPoint, address_tol_meters))

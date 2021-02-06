@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis.domain.loader
 
 import it.agilelab.bigdata.gis.domain.managers.PathManager
-import it.agilelab.bigdata.gis.domain.models.Address
+import it.agilelab.bigdata.gis.domain.models.ReverseGeocodingResponse
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
@@ -16,10 +16,10 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   "Reverse geocoding on Andorra" should "work" in {
     val lat = 42.542703
     val lon = 1.515542
-    val randomPlaceInAndorraActual: Address = osmManager.reverseGeocode(lat, lon)
+    val randomPlaceInAndorraActual: ReverseGeocodingResponse = osmManager.reverseGeocode(lat, lon)
 
-    val randomPlaceInAndorraExpected: Address =
-      Address(
+    val randomPlaceInAndorraExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
         Some(""),
         Some("La Massana"),
         None,
@@ -40,10 +40,10 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     val lat = 45.068032
     val lon = 7.643780
 
-    val viaAzziActual: Address = osmManager.reverseGeocode(lat, lon)
+    val viaAzziActual: ReverseGeocodingResponse = osmManager.reverseGeocode(lat, lon)
 
-    val viaAzziExpected: Address =
-      Address(
+    val viaAzziExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
         Some("Via Francesco Azzi"),
         Some("Turin"),
         Some("Torino"),
