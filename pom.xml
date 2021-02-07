@@ -30,6 +30,10 @@
             <name>agile-lab-dev-GIS-Lib</name>
             <url>https://api.bintray.com/maven/agile-lab-dev/GIS-Lib/gis-lib/;publish=1</url>
         </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <developers>
