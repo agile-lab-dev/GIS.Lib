@@ -1,62 +1,30 @@
 package it.agilelab.bigdata.gis.domain.loader
 
+import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
-import it.agilelab.bigdata.gis.core.utils.{Logger, ObjectPickler}
-import it.agilelab.bigdata.gis.domain.managers.ManagerUtils.Path
-import it.agilelab.bigdata.gis.domain.managers.{IndexManager, ManagerUtils}
-import it.agilelab.bigdata.gis.domain.models.{ReverseGeocodingResponse, KnnResult, OSMBoundary, OSMStreetAndHouseNumber}
+import it.agilelab.bigdata.gis.core.utils.Logger
+import it.agilelab.bigdata.gis.domain.graphhopper.GPSPoint
+import it.agilelab.bigdata.gis.domain.managers.ManagerUtils
+import it.agilelab.bigdata.gis.domain.models.{KnnResult, OSMBoundary, OSMStreetAndHouseNumber, ReverseGeocodingResponse}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
 import scala.annotation.tailrec
 import scala.collection.immutable
 
-class OSMManager extends Logger {
+case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
 
-  var boundariesGeometryList: GeometryList[OSMBoundary] = _
-  var regionGeometryList: GeometryList[OSMBoundary] = _
-  var roadsGeometryList: GeometryList[OSMStreetAndHouseNumber] = _
+  lazy val osmConfig: OSMManagerConfiguration = OSMManagerConfiguration(conf)
 
-  /**
-    * Initializes all geo lists
-    * @throws IllegalArgumentException if input params are wrong
-    */
-  @throws[IllegalArgumentException]
-  def init(paths: List[Path]): Unit = {
+  override def reverseGeocode(point: GPSPoint) : ReverseGeocodingResponse = {
 
-    val indices =
-      if (paths.size == 1) {
-        val index = IndexManager.makeIndices(paths.head)
-        (index.boundaries, index.regions, index.streets)
-      } else {
-        val boundaries = ObjectPickler.unpickle[GeometryList[OSMBoundary]](paths.head)
-        val regions = ObjectPickler.unpickle[GeometryList[OSMBoundary]](paths(1))
-        val streets = ObjectPickler.unpickle[GeometryList[OSMStreetAndHouseNumber]](paths(2))
-        (boundaries, regions, streets)
-      }
-
-    boundariesGeometryList = indices._1
-    regionGeometryList = indices._2
-    roadsGeometryList = indices._3
+    val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
+    val administrativeBoundaries: Option[(OSMBoundary, KnnResult)] = reverseGeocodeQueryingBoundaries(queryPoint)
+    val street: Option[OSMStreetAndHouseNumber] = reverseGeocodeQueryingStreets(queryPoint)
+    makeAddress(administrativeBoundaries, street, queryPoint)
   }
 
-
-  def reverseGeocode(latitude: Double, longitude: Double, filterEmptyStreets: Boolean = false,
-                     road_tol_meters: Double = 100.0,  address_tol_meters: Double = 20.0) : ReverseGeocodingResponse = {
-
-    val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(longitude, latitude))
-
-    val administrativeBoundaries: Option[(OSMBoundary, KnnResult)] =
-      reverseGeocodeQueryingBoundaries(queryPoint, filterEmptyStreets, road_tol_meters, address_tol_meters)
-
-    val street: Option[OSMStreetAndHouseNumber] =
-      reverseGeocodeQueryingStreets(queryPoint, filterEmptyStreets, road_tol_meters, address_tol_meters)
-
-    makeAddress(administrativeBoundaries, street, queryPoint, address_tol_meters)
-  }
-
-  private def reverseGeocodeQueryingBoundaries(queryPoint: Point, filterEmptyStreets: Boolean = false,
-                                               road_tol_meters: Double = 100.0, address_tol_meters: Double = 20.0): Option[(OSMBoundary, KnnResult)] = {
+  private def reverseGeocodeQueryingBoundaries(queryPoint: Point): Option[(OSMBoundary, KnnResult)] = {
 
     @tailrec
     def queryBoundaryIndices(boundaryIndices: List[GeometryList[OSMBoundary]],
@@ -91,40 +59,32 @@ class OSMManager extends Logger {
       }
     }
 
-    if(address_tol_meters > ManagerUtils.NUMBERS_MAX_DISTANCE)
+    if(osmConfig.addressTolMeters > ManagerUtils.NUMBERS_MAX_DISTANCE)
       logger.info("address_tol_meter is greater than the distance used to build the spatial index!")
 
-    queryBoundaryIndices(
-      List(boundariesGeometryList, regionGeometryList),
-      queryPoint
-    )
+    queryBoundaryIndices(List(osmConfig.boundariesGeometryList, osmConfig.regionGeometryList), queryPoint)
   }
 
-  private def reverseGeocodeQueryingStreets(queryPoint: Point, filterEmptyStreets: Boolean = false,
-                                            road_tol_meters: Double = 100.0, address_tol_meters: Double = 20.0): Option[OSMStreetAndHouseNumber] = {
+  private def reverseGeocodeQueryingStreets(queryPoint: Point): Option[OSMStreetAndHouseNumber] = {
 
-    if (roadsGeometryList != null) {
-      val roadsResult =
+    val roadsResult =
         KNNQueryMem
           .spatialKnnQueryWithMaxDistance(
-            roadsGeometryList,
+            osmConfig.roadsGeometryList,
             queryPoint,
             10,
-            road_tol_meters
+            osmConfig.roadTolMeters
           )
 
       //If filterEmptyStreets is enabled then we filter out all the not defined and empty streets
-      val road: Option[OSMStreetAndHouseNumber] = roadsResult.find(p => !filterEmptyStreets || (p.street.isDefined && !p.street.get.trim.equals("")))
-
+      val road: Option[OSMStreetAndHouseNumber] = roadsResult.find(p => !osmConfig.filterEmptyStreets || (p.street.isDefined && !p.street.get.trim.equals("")))
       road
-    } else {
-      None
-    }
 
   }
 
-  private def makeAddress(place: Option[(OSMBoundary, KnnResult)], street: Option[OSMStreetAndHouseNumber],
-                          queryPoint: Point, address_tol_meters: Double = 20.0): ReverseGeocodingResponse = {
+  private def makeAddress(place: Option[(OSMBoundary, KnnResult)],
+                          street: Option[OSMStreetAndHouseNumber],
+                          queryPoint: Point): ReverseGeocodingResponse = {
 
     (place, street) match {
 
@@ -143,9 +103,7 @@ class OSMManager extends Logger {
         ReverseGeocodingResponse(
           streetResult,
           topBoundaryWithKnnResult._1,
-          streetResult.getDistanceAndNumber(queryPoint, address_tol_meters))
+          streetResult.getDistanceAndNumber(queryPoint, osmConfig.addressTolMeters))
     }
-
   }
-
 }

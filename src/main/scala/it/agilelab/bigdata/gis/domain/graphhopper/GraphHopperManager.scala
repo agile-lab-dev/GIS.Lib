@@ -1,99 +1,29 @@
 package it.agilelab.bigdata.gis.domain.graphhopper
 
-import java.io.File
-import java.util
-
-import com.graphhopper.matching.{EdgeMatch, GPXExtension, MapMatching, MatchResult}
-import com.graphhopper.reader.osm.GraphHopperOSM
-import com.graphhopper.routing.AlgorithmOptions
-import com.graphhopper.routing.util.EncodingManager
-import com.graphhopper.routing.weighting.FastestWeighting
+import com.graphhopper.matching.{EdgeMatch, GPXExtension, MatchResult}
 import com.graphhopper.util.details.PathDetailsBuilderFactory
-import com.graphhopper.util.{GPXEntry, PMap, Parameters}
-import com.typesafe.config.{Config, ConfigFactory}
-import it.agilelab.bigdata.gis.core.encoder.CarFlagEncoderEnrich
+import com.typesafe.config.Config
+import it.agilelab.bigdata.gis.core.utils.Logger
+import it.agilelab.bigdata.gis.domain.loader.{GraphHopperConfiguration, RouteMatcher}
 
+import java.util
 import scala.collection.JavaConversions._
 
-private case class GraphHopperEnvelope(minLat: Double,
-                                       minLon: Double,
-                                       maxLat: Double,
-                                       maxLon: Double) {
+case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
-  def containsWholeRoute(gpsPoints: List[GPXEntry]): Boolean =
-    gpsPoints forall covers
-
-  def covers(point: GPXEntry): Boolean =
-    point.lat >= minLat && point.lat <= maxLat && point.lon >= minLon && point.lon <= maxLon
-
-}
-
-object GraphHopperManager {
-
-  private var hopperOSM: GraphHopperOSM = _
-  private var encoder: CarFlagEncoderEnrich = _
-  private var weighting: FastestWeighting = _
-  private var mapMatching: MapMatching = _
-
-  private val conf: Config = ConfigFactory.load()
-  private val vehicle: String = conf.getString("osm.vehicle")
-
-  //Create the actual graph to be queried
-  def init(graphLocation: String): Unit = {
-    if (hopperOSM == null) {
-      hopperOSM = new GraphHopperOSM
-
-      //Check if the graphLocation is a directory
-      val dir: File = new File(graphLocation)
-      if (!dir.isDirectory)
-        throw new IllegalArgumentException(
-          "Expected a directory as graph's location"
-        )
-
-      //Set the the elevation flag to true to include 3d dimension
-      hopperOSM.setElevation(true)
-
-      //We use Generic Weighting with the DataFlagEncoder
-      encoder = new CarFlagEncoderEnrich()
-      hopperOSM.setEncodingManager(new EncodingManager(encoder))
-      hopperOSM.setElevation(true)
-      weighting = new FastestWeighting(encoder, new PMap())
-      //hopperOSM.getCHFactoryDecorator.addWeighting(weighting)
-
-      //We disable the contraction hierarchies post processing. It seems to be mandatory in order to do map matching
-      hopperOSM.getCHFactoryDecorator.setEnabled(false)
-
-      //If no new map is specified, load from the resource folder
-      hopperOSM.load(graphLocation)
-
-      val algorithm: String = Parameters.Algorithms.DIJKSTRA_BI
-      val algoOptions: AlgorithmOptions =
-        new AlgorithmOptions(algorithm, weighting)
-      mapMatching = new MapMatching(hopperOSM, algoOptions)
-      mapMatching.setMeasurementErrorSigma(50)
-      //mapMatching.setMeasurementErrorSigma(20)
-
-    }
-  }
-
-  def graphGetter: GraphHopperOSM = {
-    hopperOSM
-  }
+  val graphConf: GraphHopperConfiguration = GraphHopperConfiguration(conf)
 
   def typeOfRoute(edge: EdgeMatch): String =
-    encoder.getHighwayAsString(edge.getEdgeState) match {
+    graphConf.encoder.getHighwayAsString(edge.getEdgeState) match {
       case null => "unclassified" //todo is right this
       case value: String => value
     }
 
   @throws(classOf[RuntimeException])
   @throws(classOf[IllegalAccessException])
-  def matchingRoute(gpsPoints: Seq[GPSPoint]): MatchedRoute = {
+  override def matchingRoute(gpsPoints: Seq[GPSPoint]): MatchedRoute = {
 
-    if (hopperOSM == null)
-      throw new IllegalAccessException("Cannot perform map matching without a graph! Call init method first")
-
-    val calcRoute: MatchResult = mapMatching.doWork(gpsPoints.map(_.toGPXEntry))
+    val calcRoute: MatchResult = graphConf.mapMatching.doWork(gpsPoints.map(_.toGPXEntry))
 
     val length = calcRoute.getMatchLength
     val time = calcRoute.getMatchMillis
@@ -104,7 +34,7 @@ object GraphHopperManager {
       val mappedEdges: Seq[(String, Double)] =
         edges
           .map(edge =>
-            (encoder.getHighwayAsString(edge.getEdgeState), edge.getEdgeState.getDistance)
+            (graphConf.encoder.getHighwayAsString(edge.getEdgeState), edge.getEdgeState.getDistance)
           )
           .map {
             case (null, value) => ("unclassified", value)
@@ -143,7 +73,7 @@ object GraphHopperManager {
                     Some(item.getQueryResult.getSnappedPoint.ele),
                     Some(typeOfRoute(edge)),
                     Some(edge.getEdgeState.getName),
-                    Some(encoder.getSpeed(item.getQueryResult.getClosestEdge.getFlags).toInt),
+                    Some(graphConf.encoder.getSpeed(item.getQueryResult.getClosestEdge.getFlags).toInt),
                     Some(item.getQueryResult.getQueryDistance)
                   )
                 )
@@ -176,7 +106,7 @@ object GraphHopperManager {
             case (edgeWithDistance, idx) => idx
           }
 
-      // distances beetween node
+      // distances between node
       val distancesBetweenNode =
         idxInitialNode
           .zip(idxInitialNode.tail)

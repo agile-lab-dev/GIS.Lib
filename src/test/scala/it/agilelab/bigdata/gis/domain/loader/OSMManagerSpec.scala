@@ -1,22 +1,18 @@
 package it.agilelab.bigdata.gis.domain.loader
 
-import it.agilelab.bigdata.gis.domain.managers.PathManager
+import com.typesafe.config.{Config, ConfigFactory}
+import it.agilelab.bigdata.gis.domain.graphhopper.GPSPoint
 import it.agilelab.bigdata.gis.domain.models.ReverseGeocodingResponse
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
-  var osmManager: OSMManager = _
-
-  override def beforeAll(): Unit = {
-    osmManager =  new OSMManager()
-    osmManager.init(List(PathManager.getInputPath))
-  }
+  val conf: Config = ConfigFactory.load()
+  val osmManager: OSMManager = OSMManager(conf)
 
   "Reverse geocoding on Andorra" should "work" in {
-    val lat = 42.542703
-    val lon = 1.515542
-    val randomPlaceInAndorraActual: ReverseGeocodingResponse = osmManager.reverseGeocode(lat, lon)
+    val point = GPSPoint(42.542703, 1.515542, None, System.currentTimeMillis())
+    val randomPlaceInAndorraActual: ReverseGeocodingResponse = osmManager.reverseGeocode(point)
 
     val randomPlaceInAndorraExpected: ReverseGeocodingResponse =
       ReverseGeocodingResponse(
@@ -37,10 +33,10 @@ class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   }
 
   "Reverse geocoding on Italy" should "work" in {
-    val lat = 45.068032
-    val lon = 7.643780
 
-    val viaAzziActual: ReverseGeocodingResponse = osmManager.reverseGeocode(lat, lon)
+    val point = GPSPoint(45.068032, 7.643780, None, System.currentTimeMillis())
+
+    val viaAzziActual: ReverseGeocodingResponse = osmManager.reverseGeocode(point)
 
     val viaAzziExpected: ReverseGeocodingResponse =
       ReverseGeocodingResponse(
