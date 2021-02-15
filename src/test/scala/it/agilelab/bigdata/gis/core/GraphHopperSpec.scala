@@ -1,17 +1,16 @@
 package it.agilelab.bigdata.gis.core
 
-import java.io.File
-import java.nio.file.{Path, Paths}
-
+import com.typesafe.config.{Config, ConfigFactory}
 import it.agilelab.bigdata.gis.core.apps.ConverterFromOSMToGraphHopperMap
 import it.agilelab.bigdata.gis.domain.graphhopper.{GPSPoint, GraphHopperManager, MatchedRoute}
 import org.apache.log4j.{Level, Logger}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-import scala.collection.JavaConversions.iterableAsScalaIterable
+import java.io.File
+import java.nio.file.Paths
 
 /**
- * @author andreaL
+ * @author andreaLbasePath
  */
 //Before run this test read Readme section `Test GraphHopper`,
 //download file `italy-latest.osm.pbf` and insert in test/resources/graphHopperSource/
@@ -19,6 +18,8 @@ import scala.collection.JavaConversions.iterableAsScalaIterable
 class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   Logger.getRootLogger.setLevel(Level.INFO)
 
+  val conf: Config = ConfigFactory.load()
+  var manager: GraphHopperManager = _
   val logger: Logger = Logger.getLogger(getClass)
 
   override def beforeAll(): Unit = {
@@ -47,7 +48,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
     logger.info(s"Init graph from $graphPathOutput")
 
-    GraphHopperManager.init(s"${graphPathOutput.getAbsolutePath}")
+    manager = GraphHopperManager(conf)
   }
 
   "test carFlagEncoderEnrich" should "retrieve result of map matching and distance for each type of street" in {
@@ -59,7 +60,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
       GPSPoint(45.075511, 7.643988, None, 1552910930000L)
     )
 
-    val res = GraphHopperManager.matchingRoute(gpsPoint)
+    val res = manager.matchingRoute(gpsPoint)
 
     assert(res.length > 150 && res.length < 200)
     assert(res.getKmType("trunk_link").isSuccess)
@@ -76,7 +77,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
       GPSPoint(38.1302, 13.3644, None, 1552910930000L)
     )
 
-    val res = GraphHopperManager.matchingRoute(gpsPoint)
+    val res = manager.matchingRoute(gpsPoint)
     assert(res.length > 2500 && res.length < 3500)
 
   }
@@ -102,7 +103,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
       GPSPoint(45.418, 12.372, None, 0L)
     )
 
-    val res: MatchedRoute = GraphHopperManager.matchingRoute(gpsPoint)
+    val res: MatchedRoute = manager.matchingRoute(gpsPoint)
     assert(res.length > 10000 && res.length < 11000)
   }
 
@@ -115,7 +116,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
       GPSPoint(45.070384, 7.685628, None, 3L)
     )
 
-    val res = GraphHopperManager.matchingRoute(gpsPoint)
+    val res = manager.matchingRoute(gpsPoint)
     assert(res.length > 1500 && res.length < 2500)
 
   }
@@ -165,7 +166,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
       GPSPoint(38.7258, 16.1555, None, 0L)
     )
 
-    val res = GraphHopperManager.matchingRoute(gpsPoint)
+    val res = manager.matchingRoute(gpsPoint)
     assert(!res.routes.contains("null"))
   }
 
@@ -181,7 +182,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
       GPSPoint(37.9615, 12.6486, None, 1563855810000L)
     )
 
-    val res = GraphHopperManager.matchingRoute(gpsPoint)
+    val res = manager.matchingRoute(gpsPoint)
     val resultTimestamp = res.distanceBetweenPoints.map(_.diffTime)
 
     val expectedTimestamp =
@@ -198,8 +199,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
       GPSPoint(42.46, 12.3823, None, 1568268786000L)
     )
 
-    val res =
-      GraphHopperManager.matchingRoute(gpsPoint).distanceBetweenPoints.head
+    val res = manager.matchingRoute(gpsPoint).distanceBetweenPoints.head
 
     assert(res.diffTime == 2000L)
     assert(res.distance > 75 && res.distance < 85)
