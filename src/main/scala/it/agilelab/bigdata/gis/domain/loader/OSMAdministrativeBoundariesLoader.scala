@@ -1,31 +1,15 @@
 package it.agilelab.bigdata.gis.domain.loader
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.{Geometry, MultiPolygon}
 import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.domain.managers.{CountrySettings, PathManager}
 import it.agilelab.bigdata.gis.domain.models.OSMBoundary
-import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 import scala.util.Try
 
-object OSMAdministrativeBoundariesLoader{
 
-  //Pay attention to side effects
-
-  var index: GeometryList[OSMBoundary] = null
-  def getStreetIndex(path: String): GeometryList[OSMBoundary] = {
-    if (index == null){
-      index = new OSMAdministrativeBoundariesLoader().loadIndex(path)
-    }
-    index
-  }
-
-}
-
-class OSMAdministrativeBoundariesLoader extends Loader[OSMBoundary] {
-
-  private val conf: Config = ConfigFactory.load().getConfig("boundary")
+case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathManager) extends Loader[OSMBoundary] {
 
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
     val countryName: String =
@@ -58,11 +42,11 @@ class OSMAdministrativeBoundariesLoader extends Loader[OSMBoundary] {
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMBoundary = {
 
     val countryName = fields.last.toString
-    val countrySettings: CountrySettings = PathManager.getCountrySetting(countryName).clean
+    val countrySettings: CountrySettings = pathManager.getCountrySetting(countryName).clean
 
-    val administrativeValue = fields(Try(conf.getInt("administrative.value")).getOrElse(3)).toString
+    val administrativeValue = fields(Try(config.getInt("administrative.value")).getOrElse(3)).toString
     val stringWithSpecialChars = new String(administrativeValue.getBytes("ISO-8859-1"), "UTF-8")
-    val administrativeLevel = fields(Try(conf.getInt("administrative.level")).getOrElse(8)).toString
+    val administrativeLevel = fields(Try(config.getInt("administrative.level")).getOrElse(8)).toString
 
     val boundary: OSMBoundary =
       if ( countrySettings.countrySuffixes.contains(administrativeLevel) )
@@ -86,6 +70,10 @@ class OSMAdministrativeBoundariesLoader extends Loader[OSMBoundary] {
     ).toOption
   }
 
-
+/*
+  def getStreetIndex(path: String): GeometryList[OSMBoundary] = {
+    loadIndex(path)
+  }
+*/
 
 }

@@ -1,10 +1,11 @@
-package it.agilelab.bigdata.gis.domain.loader
+package it.agilelab.bigdata.gis.domain.managers
 
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
-import it.agilelab.bigdata.gis.core.utils.Logger
+import it.agilelab.bigdata.gis.core.utils.{Logger, ManagerUtils}
+import it.agilelab.bigdata.gis.domain.configuration.OSMManagerConfiguration
 import it.agilelab.bigdata.gis.domain.graphhopper.GPSPoint
-import it.agilelab.bigdata.gis.domain.managers.ManagerUtils
+import it.agilelab.bigdata.gis.domain.loader.ReverseGeocoder
 import it.agilelab.bigdata.gis.domain.models.{KnnResult, OSMBoundary, OSMStreetAndHouseNumber, ReverseGeocodingResponse}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
@@ -14,7 +15,8 @@ import scala.collection.immutable
 
 case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
 
-  lazy val osmConfig: OSMManagerConfiguration = OSMManagerConfiguration(conf)
+  val osmConfig: OSMManagerConfiguration = OSMManagerConfiguration(conf)
+  val indexManager: IndexManager = IndexManager(osmConfig.indexConf)
 
   override def reverseGeocode(point: GPSPoint) : ReverseGeocodingResponse = {
 
@@ -62,7 +64,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     if(osmConfig.addressTolMeters > ManagerUtils.NUMBERS_MAX_DISTANCE)
       logger.info("address_tol_meter is greater than the distance used to build the spatial index!")
 
-    queryBoundaryIndices(List(osmConfig.boundariesGeometryList, osmConfig.regionGeometryList), queryPoint)
+    queryBoundaryIndices(List(indexManager.indexSet.boundaries, indexManager.indexSet.regions), queryPoint)
   }
 
   private def reverseGeocodeQueryingStreets(queryPoint: Point): Option[OSMStreetAndHouseNumber] = {
@@ -70,7 +72,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     val roadsResult =
         KNNQueryMem
           .spatialKnnQueryWithMaxDistance(
-            osmConfig.roadsGeometryList,
+            indexManager.indexSet.streets,
             queryPoint,
             10,
             osmConfig.roadTolMeters

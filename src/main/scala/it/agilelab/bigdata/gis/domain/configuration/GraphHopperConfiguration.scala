@@ -1,4 +1,4 @@
-package it.agilelab.bigdata.gis.domain.loader
+package it.agilelab.bigdata.gis.domain.configuration
 
 import com.graphhopper.matching.MapMatching
 import com.graphhopper.reader.osm.GraphHopperOSM
@@ -8,7 +8,7 @@ import com.graphhopper.routing.weighting.FastestWeighting
 import com.graphhopper.util.PMap
 import com.typesafe.config.Config
 import it.agilelab.bigdata.gis.core.encoder.CarFlagEncoderEnrich
-import it.agilelab.bigdata.gis.core.utils.{Configuration, Logger, ValidationUtils}
+import it.agilelab.bigdata.gis.core.utils.{Configuration, ConfigurationProperties, Logger, ValidationUtils}
 import it.agilelab.bigdata.gis.domain.graphhopper.AlgorithmType
 
 import scala.util.{Failure, Success, Try}
@@ -25,19 +25,10 @@ case class GraphHopperConfiguration(encoder: CarFlagEncoderEnrich,
 
 object GraphHopperConfiguration extends Configuration with ValidationUtils with Logger {
 
-  private val OSM: String = "osm"
-  private val GRAPH_LOCATION: String = "graph_location"
-  private val ELEVATION_ENABLED: String = "elevation_enabled"
-  private val MAP_MATCHING_ALGORITHM: String = "map_matching_algorithm"
-  private val MEASUREMENT_ERROR_SIGMA: String = "measurement_error_sigma"
-  private val CONTRACTION_HIERARCHIES_ENABLED: String = "contraction_hierarchies_enabled"
-  private val ENCODER: String = "encoder"
-
   def apply(config: Config): GraphHopperConfiguration = {
 
      val parsedConfig :Try[GraphHopperConfiguration] = for {
-      osm <- read[Config](config, OSM)
-      (encoder, hopperOSM, mapMatching)  <- tryOrLog(createObjects(osm))
+      (encoder, hopperOSM, mapMatching)  <- tryOrLog(createObjects(config))
     } yield GraphHopperConfiguration(encoder, hopperOSM, mapMatching)
 
     parsedConfig match {
@@ -48,18 +39,18 @@ object GraphHopperConfiguration extends Configuration with ValidationUtils with 
 
   private def createObjects(conf: Config): (CarFlagEncoderEnrich, GraphHopperOSM, MapMatching ) =  {
     val parsed = for {
-      graphLocationRaw <- read[String](conf, GRAPH_LOCATION)
+      graphLocationRaw <- read[String](conf, ConfigurationProperties.GRAPH_LOCATION.value)
       graphLocation <- checkIsDirectory(graphLocationRaw)
-      elevationEnabled <-  read[Boolean](conf, ELEVATION_ENABLED)
-      contractionHierarchiesEnabled <- read[Boolean](conf, CONTRACTION_HIERARCHIES_ENABLED)
-      mapMatchingAlgorithmRaw <- read[String](conf, MAP_MATCHING_ALGORITHM)
+      elevationEnabled <-  read[Boolean](conf, ConfigurationProperties.ELEVATION_ENABLED.value)
+      contractionHierarchiesEnabled <- read[Boolean](conf, ConfigurationProperties.CONTRACTION_HIERARCHIES_ENABLED.value)
+      mapMatchingAlgorithmRaw <- read[String](conf, ConfigurationProperties.MAP_MATCHING_ALGORITHM.value)
       mapMatchingAlgorithm <- tryOrLog(AlgorithmType.fromValue(mapMatchingAlgorithmRaw))
-      measurementErrorSigma <- read[Int](conf, MEASUREMENT_ERROR_SIGMA)
+      measurementErrorSigma <- read[Int](conf, ConfigurationProperties.MEASUREMENT_ERROR_SIGMA.value)
     } yield GraphHopperSettings(graphLocation, elevationEnabled, contractionHierarchiesEnabled, mapMatchingAlgorithm, measurementErrorSigma)
 
     parsed match {
       case Failure(exception) => throw exception
-      case Success(settings) => {
+      case Success(settings) =>
         //Set the the elevation flag to true to include 3d dimension
         val hopperOSM = new GraphHopperOSM
         hopperOSM.setElevation(settings.elevationEnabled)
@@ -78,7 +69,6 @@ object GraphHopperConfiguration extends Configuration with ValidationUtils with 
         mapMatching.setMeasurementErrorSigma(settings.measurementErrorSigma)
 
         (encoder, hopperOSM, mapMatching)
-      }
    }
   }
 }

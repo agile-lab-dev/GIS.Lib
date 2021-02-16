@@ -4,7 +4,8 @@ import com.graphhopper.matching.{EdgeMatch, GPXExtension, MatchResult}
 import com.graphhopper.util.details.PathDetailsBuilderFactory
 import com.typesafe.config.Config
 import it.agilelab.bigdata.gis.core.utils.Logger
-import it.agilelab.bigdata.gis.domain.loader.{GraphHopperConfiguration, RouteMatcher}
+import it.agilelab.bigdata.gis.domain.configuration.GraphHopperConfiguration
+import it.agilelab.bigdata.gis.domain.loader.RouteMatcher
 
 import java.util
 import scala.collection.JavaConversions._

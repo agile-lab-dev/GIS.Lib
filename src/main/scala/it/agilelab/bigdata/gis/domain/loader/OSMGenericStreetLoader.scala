@@ -2,8 +2,7 @@ package it.agilelab.bigdata.gis.domain.loader
 
 import com.vividsolutions.jts.geom.{Geometry, GeometryFactory}
 import it.agilelab.bigdata.gis.core.loader.Loader
-import it.agilelab.bigdata.gis.core.utils.Logger
-import it.agilelab.bigdata.gis.domain.managers.ManagerUtils
+import it.agilelab.bigdata.gis.core.utils.{Logger, ManagerUtils}
 import it.agilelab.bigdata.gis.domain.models.{OSMAddress, OSMSmallAddressNumber, OSMStreetAndHouseNumber, OSMStreetType}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
