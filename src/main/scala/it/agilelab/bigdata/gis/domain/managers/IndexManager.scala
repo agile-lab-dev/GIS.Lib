@@ -1,18 +1,23 @@
 package it.agilelab.bigdata.gis.domain.managers
 
-import java.io.File
-
-import it.agilelab.bigdata.gis.core.utils.Logger
+import com.typesafe.config.Config
+import it.agilelab.bigdata.gis.core.utils.ManagerUtils.BoundariesPos.{CITIES, COUNTIES, COUNTRY, REGIONS}
+import it.agilelab.bigdata.gis.core.utils.ManagerUtils.{BoundaryPathGroup, CountryPathSet, Path}
+import it.agilelab.bigdata.gis.core.utils.{Configuration, ConfigurationProperties, Logger, ObjectPickler}
+import it.agilelab.bigdata.gis.domain.configuration.IndexManagerConfiguration
 import it.agilelab.bigdata.gis.domain.loader.{OSMAdministrativeBoundariesLoader, OSMGenericStreetLoader}
-import it.agilelab.bigdata.gis.domain.managers.ManagerUtils.{BoundaryPathGroup, CountryPathSet, Path}
 import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMStreetAndHouseNumber}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
-import it.agilelab.bigdata.gis.domain.managers.ManagerUtils.BoundariesPos.{CITIES, COUNTIES, COUNTRY, REGIONS}
 
+import java.io.File
 import scala.collection.immutable
 
+case class IndexManager(conf: Config) extends Configuration with Logger {
 
-object IndexManager extends Logger {
+  val indexConfig: IndexManagerConfiguration = IndexManagerConfiguration(conf)
+  val pathManager : PathManager = PathManager(indexConfig.pathConf)
+  val boundariesLoader : OSMAdministrativeBoundariesLoader = OSMAdministrativeBoundariesLoader(indexConfig.boundaryConf, pathManager)
+  val indexSet: IndexSet = createIndexSet(indexConfig.inputPaths)
 
   case class IndexStuffs(regionIndex: Seq[OSMBoundary], cityIndex: Seq[OSMBoundary])
 
@@ -33,44 +38,41 @@ object IndexManager extends Logger {
     val multiCountriesPathSet: Seq[CountryPathSet] =
       new File(upperFolderPath)
         .listFiles()
-        .map(PathManager.getCountryPathSet)
+        .map(pathManager.getCountryPathSet)
         .toSeq
 
     logger.info("Loading OSM boundaries file into GeometryList...")
 
-    val boundariesLoader = new OSMAdministrativeBoundariesLoader
 
-    val indexStuffs: List[IndexStuffs] =
-      multiCountriesPathSet
-        .par
-        .map(
-          countryPathSet =>
-            createCountryBoundaries(countryPathSet.boundary, boundariesLoader)
-        )
-        .toList
+      val indexStuffs: List[IndexStuffs] =
+        multiCountriesPathSet
+          .par
+          .map(countryPathSet => createCountryBoundaries(countryPathSet.boundary, boundariesLoader))
+          .toList
 
-    val cityIndexStuff: immutable.Seq[OSMBoundary] = indexStuffs.flatMap(_.cityIndex)
-    val regionIndexStuff = indexStuffs.flatMap(_.regionIndex)
+      val cityIndexStuff: immutable.Seq[OSMBoundary] = indexStuffs.flatMap(_.cityIndex)
+      val regionIndexStuff = indexStuffs.flatMap(_.regionIndex)
 
-    val boundariesGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndexStuff.toList)
+      val boundariesGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndexStuff.toList)
 
-    val regionGeometryList: GeometryList[OSMBoundary] =
-      if (regionIndexStuff.nonEmpty)
-        boundariesLoader.buildIndex(regionIndexStuff)
-      else
-        null
+      val regionGeometryList: GeometryList[OSMBoundary] =
+        if (regionIndexStuff.nonEmpty)
+          boundariesLoader.buildIndex(regionIndexStuff)
+        else
+          null
 
-    logger.info("Done loading OSM boundaries file into GeometryList!")
+      logger.info("Done loading OSM boundaries file into GeometryList!")
 
-    val roads: Seq[Path] = multiCountriesPathSet.flatMap(countryPathSet => countryPathSet.roads)
-    val addresses: Seq[Path] = multiCountriesPathSet.flatMap(countryPathSet => countryPathSet.addressess)
+      val roads: Seq[Path] = multiCountriesPathSet.flatMap(countryPathSet => countryPathSet.roads)
+      val addresses: Seq[Path] = multiCountriesPathSet.flatMap(countryPathSet => countryPathSet.addresses)
 
-    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads, addresses)
+      val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads, addresses)
 
-    //trigger garbage collector to remove the addressNumberGeometryList if still in memory
-    System.gc()
+      //trigger garbage collector to remove the addressNumberGeometryList if still in memory
+      System.gc()
 
-    IndexSet(boundariesGeometryList, regionGeometryList, streetsGeometryList)
+      IndexSet(boundariesGeometryList, regionGeometryList, streetsGeometryList)
+
   }
 
   def createCountryBoundaries(paths: BoundaryPathGroup, boundariesLoader: OSMAdministrativeBoundariesLoader): IndexStuffs = {
@@ -151,4 +153,16 @@ object IndexManager extends Logger {
     roadsGeometryList
   }
 
+  private def createIndexSet(inputPaths: List[String]): IndexSet = {
+    if(inputPaths.length == 1) {
+      val index = makeIndices(inputPaths.head)
+      IndexSet(index.boundaries, index.regions, index.streets)
+    }
+    else {
+      val boundaries = ObjectPickler.unpickle[GeometryList[OSMBoundary]](inputPaths.head)
+      val regions = ObjectPickler.unpickle[GeometryList[OSMBoundary]](inputPaths(1))
+      val streets = ObjectPickler.unpickle[GeometryList[OSMStreetAndHouseNumber]](inputPaths(2))
+      IndexSet(boundaries, regions, streets)
+    }
+  }
 }

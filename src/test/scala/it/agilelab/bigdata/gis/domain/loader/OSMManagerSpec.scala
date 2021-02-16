@@ -2,13 +2,15 @@ package it.agilelab.bigdata.gis.domain.loader
 
 import com.typesafe.config.{Config, ConfigFactory}
 import it.agilelab.bigdata.gis.domain.graphhopper.GPSPoint
+import it.agilelab.bigdata.gis.domain.managers.OSMManager
 import it.agilelab.bigdata.gis.domain.models.ReverseGeocodingResponse
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 class OSMManagerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   val conf: Config = ConfigFactory.load()
-  val osmManager: OSMManager = OSMManager(conf)
+  val osmConf: Config = conf.getConfig("osm")
+  val osmManager: OSMManager = OSMManager(osmConf)
 
   "Reverse geocoding on Andorra" should "work" in {
     val point = GPSPoint(42.542703, 1.515542, None, System.currentTimeMillis())

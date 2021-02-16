@@ -1,6 +1,6 @@
 package it.agilelab.bigdata.gis.core.utils
 
-import it.agilelab.bigdata.gis.domain.loader.GraphHopperConfiguration.logger
+import it.agilelab.bigdata.gis.domain.configuration.GraphHopperConfiguration.logger
 
 import java.io.File
 import scala.util.{Failure, Success, Try}

@@ -1,9 +1,11 @@
 package it.agilelab.bigdata.gis.domain.loader
 
+import com.typesafe.config.{Config, ConfigFactory}
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory}
 import it.agilelab.bigdata.gis.domain.managers.PathManager
 import it.agilelab.bigdata.gis.domain.models.OSMBoundary
 import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
+import scala.collection.JavaConversions._
 
 class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen with Matchers {
 
@@ -12,9 +14,18 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
   val coord_andorra_perimeter = new Coordinate(1.6690951, 42.5057918)
   val coord_vaticano_inside = new Coordinate(12.45467, 41.90221)
   val coord_toulouse = new Coordinate(1.648, 43.493)
+  val gf = new GeometryFactory()
+  val rootConf: Config = ConfigFactory.load()
+  val osmConf: Config = rootConf.getConfig("osm")
+  val indexConf: Config = osmConf.getConfig("index")
+  val inputPaths = indexConf.getStringList("input_paths").toList
+  val boundaryConf: Config = indexConf.getConfig("boundary")
+  val pathConf: Config = indexConf.getConfig("path")
+  val pathManager: PathManager = PathManager(pathConf)
+  val omsBoundariesSelector: String => List[OSMBoundary] = (s: String) => OSMAdministrativeBoundariesLoader(boundaryConf, pathManager).loadObjects(s"${inputPaths.head}/$s")
+
 
   feature("Issue#14 Check if a Point is Inside a Polygon - State of the art") {
-    import Utils._
 
     scenario("a point is OUTSIDE a non-rectangular, concave polygon") {
 
@@ -68,7 +79,6 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
   }
 
   feature("Issue#15 Check if a MultiPoint intersect a Polygon - State of the art") {
-    import Utils._
 
     scenario("a multipoint is outside of a non-rectangular, concave polygon completely") {
 
@@ -98,10 +108,4 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
 
   }
 
-}
-
-object Utils {
-  val omsBoundariesSelector: String => List[OSMBoundary] = (s: String) =>
-    new OSMAdministrativeBoundariesLoader().loadObjects(s"${PathManager.getInputPath}/$s")
-  val gf = new GeometryFactory()
 }

@@ -19,6 +19,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
   Logger.getRootLogger.setLevel(Level.INFO)
 
   val conf: Config = ConfigFactory.load()
+  val graphConf: Config = conf.getConfig("graph")
   var manager: GraphHopperManager = _
   val logger: Logger = Logger.getLogger(getClass)
 
@@ -48,7 +49,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
 
     logger.info(s"Init graph from $graphPathOutput")
 
-    manager = GraphHopperManager(conf)
+    manager = GraphHopperManager(graphConf)
   }
 
   "test carFlagEncoderEnrich" should "retrieve result of map matching and distance for each type of street" in {
