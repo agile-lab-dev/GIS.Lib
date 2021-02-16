@@ -31,7 +31,6 @@ object GraphHopperConfiguration extends Configuration with ValidationUtils with 
   private val MAP_MATCHING_ALGORITHM: String = "map_matching_algorithm"
   private val MEASUREMENT_ERROR_SIGMA: String = "measurement_error_sigma"
   private val CONTRACTION_HIERARCHIES_ENABLED: String = "contraction_hierarchies_enabled"
-  private val ENCODER: String = "encoder"
 
   def apply(config: Config): GraphHopperConfiguration = {
 
@@ -63,9 +62,9 @@ object GraphHopperConfiguration extends Configuration with ValidationUtils with 
         //Set the the elevation flag to true to include 3d dimension
         val hopperOSM = new GraphHopperOSM
         hopperOSM.setElevation(settings.elevationEnabled)
-        val encoder = new CarFlagEncoderEnrich() // TODO refactor to use a generic trait and not a single encoder implementation
-        hopperOSM.setEncodingManager(new EncodingManager(encoder))
-        val weighting = new FastestWeighting(encoder, new PMap()) // TODO refactor to use a generic trait and not a single weighting implementation
+        val encoder = new CarFlagEncoderEnrich()
+        hopperOSM.setEncodingManager(EncodingManager.create(encoder))
+        val weighting = new FastestWeighting(encoder, new PMap())
 
         //We disable the contraction hierarchies post processing. It seems to be mandatory in order to do map matching
         hopperOSM.getCHFactoryDecorator.setEnabled(settings.contractionHierarchiesEnabled)

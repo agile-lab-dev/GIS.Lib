@@ -1,17 +1,22 @@
 package it.agilelab.bigdata.gis.domain.graphhopper
 
+import java.util
+
 import com.graphhopper.matching.{EdgeMatch, GPXExtension, MatchResult}
+import com.graphhopper.routing.profiles.{FactorizedDecimalEncodedValue, SimpleIntEncodedValue}
 import com.graphhopper.util.details.PathDetailsBuilderFactory
 import com.typesafe.config.Config
 import it.agilelab.bigdata.gis.core.utils.Logger
 import it.agilelab.bigdata.gis.domain.loader.{GraphHopperConfiguration, RouteMatcher}
 
-import java.util
 import scala.collection.JavaConversions._
 
-case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
+case class GraphHopperManager(val conf: Config) extends RouteMatcher with Logger {
 
   val graphConf: GraphHopperConfiguration = GraphHopperConfiguration(conf)
+
+  val speedEncoder: FactorizedDecimalEncodedValue = graphConf.encoder.getEncodedValue("car.average_speed", classOf[FactorizedDecimalEncodedValue])
+  val highwayEncoder: SimpleIntEncodedValue = graphConf.encoder.getEncodedValue("car.highway", classOf[SimpleIntEncodedValue])
 
   def typeOfRoute(edge: EdgeMatch): String =
     graphConf.encoder.getHighwayAsString(edge.getEdgeState) match {
@@ -73,7 +78,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
                     Some(item.getQueryResult.getSnappedPoint.ele),
                     Some(typeOfRoute(edge)),
                     Some(edge.getEdgeState.getName),
-                    Some(graphConf.encoder.getSpeed(item.getQueryResult.getClosestEdge.getFlags).toInt),
+                    Some(speedEncoder.getDecimal(false, item.getQueryResult.getClosestEdge.getFlags).toInt),
                     Some(item.getQueryResult.getQueryDistance)
                   )
                 )
@@ -148,7 +153,8 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
         points,
         length,
         time,
-        routeTypesKm,
+        Map.empty[String, Double],
+//        routeTypesKm,
         distancesBetweenNode
       )
     } else

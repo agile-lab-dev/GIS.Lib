@@ -28,10 +28,10 @@ object ConverterFromOSMToGraphHopperMap extends App {
   hopperOSM.setElevation(true)
   //We use Generic Weighting with the DataFlagEncoder
   val encoder = new CarFlagEncoderEnrich()
-  hopperOSM.setEncodingManager(new EncodingManager(encoder))
+  hopperOSM.setEncodingManager(EncodingManager.create(encoder))
   hopperOSM.setElevation(true)
   val weighting = new FastestWeighting(encoder, new PMap())
-  hopperOSM.getCHFactoryDecorator.addWeighting(weighting)
+  hopperOSM.getCHFactoryDecorator.addWeighting(weighting.getName)
 
   //We disable the contraction hierarchies post processing. It seems to be mandatory in order to do map matching
   hopperOSM.getCHFactoryDecorator.setEnabled(false)
