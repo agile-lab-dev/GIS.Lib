@@ -10,7 +10,7 @@ import java.io.File
 import java.nio.file.Paths
 
 /**
- * @author andreaLbasePath
+ * @author andreaL
  */
 //Before run this test read Readme section `Test GraphHopper`,
 //download file `italy-latest.osm.pbf` and insert in test/resources/graphHopperSource/
@@ -79,7 +79,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     )
 
     val res = manager.matchingRoute(gpsPoint)
-    assert(res.length > 2500 && res.length < 3500)
+    assert(res.length > 1700 && res.length < 2200)
 
   }
 
@@ -105,7 +105,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
     )
 
     val res: MatchedRoute = manager.matchingRoute(gpsPoint)
-    assert(res.length > 10000 && res.length < 11000)
+    assert(res.length > 10500 && res.length < 11500)
   }
 
   "test with point near pedonal area" should "exclude pedonal area" in {
