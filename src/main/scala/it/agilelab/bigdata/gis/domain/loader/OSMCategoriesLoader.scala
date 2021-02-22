@@ -1,38 +1,33 @@
 package it.agilelab.bigdata.gis.domain.loader
 
-import com.vividsolutions.jts.geom.{Geometry, MultiPolygon}
+import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.bigdata.gis.core.loader.Loader
-import it.agilelab.bigdata.gis.domain.models.CategoriesCfg.CategoryInfoCfg
 import it.agilelab.bigdata.gis.domain.models.{OSMGeoCategory, OSMGeoMetadata}
+import it.agilelab.bigdata.gis.domain.models.CategoriesCfg.CategoryInfoCfg
+
+import java.io.File
+import java.util.regex.Pattern
 
 
 class OSMCategoriesLoader(categoryInfoCfg: CategoryInfoCfg) extends Loader[OSMGeoCategory] {
+
   import OSMCategoriesLoader._
 
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
 
     val pattern = """[ \w-]+?(?=\.)""".r
 
-    val fileName: String = source.split("/").reverse.head
-
-    val res: Seq[(Array[AnyRef], MultiPolygon)] =
-      ShapeFileReader.readMultiPolygonFeatures(source).map(e => (e._2.toArray, e._1))
+    val fileName: String = source.split(Pattern.quote(File.separator)).reverse.head
 
     /* fixme
-    We need to propagate the country name to the object mapping function, called after the current one.
-    This is a terrible hack. I'm gonna refactor it soon.
+     We need to propagate the country name to the object mapping function, called after the current one.
+     This is a terrible hack. I'm gonna refactor it soon.
      */
 
-    val resWithCountryNameInFields =
-      res.map(
-        pair => {
-          val fieldsWithCountryName = pair._1 :+ (pattern findFirstIn fileName).getOrElse(UNKNOWN_NAME)
-          val multipolygon = pair._2
-          (fieldsWithCountryName, multipolygon)
-        }
-      )
-
-    resWithCountryNameInFields.toIterator
+    ShapeFileReader.readMultiPolygonFeatures(source)
+      .map { case (multiPolygon, list) =>
+        (list.toArray :+ (pattern findFirstIn fileName).getOrElse(UNKNOWN_NAME)) -> multiPolygon
+      }.toIterator
   }
 
   protected def objectMapping(fields: Array[AnyRef], geometry: Geometry): OSMGeoCategory = {

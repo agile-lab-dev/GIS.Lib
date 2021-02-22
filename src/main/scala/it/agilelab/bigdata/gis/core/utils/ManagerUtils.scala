@@ -15,14 +15,6 @@ object ManagerUtils {
   val FOLD_REGION_ON_COUNTRY = 2
   val DONE = 3
 
-  //massima distanza per il knn.
+  //maximum distance for kNN.
   val NUMBERS_MAX_DISTANCE = 200D
-
-  object BoundariesPos {
-    val CITIES = 0
-    val COUNTIES = 1
-    val REGIONS = 2
-    val COUNTRY = 3
-  }
-
 }

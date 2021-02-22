@@ -13,7 +13,7 @@ import it.agilelab.bigdata.gis.core.utils.{XMaxComparator, XMinComparator, YMaxC
 /**
  * The Class SpatialList.
  */
-abstract class SpatialList extends Serializable{
+abstract class SpatialList extends Serializable {
 	
 	/** The Constant logger. */
 		//val logger = Logger.getLogger(this.getClass)

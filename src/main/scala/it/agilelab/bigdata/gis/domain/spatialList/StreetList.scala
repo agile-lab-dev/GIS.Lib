@@ -34,9 +34,8 @@ class StreetList(polygonList: List[LineString]) extends SpatialList{
 
     try{
       rawSpatialCollection.foreach(spatialObject => {
-        val json = writer.write(spatialObject.asInstanceOf[Geometry])
-        val jsonstring = json.toString
-        fw.write(jsonstring)
+        val json = writer.write(spatialObject.asInstanceOf[Geometry]).toString
+        fw.write(json)
       })
     }
     finally fw.close()

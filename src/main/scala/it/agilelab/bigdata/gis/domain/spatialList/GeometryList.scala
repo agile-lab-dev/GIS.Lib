@@ -16,7 +16,7 @@ import org.wololo.jts2geojson.GeoJSONWriter
 /**
  * The Class LineStringRDD.
  */
-class GeometryList[T <: Geometry](polygonList: List[T]) extends SpatialList{
+class GeometryList[T <: Geometry](polygonList: List[T]) extends SpatialList {
 
   rawSpatialCollection = polygonList
   boundary()
@@ -33,9 +33,8 @@ class GeometryList[T <: Geometry](polygonList: List[T]) extends SpatialList{
 
     try{
       rawSpatialCollection.foreach(spatialObject => {
-        val json = writer.write(spatialObject.asInstanceOf[Geometry])
-        val jsonstring = json.toString
-        fw.write(jsonstring)
+        val json = writer.write(spatialObject.asInstanceOf[Geometry]).toString
+        fw.write(json)
       })
     }
     finally fw.close()

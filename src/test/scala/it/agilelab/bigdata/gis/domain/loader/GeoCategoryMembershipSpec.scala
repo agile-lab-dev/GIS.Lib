@@ -2,17 +2,13 @@ package it.agilelab.bigdata.gis.domain.loader
 
 import java.nio.file.Paths
 import java.util.Date
-
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory}
 import it.agilelab.bigdata.gis.domain.managers.GeometryMembershipInfoManager
-import it.agilelab.bigdata.gis.domain.models.CategoriesCfg.{
-  GeoMetadataCfg,
-  Country => CountryCfg,
-  Custom => CustomCfg
-}
+import it.agilelab.bigdata.gis.domain.models.CategoriesCfg.{GeoMetadataCfg, Country => CountryCfg, Custom => CustomCfg}
 import it.agilelab.bigdata.gis.domain.models.{CategoriesCfg, InputCategory}
 import org.scalatest.{FlatSpec, Matchers}
 
+import java.io.File
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
@@ -30,7 +26,7 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
     val sut = CategoriesCfg
     val result = sut.load
     result shouldBe a[Success[_]]
-    result.get.geoDataPath.toString shouldBe ("src/test/resources/osm/categories")
+    result.get.geoDataPath.toString shouldBe ("src/test/resources/osm/categories").replace("/", File.separator)
     result.get.categoryInfo.size shouldEqual 1
     result.get.categoryInfo should contain(
       CountryCfg(

@@ -3,7 +3,12 @@ package it.agilelab.bigdata.gis.domain.models
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
-case class OSMPlace(polygon: Geometry, name: String, placeType: String, firstField: String, secondField: Int, fourthField: Long) extends Geometry(polygon.getFactory) {
+case class OSMPlace(polygon: Geometry,
+                    name: String,
+                    placeType: String,
+                    firstField: String,
+                    secondField: Int,
+                    fourthField: Long) extends Geometry(polygon.getFactory) {
 
   override def toString: String = {
     s"""Line: ${polygon.toString}

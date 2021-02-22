@@ -5,14 +5,17 @@ import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.domain.models._
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
+import java.util
 
-object OSMPlaceShapeLoader{
+
+object OSMPlaceShapeLoader {
 
   //Pay attention to side effects
 
   var index: GeometryList[OSMPlace] = _
+
   def getStreetIndex(path: String): GeometryList[OSMPlace] = {
-    if (index == null){
+    if (index == null) {
       index = new OSMPlaceShapeLoader().loadIndex(path)
     }
     index
@@ -20,26 +23,29 @@ object OSMPlaceShapeLoader{
 
 }
 
-class OSMPlaceShapeLoader() extends Loader[OSMPlace]{
+class OSMPlaceShapeLoader() extends Loader[OSMPlace] {
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
 
-    if (source.endsWith("places_a_free_1.shp")) ShapeFileReader.readMultiPolygonFeatures(source).map(e => (e._2.toArray, e._1)).toIterator
-    else if (source.endsWith("places_free_1.shp")) ShapeFileReader.readPointFeaturesToPolygon(source).map(e => (e._2.toArray, e._1)).toIterator
-    else Iterator.empty
+    val poligons: Seq[(Geometry, util.List[AnyRef])] = if (source.endsWith("places_a_free_1.shp")) {
+      ShapeFileReader.readMultiPolygonFeatures(source)
+    } else if (source.endsWith("places_free_1.shp")) {
+      ShapeFileReader.readPointFeaturesToPolygon(source)
+    } else {
+      Seq.empty
+    }
+
+    poligons.map { case (geometry, list) => (list.toArray, geometry) }.toIterator
 
   }
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMPlace = {
 
-    val name: String = if (fields(5) != null) fields(5).toString else ""
-    val placetype: String = if (fields(3) != null) fields(3).toString else ""
-    val firstField: String = if (fields(1) != null) fields(1).toString else ""
+    val name: String = Option(fields(5)).map(_.toString).getOrElse("")
+    val placeType: String = Option(fields(3)).map(_.toString).getOrElse("")
+    val firstField: String = Option(fields(1)).map(_.toString).getOrElse("")
     val secondField: Int = fields(2).asInstanceOf[Int]
     val fourthField: Long = fields(4).asInstanceOf[Long]
 
-    OSMPlace(line, name, placetype, firstField, secondField, fourthField)
-
+    OSMPlace(line, name, placeType, firstField, secondField, fourthField)
   }
-
-
 }
