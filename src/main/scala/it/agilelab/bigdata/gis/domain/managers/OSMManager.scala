@@ -11,19 +11,15 @@ import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
 import scala.annotation.tailrec
-import scala.collection.immutable
 
 case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
 
   val osmConfig: OSMManagerConfiguration = OSMManagerConfiguration(conf)
   val indexManager: IndexManager = IndexManager(osmConfig.indexConf)
 
-  override def reverseGeocode(point: GPSPoint) : ReverseGeocodingResponse = {
-
+  override def reverseGeocode(point: GPSPoint): ReverseGeocodingResponse = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
-    val administrativeBoundaries: Option[(OSMBoundary, KnnResult)] = reverseGeocodeQueryingBoundaries(queryPoint)
-    val street: Option[OSMStreetAndHouseNumber] = reverseGeocodeQueryingStreets(queryPoint)
-    makeAddress(administrativeBoundaries, street, queryPoint)
+    makeAddress(reverseGeocodeQueryingBoundaries(queryPoint), reverseGeocodeQueryingStreets(queryPoint), queryPoint)
   }
 
   private def reverseGeocodeQueryingBoundaries(queryPoint: Point): Option[(OSMBoundary, KnnResult)] = {
@@ -32,28 +28,16 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     def queryBoundaryIndices(boundaryIndices: List[GeometryList[OSMBoundary]],
                              query: Point): Option[(OSMBoundary, KnnResult)] = {
       boundaryIndices match {
-
-        case Nil =>
-          None
-
-        case index :: indicesTail =>
-          val places: immutable.Seq[(OSMBoundary, KnnResult)] =
-            KNNQueryMem.spatialKnnQuery(
-              index,
-              query,
-              10,
-              distanceOp = "Default"
-            )
-
-          val topPlace: Option[(OSMBoundary, KnnResult)] = places.headOption
-
-          val placeCoversQueriedPoint: Boolean =
-            topPlace match {
-              case Some(head) => head._1.contains(query)
-              case None => false
-            }
-
-          if (placeCoversQueriedPoint) {
+        case Nil => None
+        case index :: indicesTail => val topPlace = KNNQueryMem.spatialKnnQuery(
+          index,
+          query,
+          k = 10
+        )
+          .headOption
+          .filter { case (boundary, _) => boundary.contains(query) }
+          // we cannot use .orElse here because it won't be seen as tailrec
+          if (topPlace.nonEmpty) {
             topPlace
           } else {
             queryBoundaryIndices(indicesTail, query)
@@ -61,7 +45,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
       }
     }
 
-    if(osmConfig.addressTolMeters > ManagerUtils.NUMBERS_MAX_DISTANCE)
+    if (osmConfig.addressTolMeters > ManagerUtils.NUMBERS_MAX_DISTANCE)
       logger.info("address_tol_meter is greater than the distance used to build the spatial index!")
 
     queryBoundaryIndices(List(indexManager.indexSet.boundaries, indexManager.indexSet.regions), queryPoint)
@@ -69,19 +53,15 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
 
   private def reverseGeocodeQueryingStreets(queryPoint: Point): Option[OSMStreetAndHouseNumber] = {
 
-    val roadsResult =
-        KNNQueryMem
-          .spatialKnnQueryWithMaxDistance(
-            indexManager.indexSet.streets,
-            queryPoint,
-            10,
-            osmConfig.roadTolMeters
-          )
+    val roadsResult: Seq[OSMStreetAndHouseNumber] = KNNQueryMem.spatialKnnQueryWithMaxDistance(
+      indexManager.indexSet.streets,
+      queryPoint,
+      k = 10,
+      osmConfig.roadTolMeters
+    )
 
-      //If filterEmptyStreets is enabled then we filter out all the not defined and empty streets
-      val road: Option[OSMStreetAndHouseNumber] = roadsResult.find(p => !osmConfig.filterEmptyStreets || (p.street.isDefined && !p.street.get.trim.equals("")))
-      road
-
+    //If filterEmptyStreets is enabled then we filter out all the not defined and empty streets
+    roadsResult.find(p => !osmConfig.filterEmptyStreets || p.street.exists(_.trim.nonEmpty))
   }
 
   private def makeAddress(place: Option[(OSMBoundary, KnnResult)],
@@ -89,22 +69,12 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
                           queryPoint: Point): ReverseGeocodingResponse = {
 
     (place, street) match {
-
-      case (None, _) =>
-        ReverseGeocodingResponse(None, None)
-
-      case (Some(topBoundaryWithKnnResult), None) =>
-
-        val topPlace: Option[OSMBoundary] =
-          Some(topBoundaryWithKnnResult._1)
-            .asInstanceOf[Option[OSMBoundary]]
-
-        ReverseGeocodingResponse(None, topPlace)
-
-      case (Some(topBoundaryWithKnnResult), Some(streetResult)) =>
+      case (None, _) => ReverseGeocodingResponse(None, None)
+      case (Some((boundary, _)), None) => ReverseGeocodingResponse(None, Some(boundary))
+      case (Some((boundary, _)), Some(streetResult)) =>
         ReverseGeocodingResponse(
           streetResult,
-          topBoundaryWithKnnResult._1,
+          boundary,
           streetResult.getDistanceAndNumber(queryPoint, osmConfig.addressTolMeters))
     }
   }

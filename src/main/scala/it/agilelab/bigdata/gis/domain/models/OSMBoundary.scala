@@ -4,16 +4,18 @@ import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
 case class OSMBoundary(multiPolygon: Geometry,
-                       city: Option[String],
-                       county: Option[String],
-                       region: Option[String],
-                       country: Option[String],
+                       city: Option[String] = None,
+                       county: Option[String] = None,
+                       region: Option[String] = None,
+                       country: Option[String] = None,
+                       countryCode: Option[String] = None,
+                       countyCode: Option[String] = None,
                        boundaryType: String,
                        env: Envelope)
   extends MultiPolygon(
     {
       val length = multiPolygon.getNumGeometries
-      (0 until length).map{
+      (0 until length).map {
         x => multiPolygon.getGeometryN(x).asInstanceOf[Polygon]
       }
     }.toArray,
@@ -34,15 +36,15 @@ case class OSMBoundary(multiPolygon: Geometry,
     city.isDefined && county.isDefined && region.isDefined && country.isDefined
 
   /** As seen from class Street, the missing signatures are as follows.
-    *  For convenience, these are usable as stub implementations.
-    */
-//  def apply(filter: CoordinateFilter) = multiPolygon.apply(filter)
-//
-//  def apply(filter: CoordinateSequenceFilter)  = multiPolygon.apply(filter)
-//
-//  def apply(filter: GeometryFilter) = multiPolygon.apply(filter)
-//
-//  def apply(filter: GeometryComponentFilter) = multiPolygon.apply(filter)
+   * For convenience, these are usable as stub implementations.
+   */
+  //  def apply(filter: CoordinateFilter) = multiPolygon.apply(filter)
+  //
+  //  def apply(filter: CoordinateSequenceFilter)  = multiPolygon.apply(filter)
+  //
+  //  def apply(filter: GeometryFilter) = multiPolygon.apply(filter)
+  //
+  //  def apply(filter: GeometryComponentFilter) = multiPolygon.apply(filter)
 
   def getCoordinateSequence: CoordinateArraySequence = {
     new CoordinateArraySequence(getCoordinates)
@@ -72,7 +74,7 @@ case class OSMBoundary(multiPolygon: Geometry,
 
     if (i < getNumPoints) 1
     else if (j < s.getNumPoints) -1
-    else 0
+         else 0
   }
 
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
@@ -101,6 +103,24 @@ case class OSMBoundary(multiPolygon: Geometry,
   override def getNumPoints: Int = multiPolygon.getNumPoints
 
   def customCovers(other: OSMBoundary): Boolean = {
-    other.env.getMinX >= this.env.getMinX && other.env.getMaxX <= this.env.getMaxX && other.env.getMinY >= this.env.getMinY && other.env.getMaxY <= this.env.getMaxY
+    other.env.getMinX >= this.env.getMinX &&
+      other.env.getMaxX <= this.env.getMaxX &&
+      other.env.getMinY >= this.env.getMinY &&
+      other.env.getMaxY <= this.env.getMaxY
+  }
+
+  /**
+   * Merges the current boundary with another one.
+   * Only if an attribute is missing in the current boundary but defined in the other one its value will be updated.
+   */
+  def merge(other: OSMBoundary): OSMBoundary = {
+    this.copy(
+      city = this.city.orElse(other.city),
+      county = this.county.orElse(other.county),
+      region = this.region.orElse(other.region),
+      country = this.country.orElse(other.country),
+      countryCode = this.countryCode.orElse(other.countryCode),
+      countyCode = this.countyCode.orElse(other.countyCode)
+    )
   }
 }

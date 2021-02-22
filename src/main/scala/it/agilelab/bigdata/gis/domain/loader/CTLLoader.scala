@@ -32,26 +32,25 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
   val openStep = '('
   val closeStep = ')'
 
-  val sridFactory8003 =
-    new GeometryFactory(new PrecisionModel(), 8003, CoordinateArraySequenceFactory.instance())
+  val sridFactory8003 = new GeometryFactory(new PrecisionModel(), 8003, CoordinateArraySequenceFactory.instance())
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): HereMapsStreet = {
 
-    val fields2 = fields.map(_.toString)
+    val stringFields = fields.map(_.toString)
 
-    val streetType: String = fields2(4)
+    val streetType: String = stringFields(4)
     val st = HereMapsStreetType.fromValue(streetType)
 
-    val length: Double = fields2(8).replace(',', '.').toDouble
-    var bidirected: Boolean = false
-    if (fields2(10) == "\"Y\"") bidirected = true
-    val street: String = fields2(11)
-    val city: String = fields2(12)
-    val county: String = fields2(13)
-    val state: String = fields2(14)
-    val country: String = fields2(15)
-    val fromSpeed: Integer = fields2(16).toInt
-    val toSpeed: Integer = fields2(17).toInt
+    val length: Double = stringFields(8).replace(',', '.').toDouble
+    var biDirected: Boolean = false
+    if (stringFields(10) == "\"Y\"") biDirected = true
+    val street: String = stringFields(11)
+    val city: String = stringFields(12)
+    val county: String = stringFields(13)
+    val state: String = stringFields(14)
+    val country: String = stringFields(15)
+    val fromSpeed: Integer = stringFields(16).toInt
+    val toSpeed: Integer = stringFields(17).toInt
 
     HereMapsStreet(
       line,
@@ -61,7 +60,7 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
       state,
       country,
       Math.max(fromSpeed, toSpeed),
-      bidirected,
+      biDirected,
       length,
       st)
   }

@@ -14,7 +14,8 @@ trait OSMGenericStreetLoader extends Loader[OSMStreetAndHouseNumber] {
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
     ShapeFileReader
       .readMultiLineFeatures(source)
-      .map(e => (e._2.toArray, e._1)).toIterator
+      .map { case (multiLine, list) => (list.toArray, multiLine) }
+      .toIterator
   }
 
   // references: https://wiki.openstreetmap.org/wiki/Key:highway
@@ -22,20 +23,15 @@ trait OSMGenericStreetLoader extends Loader[OSMStreetAndHouseNumber] {
     val pointsArray = line.getCoordinates.flatMap(coord => Array(coord.x, coord.y))
 
     val osm_id = fields(1).toString
-    val streetType = Try(if (fields(3) != null) fields(3).toString else "").toOption
+    val streetType = Try(Option(fields(3)).map(_.toString).getOrElse("")).toOption
     val street = Try(new String(fields(4).toString.getBytes("ISO-8859-1"), "UTF-8")).toOption
 
     val st: Option[OSMStreetType] = streetType.map(OSMStreetType.fromValue)
 
-    val oneway: Option[Boolean] = Try(if (fields(6).toString == "F") false else true).toOption
-    val speedLimit: Option[Int] =
-      Try(fields(7).toString.toInt).toOption match {
-        case None => None
-        case Some(x) if x == 0 => None
-        case Some(x) => Some(x)
-      }
-    val isBridge: Option[Boolean] = Try(if (fields(9).toString == "F") false else true).toOption
-    val isTunnel: Option[Boolean] = Try(if (fields(10).toString == "F") false else true).toOption
+    val oneway: Option[Boolean] = Try(fields(6).toString != "F").toOption
+    val speedLimit: Option[Int] = Try(fields(7).toString.toInt).toOption.filter(_ != 0)
+    val isBridge: Option[Boolean] = Try(fields(9).toString != "F").toOption
+    val isTunnel: Option[Boolean] = Try(fields(10).toString != "F").toOption
     //val toSpeed: Integer = fields(6).toInt
 
     OSMStreetAndHouseNumber(osm_id, pointsArray, street, st, Seq.empty[OSMSmallAddressNumber], speedLimit, isBridge, isTunnel, oneway)

@@ -15,10 +15,10 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
   val graphConf: GraphHopperConfiguration = GraphHopperConfiguration(conf)
 
   def typeOfRoute(edge: EdgeMatch): String =
-    graphConf.encoder.getHighwayAsString(edge.getEdgeState) match {
-      case null => "unclassified" //todo is right this
-      case value: String => value
-    }
+    Option(graphConf.encoder.getHighwayAsString(edge.getEdgeState))
+      //TODO is this right?
+      .getOrElse("unclassified")
+
 
   @throws(classOf[RuntimeException])
   @throws(classOf[IllegalAccessException])
@@ -34,9 +34,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
       val mappedEdges: Seq[(String, Double)] =
         edges
-          .map(edge =>
-            (graphConf.encoder.getHighwayAsString(edge.getEdgeState), edge.getEdgeState.getDistance)
-          )
+          .map(edge => (graphConf.encoder.getHighwayAsString(edge.getEdgeState), edge.getEdgeState.getDistance))
           .map {
             case (null, value) => ("unclassified", value)
             case x: (String, Double) => x
@@ -48,7 +46,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
         .get("distance")
 
       //retrieve all edges
-      val alledges: Seq[EnrichEdge] = edges.toList.flatMap(edge => {
+      val allEdges: Seq[EnrichEdge] = edges.toList.flatMap(edge => {
         val gpsExtensions: util.List[GPXExtension] = edge.getGpxExtensions
         val edgeId = edge.getEdgeState.getBaseNode
 
@@ -86,7 +84,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
       //union information on edge with information on distances
       val distancesBetweenEdge: Seq[EnrichEdgeWithDistance] =
-        alledges.zip(distances).map {
+        allEdges.zip(distances).map {
           case (edge, distance) =>
             EnrichEdgeWithDistance(
               edge.idNode,
@@ -143,7 +141,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
           .map(x => (x._1, x._2.map(_._2).sum))
 
       val points: Seq[TracePoint] =
-        alledges.filter(_.isInitialNode).map(_.node.get)
+        allEdges.filter(_.isInitialNode).map(_.node.get)
 
       MatchedRoute(
         points,
@@ -153,6 +151,6 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
         distancesBetweenNode
       )
     } else
-      MatchedRoute(gpsPoints.map(_.toTracePoint), length, time, Map.empty, Seq.empty)
+        MatchedRoute(gpsPoints.map(_.toTracePoint), length, time, Map.empty, Seq.empty)
   }
 }

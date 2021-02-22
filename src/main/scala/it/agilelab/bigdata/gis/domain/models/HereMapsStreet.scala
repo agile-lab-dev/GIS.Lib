@@ -51,7 +51,16 @@ object HereMapsStreetType {
 
 object HereMapsStreet{}
 
-case class HereMapsStreet(lineString: Geometry, street: String, city: String, county: String, state: String, country: String, speedLimit: Int, bidirected: Boolean, length: Double, streetType: HereMapsStreetType) extends Geometry(lineString.getFactory) {
+case class HereMapsStreet(lineString: Geometry,
+                          street: String,
+                          city: String,
+                          county: String,
+                          state: String,
+                          country: String,
+                          speedLimit: Int,
+                          biDirected: Boolean,
+                          length: Double,
+                          streetType: HereMapsStreetType) extends Geometry(lineString.getFactory) {
 
     override def toString: String = {
         s"""Line: ${lineString.toString}
@@ -61,7 +70,7 @@ case class HereMapsStreet(lineString: Geometry, street: String, city: String, co
            |State: $state
            |Country: $country
            |FromSpeed: $speedLimit
-           |Bidirected: $bidirected
+           |Bidirected: $biDirected
            |Length: $length
            |StreetType: ${streetType.value}
          """.stripMargin

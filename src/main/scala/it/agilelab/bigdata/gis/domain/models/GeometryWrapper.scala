@@ -1,14 +1,13 @@
 package it.agilelab.bigdata.gis.domain.models
 
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 import com.vividsolutions.jts.geom._
+import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
 class GeometryWrapper[T <: Geometry](id: String, geometry: T) extends Geometry(geometry.getFactory) {
 
-
   /** As seen from class Street, the missing signatures are as follows.
-    *  For convenience, these are usable as stub implementations.
-    */
+   * For convenience, these are usable as stub implementations.
+   */
   def apply(filter: CoordinateFilter): Unit = geometry.apply(filter)
 
   def apply(filter: CoordinateSequenceFilter): Unit = geometry.apply(filter)
@@ -22,11 +21,11 @@ class GeometryWrapper[T <: Geometry](id: String, geometry: T) extends Geometry(g
   }
 
   override def computeEnvelopeInternal(): Envelope = {
-    if (isEmpty)
+    if (isEmpty) {
       new Envelope
-    else
+    } else {
       getCoordinateSequence.expandEnvelope(new Envelope)
-
+    }
   }
 
   override def getBoundary: Geometry = geometry.getBoundary
@@ -46,10 +45,10 @@ class GeometryWrapper[T <: Geometry](id: String, geometry: T) extends Geometry(g
     }
 
     if (i < getNumPoints)
-       1
+      1
     else if (j < s.getNumPoints)
-      -1
-    else 0
+           -1
+         else 0
   }
 
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
@@ -76,7 +75,4 @@ class GeometryWrapper[T <: Geometry](id: String, geometry: T) extends Geometry(g
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = geometry.equalsExact(other, tolerance)
 
   override def getNumPoints: Int = geometry.getNumPoints
-
-
-
 }

@@ -1,17 +1,16 @@
 package it.agilelab.bigdata.gis.domain.loader
 
-import java.io.File
-import java.net.URL
-import java.util
-
-import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
 import com.vividsolutions.jts.{geom => jts}
+import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
 import org.geotools.data.shapefile._
 import org.geotools.data.simple._
 import org.opengis.feature.simple._
 
+import java.io.File
+import java.net.URL
+import java.util
 import scala.collection.JavaConversions._
-import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 object ShapeFileReader {
 
@@ -40,8 +39,7 @@ object ShapeFileReader {
     val ftItr: SimpleFeatureIterator = ds.getFeatureSource.getFeatures.features
 
     try {
-
-      val simpleFeatures = mutable.ListBuffer[SimpleFeature]()
+      val simpleFeatures = ListBuffer[SimpleFeature]()
       while (ftItr.hasNext) simpleFeatures += ftItr.next()
       simpleFeatures.toList
     } finally {
@@ -51,8 +49,7 @@ object ShapeFileReader {
   }
 
   def readPointFeatures(path: String): Seq[(jts.Point, util.List[AnyRef])] = {
-    readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.Point].map(e => (e, ft.getAttributes)) }
+    readSimpleFeatures(path).flatMap { ft => ft.geom[jts.Point].map(e => (e, ft.getAttributes)) }
   }
 
   def readPointFeaturesToPolygon(path: String): Seq[(jts.Polygon, util.List[AnyRef])] = {

@@ -10,38 +10,36 @@ case class OSMAddress(point: Geometry, street: String, number: String) extends G
   setUserData(this)
 
   /** As seen from class Street, the missing signatures are as follows.
-    *  For convenience, these are usable as stub implementations.
-    */
-  def apply(filter: CoordinateFilter) = point.apply(filter)
+   * For convenience, these are usable as stub implementations.
+   */
+  def apply(filter: CoordinateFilter): Unit = point.apply(filter)
 
-  def apply(filter: CoordinateSequenceFilter)  = point.apply(filter)
+  def apply(filter: CoordinateSequenceFilter): Unit = point.apply(filter)
 
-  def apply(filter: GeometryFilter) = point.apply(filter)
+  def apply(filter: GeometryFilter): Unit = point.apply(filter)
 
-  def apply(filter: GeometryComponentFilter) = point.apply(filter)
+  def apply(filter: GeometryComponentFilter): Unit = point.apply(filter)
 
-  def getCoordinateSequence() = {
+  def getCoordinateSequence: CoordinateArraySequence = {
     new CoordinateArraySequence(getCoordinates)
   }
 
   override def computeEnvelopeInternal(): Envelope = {
-    if (isEmpty)
+    if (isEmpty) {
       new Envelope
-    else
+    } else {
       getCoordinateSequence.expandEnvelope(new Envelope)
-
+    }
   }
 
   override def getBoundary: Geometry = point.getBoundary
 
-  override def compareToSameClass(o: scala.Any): Int = {
-    val s: OSMAddress = o.asInstanceOf[OSMAddress]
-    getCoordinate.compareTo(s.getCoordinate)
+  override def compareToSameClass(o: Any): Int = {
+    getCoordinate.compareTo(o.asInstanceOf[OSMAddress].getCoordinate)
   }
 
-  override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
-    val s: OSMAddress = o.asInstanceOf[OSMAddress]
-    return comp.compare(getCoordinateSequence(), s.getCoordinateSequence())
+  override def compareToSameClass(o: Any, comp: CoordinateSequenceComparator): Int = {
+    comp.compare(getCoordinateSequence, o.asInstanceOf[OSMAddress].getCoordinateSequence)
   }
 
   override def getCoordinates: Array[Coordinate] = point.getCoordinates
@@ -64,8 +62,8 @@ case class OSMAddress(point: Geometry, street: String, number: String) extends G
 
   override def getNumPoints: Int = 1
 
-  override def toString() = {
-    s"""Point:${point.toString()}
+  override def toString: String = {
+    s"""Point:${point.toString}
        |Street:$street
        |Number:$number
        """.stripMargin
