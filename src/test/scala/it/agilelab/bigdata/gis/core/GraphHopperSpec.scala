@@ -2,8 +2,8 @@ package it.agilelab.bigdata.gis.core
 
 import com.typesafe.config.{Config, ConfigFactory}
 import it.agilelab.bigdata.gis.core.apps.ConverterFromOSMToGraphHopperMap
+import it.agilelab.bigdata.gis.core.utils.Logger
 import it.agilelab.bigdata.gis.domain.graphhopper.{GPSPoint, GraphHopperManager, MatchedRoute}
-import org.apache.log4j.{Level, Logger}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 import java.io.File
@@ -15,13 +15,11 @@ import java.nio.file.Paths
 //Before run this test read Readme section `Test GraphHopper`,
 //download file `italy-latest.osm.pbf` and insert in test/resources/graphHopperSource/
 
-class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
-  Logger.getRootLogger.setLevel(Level.INFO)
+class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll with Logger{
 
   val conf: Config = ConfigFactory.load()
   val graphConf: Config = conf.getConfig("graph")
   var manager: GraphHopperManager = _
-  val logger: Logger = Logger.getLogger(getClass)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
