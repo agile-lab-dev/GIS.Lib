@@ -1,11 +1,9 @@
 package it.agilelab.bigdata.gis.core.utils
 
-import it.agilelab.bigdata.gis.domain.configuration.GraphHopperConfiguration.logger
-
 import java.io.File
 import scala.util.{Failure, Success, Try}
 
-trait ValidationUtils {
+trait ValidationUtils extends Logger {
 
   def tryOrLog[T](v: => T): Try [T] = {
     Try(v) recoverWith {

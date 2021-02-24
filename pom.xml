@@ -64,6 +64,19 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.version>2.11.2</scala.version>
+        <org.slf4j.api.version>1.7.26</org.slf4j.api.version>
+        <org.rogach.scallop.version>3.5.1</org.rogach.scallop.version>
+        <com.typesafe.config.version>1.2.1</com.typesafe.config.version>
+        <org.scalaz.core.version>7.3.2</org.scalaz.core.version>
+        <com.github.pureconfig.version>0.12.1</com.github.pureconfig.version>
+        <org.datasyslab.jtsplus.version>0.1.0</org.datasyslab.jtsplus.version>
+        <org.geotools.shapefile.version>17.2</org.geotools.shapefile.version>
+        <org.wololo.jts2geojson.version>0.7.0</org.wololo.jts2geojson.version>
+        <com.graphhopper.core.version>0.11.0</com.graphhopper.core.version>
+        <com.graphhopper.reader.version>0.11.0</com.graphhopper.reader.version>
+        <com.graphhopper.mapmatching.version>0.11.0-4</com.graphhopper.mapmatching.version>
+        <com.github.scala-incubator.io.version>0.4.3-1</com.github.scala-incubator.io.version>
+        <org.scalatest.version>3.0.4</org.scalatest.version>
     </properties>
 	
 	<dependencies>
@@ -74,27 +87,33 @@
         </dependency>
 
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j.api.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${org.slf4j.api.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.rogach</groupId>
             <artifactId>scallop_2.11</artifactId>
-            <version>3.5.1</version>
+            <version>${org.rogach.scallop.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
-            <version>1.2.1</version>
+            <version>${com.typesafe.config.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.scalaz</groupId>
             <artifactId>scalaz-core_2.11</artifactId>
-            <version>7.3.2</version>
+            <version>${org.scalaz.core.version}</version>
         </dependency>
 
 
@@ -102,19 +121,19 @@
         <dependency>
             <groupId>com.github.pureconfig</groupId>
             <artifactId>pureconfig_2.11</artifactId>
-            <version>0.12.1</version>
+            <version>${com.github.pureconfig.version}</version>
         </dependency>
 
         <dependency>
 			<groupId>org.datasyslab</groupId>
 			<artifactId>JTSplus</artifactId>
-			<version>0.1.0</version>
+			<version>${org.datasyslab.jtsplus.version}</version>
 		</dependency>
 
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-shapefile</artifactId>
-            <version>17.2</version>
+            <version>${org.geotools.shapefile.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.vividsolutions</groupId>
@@ -126,7 +145,7 @@
 		<dependency>
 			<groupId>org.wololo</groupId>
 			<artifactId>jts2geojson</artifactId>
-			<version>0.7.0</version>
+			<version>${org.wololo.jts2geojson.version}</version>
 			<exclusions>
 				<exclusion>
 			<groupId>com.vividsolutions</groupId>
@@ -140,7 +159,7 @@
         <dependency>
             <groupId>com.graphhopper</groupId>
             <artifactId>graphhopper-core</artifactId>
-            <version>0.11.0</version>
+            <version>${com.graphhopper.core.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.vividsolutions</groupId>
@@ -152,20 +171,20 @@
         <dependency>
             <groupId>com.graphhopper</groupId>
             <artifactId>graphhopper-reader-osm</artifactId>
-            <version>0.11.0</version>
+            <version>${com.graphhopper.reader.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.graphhopper</groupId>
             <artifactId>graphhopper-map-matching-core</artifactId>
-            <version>0.11.0-4</version>
+            <version>${com.graphhopper.mapmatching.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.github.scala-incubator.io/scala-io-file_2.11 -->
         <dependency>
             <groupId>com.github.scala-incubator.io</groupId>
             <artifactId>scala-io-file_2.11</artifactId>
-            <version>0.4.3-1</version>
+            <version>${com.github.scala-incubator.io.version}</version>
         </dependency>
 
 
@@ -173,7 +192,7 @@
         <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.11</artifactId>
-            <version>3.0.4</version>
+            <version>${org.scalatest.version}</version>
             <scope>test</scope>
         </dependency>
 

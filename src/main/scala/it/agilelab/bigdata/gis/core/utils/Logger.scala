@@ -1,6 +1,9 @@
 package it.agilelab.bigdata.gis.core.utils
-import org.apache.log4j
+
+import org.slf4j.LoggerFactory
 
 trait Logger {
-  val logger: log4j.Logger = log4j.Logger.getLogger(getClass)
+
+  @transient
+  protected lazy val logger: org.slf4j.Logger = LoggerFactory.getLogger(getClass.getName)
 }
