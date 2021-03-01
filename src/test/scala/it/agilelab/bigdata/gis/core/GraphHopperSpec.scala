@@ -3,8 +3,8 @@ package it.agilelab.bigdata.gis.core
 import com.typesafe.config.{Config, ConfigFactory}
 import it.agilelab.bigdata.gis.core.apps.ConverterFromOSMToGraphHopperMap
 import it.agilelab.bigdata.gis.core.utils.Logger
-import it.agilelab.bigdata.gis.domain.graphhopper.{GPSPoint, GraphHopperManager, MatchedRoute}
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+import it.agilelab.bigdata.gis.domain.graphhopper.{GPSPoint, GraphHopperManager}
+import org.scalatest.{BeforeAndAfterAll, EitherValues, FlatSpec, Matchers}
 
 import java.io.File
 import java.nio.file.Paths
@@ -15,7 +15,7 @@ import java.nio.file.Paths
 //Before run this test read Readme section `Test GraphHopper`,
 //download file `italy-latest.osm.pbf` and insert in test/resources/graphHopperSource/
 
-class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll with Logger{
+class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with BeforeAndAfterAll with Logger {
 
   val conf: Config = ConfigFactory.load()
   val graphConf: Config = conf.getConfig("graph")
@@ -61,9 +61,11 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll with
 
     val res = manager.matchingRoute(gpsPoint)
 
-    assert(res.length > 150 && res.length < 200)
-    assert(res.getKmType("trunk_link").isSuccess)
-    assert(res.getKmType("secondary_link").isSuccess)
+    val matchingRoute = res.right.value
+
+    assert(matchingRoute.length > 150 && matchingRoute.length < 200)
+    assert(matchingRoute.getKmType("trunk_link").isSuccess)
+    assert(matchingRoute.getKmType("secondary_link").isSuccess)
 
   }
 
@@ -77,8 +79,10 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll with
     )
 
     val res = manager.matchingRoute(gpsPoint)
-    assert(res.length > 1700 && res.length < 2200)
 
+    val matchingRoute = res.right.value
+
+    assert(matchingRoute.length > 1700 && matchingRoute.length < 2200)
   }
 
   "test with point near sea or in sea" should "exclude ferries" in {
@@ -102,8 +106,11 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll with
       GPSPoint(45.418, 12.372, None, 0L)
     )
 
-    val res: MatchedRoute = manager.matchingRoute(gpsPoint)
-    assert(res.length > 10500 && res.length < 11500)
+    val res = manager.matchingRoute(gpsPoint)
+
+    val matchingRoute = res.right.value
+
+    assert(matchingRoute.length > 10500 && matchingRoute.length < 11500)
   }
 
   "test with point near pedonal area" should "exclude pedonal area" in {
@@ -116,8 +123,10 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll with
     )
 
     val res = manager.matchingRoute(gpsPoint)
-    assert(res.length > 1500 && res.length < 2500)
 
+    val matchingRoute = res.right.value
+
+    assert(matchingRoute.length > 1500 && matchingRoute.length < 2500)
   }
 
   "test with type road is null" should "change in unclassified" in {
@@ -166,7 +175,10 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll with
     )
 
     val res = manager.matchingRoute(gpsPoint)
-    assert(!res.routes.contains("null"))
+
+    val matchingRoute = res.right.value
+
+    assert(!matchingRoute.routes.contains("null"))
   }
 
   "trip" should "retrieve points sorted by timestamp" in {
@@ -182,13 +194,14 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll with
     )
 
     val res = manager.matchingRoute(gpsPoint)
-    val resultTimestamp = res.distanceBetweenPoints.map(_.diffTime)
+
+    val matchingRoute = res.right.value
+    val matchingRouteTimestamp = matchingRoute.distanceBetweenPoints.map(_.diffTime)
 
     val expectedTimestamp =
       gpsPoint.zip(gpsPoint.tail).map { case (a, b) => b.time - a.time }
 
-    assert(resultTimestamp == expectedTimestamp)
-
+    assert(matchingRouteTimestamp == expectedTimestamp)
   }
 
   "test with point to calculate distance " should "calculate distance between points" in {
@@ -198,11 +211,13 @@ class GraphHopperSpec extends FlatSpec with Matchers with BeforeAndAfterAll with
       GPSPoint(42.46, 12.3823, None, 1568268786000L)
     )
 
-    val res = manager.matchingRoute(gpsPoint).distanceBetweenPoints.head
+    val res = manager.matchingRoute(gpsPoint)
 
-    assert(res.diffTime == 2000L)
-    assert(res.distance > 75 && res.distance < 85)
+    val matchingRoute = res.right.value
+    val distanceBetweenPoints = matchingRoute.distanceBetweenPoints.head
 
+    assert(distanceBetweenPoints.diffTime == 2000L)
+    assert(distanceBetweenPoints.distance > 75 && distanceBetweenPoints.distance < 85)
   }
 
 }

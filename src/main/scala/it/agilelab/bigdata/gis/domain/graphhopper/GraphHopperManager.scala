@@ -9,6 +9,7 @@ import it.agilelab.bigdata.gis.domain.loader.RouteMatcher
 
 import java.util
 import scala.collection.JavaConversions._
+import scala.util.{Failure, Success, Try}
 
 case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
@@ -19,12 +20,10 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
       //TODO is this right?
       .getOrElse("unclassified")
 
-
   @throws(classOf[RuntimeException])
   @throws(classOf[IllegalAccessException])
-  override def matchingRoute(gpsPoints: Seq[GPSPoint]): MatchedRoute = {
-
-    val calcRoute: MatchResult = graphConf.mapMatching.doWork(gpsPoints.map(_.toGPXEntry))
+  private def getMatchingRoute(gpsPoints: Seq[GPSPoint]) = {
+    val calcRoute = graphConf.mapMatching.doWork(gpsPoints.map(_.toGPXEntry))
 
     val length = calcRoute.getMatchLength
     val time = calcRoute.getMatchMillis
@@ -152,5 +151,12 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
       )
     } else
         MatchedRoute(gpsPoints.map(_.toTracePoint), length, time, Map.empty, Seq.empty)
+  }
+
+  override def matchingRoute(gpsPoints: Seq[GPSPoint]): Either[MatchedRouteError, MatchedRoute] = {
+    Try(getMatchingRoute(gpsPoints)) match {
+      case Success(matchingRoute) => Right(matchingRoute)
+      case Failure(ex) => Left(MatchedRouteError(ex))
+    }
   }
 }
