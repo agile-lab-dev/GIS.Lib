@@ -23,7 +23,9 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
     Try(makeAddress(reverseGeocodeQueryingBoundaries(queryPoint), reverseGeocodeQueryingStreets(queryPoint), queryPoint)) match {
       case Success(addr) => Right(addr)
-      case Failure(ex) => Left(ReverseGeocodingError(ex))
+      case Failure(ex) =>
+        logger.error("Failed to reverse geocode points", ex)
+        Left(ReverseGeocodingError(ex))
     }
   }
 
