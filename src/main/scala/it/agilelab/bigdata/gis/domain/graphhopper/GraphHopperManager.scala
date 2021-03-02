@@ -5,6 +5,7 @@ import com.graphhopper.util.details.PathDetailsBuilderFactory
 import com.typesafe.config.Config
 import it.agilelab.bigdata.gis.core.utils.Logger
 import it.agilelab.bigdata.gis.domain.configuration.GraphHopperConfiguration
+import it.agilelab.bigdata.gis.domain.exceptions.MatchedRouteError
 import it.agilelab.bigdata.gis.domain.loader.RouteMatcher
 
 import java.util
@@ -150,7 +151,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
       } else
           Right(MatchedRoute(gpsPoints.map(_.toTracePoint), length, time, Map.empty, Seq.empty))
     } catch {
-      case ex: _ => Left(MatchedRouteError(ex))
+      case ex: Throwable => Left(MatchedRouteError(ex))
     }
   }
 }

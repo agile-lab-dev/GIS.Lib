@@ -52,10 +52,3 @@ case class ReverseGeocodingResponse(street: Option[String],
                                     speedCategory: Option[String] = None,
                                     roadType: Option[String] = None,
                                     distance: Option[Double] = None) extends OutputModel
-
-/**
- * Reverse geocoding error.
- *
- * @param ex error cause.
- */
-case class ReverseGeocodingError(ex: Throwable)

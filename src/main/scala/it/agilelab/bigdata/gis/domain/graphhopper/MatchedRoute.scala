@@ -70,10 +70,3 @@ case class MatchedRoute(points: Seq[TracePoint],
   }
 
 }
-
-/**
- * Matcher route error.
- *
- * @param ex error reason.
- */
-case class MatchedRouteError(ex: Throwable)

@@ -4,9 +4,10 @@ import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
 import it.agilelab.bigdata.gis.core.utils.{Logger, ManagerUtils}
 import it.agilelab.bigdata.gis.domain.configuration.OSMManagerConfiguration
+import it.agilelab.bigdata.gis.domain.exceptions.ReverseGeocodingError
 import it.agilelab.bigdata.gis.domain.graphhopper.GPSPoint
 import it.agilelab.bigdata.gis.domain.loader.ReverseGeocoder
-import it.agilelab.bigdata.gis.domain.models.{KnnResult, OSMBoundary, OSMStreetAndHouseNumber, ReverseGeocodingError, ReverseGeocodingResponse}
+import it.agilelab.bigdata.gis.domain.models.{KnnResult, OSMBoundary, OSMStreetAndHouseNumber, ReverseGeocodingResponse}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
