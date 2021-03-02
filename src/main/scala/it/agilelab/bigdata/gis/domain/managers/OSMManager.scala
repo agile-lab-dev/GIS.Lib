@@ -4,6 +4,7 @@ import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
 import it.agilelab.bigdata.gis.core.utils.{Logger, ManagerUtils}
 import it.agilelab.bigdata.gis.domain.configuration.OSMManagerConfiguration
+import it.agilelab.bigdata.gis.domain.exceptions.ReverseGeocodingError
 import it.agilelab.bigdata.gis.domain.graphhopper.GPSPoint
 import it.agilelab.bigdata.gis.domain.loader.ReverseGeocoder
 import it.agilelab.bigdata.gis.domain.models.{KnnResult, OSMBoundary, OSMStreetAndHouseNumber, ReverseGeocodingResponse}
@@ -11,15 +12,21 @@ import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
 import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
 
   val osmConfig: OSMManagerConfiguration = OSMManagerConfiguration(conf)
   val indexManager: IndexManager = IndexManager(osmConfig.indexConf)
 
-  override def reverseGeocode(point: GPSPoint): ReverseGeocodingResponse = {
+  override def reverseGeocode(point: GPSPoint): Either[ReverseGeocodingError, ReverseGeocodingResponse] = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
-    makeAddress(reverseGeocodeQueryingBoundaries(queryPoint), reverseGeocodeQueryingStreets(queryPoint), queryPoint)
+    Try(makeAddress(reverseGeocodeQueryingBoundaries(queryPoint), reverseGeocodeQueryingStreets(queryPoint), queryPoint)) match {
+      case Success(addr) => Right(addr)
+      case Failure(ex) =>
+        logger.error("Failed to reverse geocode points", ex)
+        Left(ReverseGeocodingError(ex))
+    }
   }
 
   private def reverseGeocodeQueryingBoundaries(queryPoint: Point): Option[(OSMBoundary, KnnResult)] = {
