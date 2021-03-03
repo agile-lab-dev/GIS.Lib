@@ -1,11 +1,11 @@
 package it.agilelab.bigdata.gis.domain.managers
 
 import com.typesafe.config.Config
-import it.agilelab.bigdata.gis.core.utils.{Configuration, Logger, ObjectPickler}
 import it.agilelab.bigdata.gis.core.utils.ManagerUtils.{BoundaryPathGroup, CountryPathSet, Path}
+import it.agilelab.bigdata.gis.core.utils.{Configuration, Logger, ObjectPickler}
 import it.agilelab.bigdata.gis.domain.configuration.IndexManagerConfiguration
-import it.agilelab.bigdata.gis.domain.loader.{OSMAdministrativeBoundariesLoader, OSMGenericStreetLoader}
-import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMStreetAndHouseNumber}
+import it.agilelab.bigdata.gis.domain.loader.{OSMAdministrativeBoundariesLoader, OSMGenericStreetLoader, OSMPostalCodeLoader}
+import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMPostalCode, OSMStreetAndHouseNumber}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 import java.io.File
@@ -17,6 +17,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
   val pathManager: PathManager = PathManager(indexConfig.pathConf)
   val boundariesLoader: OSMAdministrativeBoundariesLoader =
     OSMAdministrativeBoundariesLoader(indexConfig.boundaryConf, pathManager)
+  val postalCodeLoader: OSMPostalCodeLoader = OSMPostalCodeLoader()
   val indexSet: IndexSet = createIndexSet(indexConfig.inputPaths)
 
   /**
@@ -42,7 +43,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     val indexStuffs: List[IndexStuffs] =
       multiCountriesPathSet
         .par
-        .map(countryPathSet => createCountryBoundaries(countryPathSet.boundary, boundariesLoader))
+        .map(pathSet => createCountryBoundariesWithPostalCodes(pathSet.boundary, pathSet.postalCodes))
         .toList
 
     val cityIndexStuff: List[OSMBoundary] = indexStuffs.flatMap(_.cityIndex)
@@ -50,8 +51,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
 
     val boundariesGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndexStuff)
 
-    val regionGeometryList: GeometryList[OSMBoundary] =
-      if (regionIndexStuff.nonEmpty)
+    val regionGeometryList: GeometryList[OSMBoundary] = if (regionIndexStuff.nonEmpty)
         boundariesLoader.buildIndex(regionIndexStuff)
       else
         null
@@ -70,11 +70,12 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
   }
 
   //TODO review performances
-  def createCountryBoundaries(paths: BoundaryPathGroup,
-                              boundariesLoader: OSMAdministrativeBoundariesLoader): IndexStuffs = {
+  def createCountryBoundariesWithPostalCodes(paths: BoundaryPathGroup, postalCodesPath: Array[Path]): IndexStuffs = {
 
+    val loadPostalCode: Seq[Path] => Seq[OSMPostalCode] = pathList => pathList.flatMap(postalCodeLoader.loadObjects(_))
     val loadBoundaries: Seq[Path] => Seq[OSMBoundary] = pathList => pathList.flatMap(boundariesLoader.loadObjects(_))
 
+    val postalCodes: Seq[OSMPostalCode] = loadPostalCode(postalCodesPath)
     val cities: Seq[OSMBoundary] = loadBoundaries(paths.city)
     val counties: Seq[OSMBoundary] = loadBoundaries(paths.county)
     val regions: Seq[OSMBoundary] = loadBoundaries(paths.region)
@@ -84,7 +85,8 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
 
     logger.info(s"Start loading boundary of: $countryName...")
 
-    val citiesWithCounties: Seq[OSMBoundary] = mergeBoundaries(cities, counties)
+    val postalCodesWithCities: Seq[OSMBoundary] = enrichCities(cities, postalCodes)
+    val citiesWithCounties: Seq[OSMBoundary] = mergeBoundaries(postalCodesWithCities, counties)
     val countiesWithRegion: Seq[OSMBoundary] = mergeBoundaries(citiesWithCounties, regions)
 
     val primaryIndexBoundaries: Seq[OSMBoundary] = countiesWithRegion.map(_.merge(countryBoundary))
@@ -118,6 +120,26 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
           .getOrElse(boundary)
       }
     }
+
+  /**
+   * Enrich when possible all cities with a postalCode.
+   * This is done checking if a postalCode is contained into the boundaries of a city
+   *
+   * @param cities list of cities polygons
+   * @param postalCodes list of postalCode points
+   * @return same sequence of cities, but enriched when possible with postalCodes
+   */
+  private def enrichCities(cities: Seq[OSMBoundary], postalCodes: Seq[OSMPostalCode]): Seq[OSMBoundary] = {
+
+    cities
+      .filter(_.city.isDefined)
+      .map{ city =>
+        postalCodes.find(_.point.coveredBy(city.multiPolygon)) match {
+          case Some(found) => city.copy(postalCode = found.postalCode)
+          case _ => city
+       }
+     }
+  }
 
   /** Create the addresses index that will be used to decorate the road index leaves by adding
    * a sequence of OSMAddress to retrieve the candidate street number
