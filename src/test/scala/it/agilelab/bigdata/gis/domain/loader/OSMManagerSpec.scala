@@ -55,7 +55,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Piemont"),
         country = Some("Italy"),
         countryCode = Some("ITA"),
-        postalIndex = None,
+        postalIndex = Some("10024"),
         addressRange = None,
         speedLimit = Some(50),
         speedCategory = None,
@@ -64,6 +64,34 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
       )
 
     viaAzziActual should be(viaAzziExpected)
+  }
+
+  "Reverse geocoding on Italy" should "has correct postalcode valued" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.3395, 11.8863, None, System.currentTimeMillis())
+
+    val albignasego: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
+    println(albignasego)
+    val albignasegoExptected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = None,
+        city = Some("Albignasego"),
+        county = Some("Padova"),
+        countyCode = Some("PD"),
+        region = Some("Veneto"),
+        country = Some("Italy"),
+        countryCode = Some("ITA"),
+        postalIndex = Some("35020"),
+        addressRange = None,
+        speedLimit = None,
+        speedCategory = None,
+        roadType = None,
+        distance = None
+      )
+
+    albignasego should be(albignasegoExptected)
   }
 
   /*-------------------------------*/

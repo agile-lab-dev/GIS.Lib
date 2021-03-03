@@ -10,6 +10,7 @@ case class OSMBoundary(multiPolygon: Geometry,
                        country: Option[String] = None,
                        countryCode: Option[String] = None,
                        countyCode: Option[String] = None,
+                       postalCode: Option[String] = None,
                        boundaryType: String,
                        env: Envelope)
   extends MultiPolygon(
@@ -28,6 +29,7 @@ case class OSMBoundary(multiPolygon: Geometry,
        |County: ${county.map(_.toString)}
        |Region: ${region.map(_.toString)}
        |Country: ${country.map(_.toString)}
+       |PostalCode: ${postalCode.map(_.toString)}
        """.stripMargin
   }
 

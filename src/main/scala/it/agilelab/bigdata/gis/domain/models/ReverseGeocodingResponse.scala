@@ -17,7 +17,7 @@ object ReverseGeocodingResponse {
       osmBoundary.region,
       osmBoundary.country,
       osmBoundary.countryCode,
-      None,
+      osmBoundary.postalCode,
       distanceAndNumber._2,
       osmStreet.speedLimit,
       None,
@@ -35,7 +35,7 @@ object ReverseGeocodingResponse {
       osmBoundary.flatMap(_.region),
       osmBoundary.flatMap(_.country),
       osmBoundary.flatMap(_.countryCode),
-      None,
+      osmBoundary.flatMap(_.postalCode),
       osmStreet.flatMap(_.streetType.map(_.value)),
       osmStreet.flatMap(_.speedLimit))
   }
