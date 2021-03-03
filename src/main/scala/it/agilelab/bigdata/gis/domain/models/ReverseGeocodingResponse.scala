@@ -4,10 +4,12 @@ import it.agilelab.bigdata.gis.core.model.output.OutputModel
 
 object ReverseGeocodingResponse {
 
-  def apply(osmStreet: OSMStreetAndHouseNumber,
+  def apply(id: String,
+            osmStreet: OSMStreetAndHouseNumber,
             osmBoundary: OSMBoundary,
             distanceAndNumber: (Double, Option[String])): ReverseGeocodingResponse = {
     ReverseGeocodingResponse(
+      id,
       osmStreet.street,
       osmBoundary.city,
       osmBoundary.county,
@@ -23,8 +25,9 @@ object ReverseGeocodingResponse {
       Some(distanceAndNumber._1))
   }
 
-  def apply(osmStreet: Option[OSMStreet], osmBoundary: Option[OSMBoundary]): ReverseGeocodingResponse = {
+  def apply(id: String, osmStreet: Option[OSMStreet], osmBoundary: Option[OSMBoundary]): ReverseGeocodingResponse = {
     ReverseGeocodingResponse(
+      id,
       osmStreet.flatMap(_.street),
       osmBoundary.flatMap(_.city),
       osmBoundary.flatMap(_.county),
@@ -39,7 +42,8 @@ object ReverseGeocodingResponse {
 
 }
 
-case class ReverseGeocodingResponse(street: Option[String],
+case class ReverseGeocodingResponse(id: String,
+                                    street: Option[String],
                                     city: Option[String],
                                     county: Option[String],
                                     countyCode: Option[String],

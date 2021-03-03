@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis.domain.loader
 
 import com.typesafe.config.{Config, ConfigFactory}
-import it.agilelab.bigdata.gis.domain.graphhopper.GPSPoint
+import it.agilelab.bigdata.gis.domain.graphhopper.{GPSPoint, IdentifiableGPSPoint}
 import it.agilelab.bigdata.gis.domain.managers.OSMManager
 import it.agilelab.bigdata.gis.domain.models.ReverseGeocodingResponse
 import org.scalatest.{BeforeAndAfterAll, EitherValues, FlatSpec, Matchers}
@@ -13,11 +13,13 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
   val osmManager: OSMManager = OSMManager(osmConf)
 
   "Reverse geocoding on Andorra" should "work" in {
-    val point = GPSPoint(42.542703, 1.515542, None, System.currentTimeMillis())
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 42.542703, 1.515542, None, System.currentTimeMillis())
     val randomPlaceInAndorraActual: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
 
     val randomPlaceInAndorraExpected: ReverseGeocodingResponse =
       ReverseGeocodingResponse(
+        id,
         street = Some(""),
         city = Some("La Massana"),
         county = None,
@@ -38,12 +40,14 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
 
   "Reverse geocoding on Italy" should "work" in {
 
-    val point = GPSPoint(45.068032, 7.643780, None, System.currentTimeMillis())
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.068032, 7.643780, None, System.currentTimeMillis())
 
     val viaAzziActual: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
 
     val viaAzziExpected: ReverseGeocodingResponse =
       ReverseGeocodingResponse(
+        id,
         street = Some("Via Francesco Azzi"),
         city = Some("Turin"),
         county = Some("Torino"),

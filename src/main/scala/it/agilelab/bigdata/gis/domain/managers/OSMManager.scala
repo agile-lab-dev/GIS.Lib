@@ -5,7 +5,7 @@ import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
 import it.agilelab.bigdata.gis.core.utils.{Logger, ManagerUtils}
 import it.agilelab.bigdata.gis.domain.configuration.OSMManagerConfiguration
 import it.agilelab.bigdata.gis.domain.exceptions.ReverseGeocodingError
-import it.agilelab.bigdata.gis.domain.graphhopper.GPSPoint
+import it.agilelab.bigdata.gis.domain.graphhopper.IdentifiableGPSPoint
 import it.agilelab.bigdata.gis.domain.loader.ReverseGeocoder
 import it.agilelab.bigdata.gis.domain.models.{KnnResult, OSMBoundary, OSMStreetAndHouseNumber, ReverseGeocodingResponse}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
@@ -19,9 +19,9 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
   val osmConfig: OSMManagerConfiguration = OSMManagerConfiguration(conf)
   val indexManager: IndexManager = IndexManager(osmConfig.indexConf)
 
-  override def reverseGeocode(point: GPSPoint): Either[ReverseGeocodingError, ReverseGeocodingResponse] = {
+  override def reverseGeocode(point: IdentifiableGPSPoint): Either[ReverseGeocodingError, ReverseGeocodingResponse] = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
-    Try(makeAddress(reverseGeocodeQueryingBoundaries(queryPoint), reverseGeocodeQueryingStreets(queryPoint), queryPoint)) match {
+    Try(makeAddress(point, reverseGeocodeQueryingBoundaries(queryPoint), reverseGeocodeQueryingStreets(queryPoint), queryPoint)) match {
       case Success(addr) => Right(addr)
       case Failure(ex) =>
         logger.error("Failed to reverse geocode points", ex)
@@ -71,15 +71,17 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     roadsResult.find(p => !osmConfig.filterEmptyStreets || p.street.exists(_.trim.nonEmpty))
   }
 
-  private def makeAddress(place: Option[(OSMBoundary, KnnResult)],
+  private def makeAddress(point: IdentifiableGPSPoint,
+                          place: Option[(OSMBoundary, KnnResult)],
                           street: Option[OSMStreetAndHouseNumber],
                           queryPoint: Point): ReverseGeocodingResponse = {
 
     (place, street) match {
-      case (None, _) => ReverseGeocodingResponse(None, None)
-      case (Some((boundary, _)), None) => ReverseGeocodingResponse(None, Some(boundary))
+      case (None, _) => ReverseGeocodingResponse(point.id, None, None)
+      case (Some((boundary, _)), None) => ReverseGeocodingResponse(point.id, None, Some(boundary))
       case (Some((boundary, _)), Some(streetResult)) =>
         ReverseGeocodingResponse(
+          point.id,
           streetResult,
           boundary,
           streetResult.getDistanceAndNumber(queryPoint, osmConfig.addressTolMeters))
