@@ -4,7 +4,7 @@ import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
 
-case class OSMAddress(point: Geometry, street: String, number: String) extends Geometry(point.getFactory) {
+case class OSMHouseNumber(point: Geometry, number: String) extends Geometry(point.getFactory) {
 
 
   setUserData(this)
@@ -35,11 +35,11 @@ case class OSMAddress(point: Geometry, street: String, number: String) extends G
   override def getBoundary: Geometry = point.getBoundary
 
   override def compareToSameClass(o: Any): Int = {
-    getCoordinate.compareTo(o.asInstanceOf[OSMAddress].getCoordinate)
+    getCoordinate.compareTo(o.asInstanceOf[OSMHouseNumber].getCoordinate)
   }
 
   override def compareToSameClass(o: Any, comp: CoordinateSequenceComparator): Int = {
-    comp.compare(getCoordinateSequence, o.asInstanceOf[OSMAddress].getCoordinateSequence)
+    comp.compare(getCoordinateSequence, o.asInstanceOf[OSMHouseNumber].getCoordinateSequence)
   }
 
   override def getCoordinates: Array[Coordinate] = point.getCoordinates
@@ -64,7 +64,6 @@ case class OSMAddress(point: Geometry, street: String, number: String) extends G
 
   override def toString: String = {
     s"""Point:${point.toString}
-       |Street:$street
        |Number:$number
        """.stripMargin
   }

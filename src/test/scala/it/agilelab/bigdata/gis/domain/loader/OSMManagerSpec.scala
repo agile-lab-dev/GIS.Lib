@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis.domain.loader
 
 import com.typesafe.config.{Config, ConfigFactory}
-import it.agilelab.bigdata.gis.domain.graphhopper.{GPSPoint, IdentifiableGPSPoint}
+import it.agilelab.bigdata.gis.domain.graphhopper.IdentifiableGPSPoint
 import it.agilelab.bigdata.gis.domain.managers.OSMManager
 import it.agilelab.bigdata.gis.domain.models.ReverseGeocodingResponse
 import org.scalatest.{BeforeAndAfterAll, EitherValues, FlatSpec, Matchers}
@@ -56,11 +56,11 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         country = Some("Italy"),
         countryCode = Some("ITA"),
         postalIndex = Some("10024"),
-        addressRange = None,
+        addressRange = Some("10"),
         speedLimit = Some(50),
         speedCategory = None,
         roadType = Some("unclassified"),
-        distance = Some(31.87219775357211)
+        distance = Some(8.934272840344661)
       )
 
     viaAzziActual should be(viaAzziExpected)
@@ -93,6 +93,35 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
 
     albignasego should be(albignasegoExptected)
   }
+
+  "Reverse geocoding on Italy" should "has correct house number valued" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.08333, 7.61496, None, System.currentTimeMillis())
+
+    val corsoSaccoEVanzettiActual: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
+
+    val corsoSaccoEVanzettiExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = Some("Corso Sacco e Vanzetti"),
+        city = Some("Turin"),
+        county = Some("Torino"),
+        countyCode = Some("TO"),
+        region = Some("Piemont"),
+        country = Some("Italy"),
+        countryCode = Some("ITA"),
+        postalIndex = Some("10024"),
+        addressRange = Some("9 scala A"),
+        speedLimit = None,
+        speedCategory = None,
+        roadType = Some("residential"),
+        distance = Some(1.4465500367107154)
+      )
+
+    corsoSaccoEVanzettiActual should be(corsoSaccoEVanzettiExpected)
+  }
+
 
   /*-------------------------------*/
   /*LOAD MAP TO REMOVE THIS COMMENT*/
