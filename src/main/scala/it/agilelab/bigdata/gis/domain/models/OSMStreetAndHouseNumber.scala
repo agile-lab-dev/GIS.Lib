@@ -10,14 +10,14 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
 object OSMStreetAndHouseNumber {
 
-  def decorateWithNumbers(roadEL: OSMStreetAndHouseNumber, addressEls: Seq[OSMAddress]): OSMStreetAndHouseNumber = {
+  def decorateWithNumbers(roadEL: OSMStreetAndHouseNumber, houseNumberEls: Seq[OSMHouseNumber]): OSMStreetAndHouseNumber = {
     val numbersEls =
-      addressEls.map(
-        osmAddress =>
-          OSMSmallAddressNumber(
-            osmAddress.point.getCoordinate.x,
-            osmAddress.point.getCoordinate.y,
-            osmAddress.number)
+      houseNumberEls.map(
+        houseNumber => OSMSmallAddressNumber(
+            houseNumber.point.getCoordinate.x,
+            houseNumber.point.getCoordinate.y,
+            houseNumber.number
+        )
       )
 
     roadEL.copy(numbers = numbersEls)
