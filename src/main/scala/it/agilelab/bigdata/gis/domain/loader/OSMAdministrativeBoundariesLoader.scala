@@ -69,7 +69,9 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
         env = line.getEnvelopeInternal
       )
     } else {
-      throw new IllegalArgumentException("Not recognized administrative level!")
+      throw new IllegalArgumentException(
+      s"Unrecognized administrative level: $administrativeLevel [administrativeValue: $administrativeValue] in any of $countrySettings"
+      )
     }
   }
 
