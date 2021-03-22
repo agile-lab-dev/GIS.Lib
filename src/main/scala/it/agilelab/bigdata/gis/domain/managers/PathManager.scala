@@ -68,5 +68,4 @@ case class CountrySettings(countrySuffixes: List[String],
       this.citySuffixes.map(_.split('.').head)
     )
   }
-
 }
