@@ -30,7 +30,7 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
     scenario("a point is OUTSIDE a non-rectangular, concave polygon") {
 
       Given("Andorra country boundary")
-      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/andorra-AL2.shp").head
 
       And("a point is defined outside it")
       val aPoint = gf.createPoint(coord_andorra_outside0);
@@ -42,7 +42,7 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
     scenario("a point is INSIDE a non-rectangular, concave polygon") {
 
       Given("Andorra country boundary")
-      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/andorra-AL2.shp").head
 
       And("a point is defined inside it")
       val aPoint = gf.createPoint(coord_andorra_inside);
@@ -53,7 +53,7 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
 
     scenario("a point is PART OF THE PERIMETER of a non-rectangular, concave polygon") {
       Given("Andorra country boundary")
-      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/andorra-AL2.shp").head
 
       And("a point is defined inside it")
       val aPoint = gf.createPoint(coord_andorra_perimeter);
@@ -67,7 +67,7 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
     scenario("a point is OUTSIDE, sitting in a 'hole' of a non-rectangular, concave polygon") {
 
       Given("Lazio region boundary")
-      val lazioRegionBoundary = omsBoundariesSelector("italy/Italy_AL4.shp").filter(_.region.contains("Lazio")).head
+      val lazioRegionBoundary = omsBoundariesSelector("italy/italy-AL4.shp").filter(_.region.contains("Lazio")).head
 
       And("a point is defined somewhere in Vaticano country, that's inside Lazio's perimeter, but not part of its area")
       val aPoint = gf.createPoint(coord_vaticano_inside);
@@ -83,7 +83,7 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
     scenario("a multipoint is outside of a non-rectangular, concave polygon completely") {
 
       Given("Andorra country boundary")
-      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/andorra-AL2.shp").head
 
       And("a 3-point line is defined outside it with neither intersections nor point inside it")
       val coord_andorra_outside1 = new Coordinate(1.7024, 42.4278)
@@ -97,7 +97,7 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
     scenario("a multipoint intersect a non-rectangular, concave polygon - a point is inside it at least") {
 
       Given("Andorra country boundary")
-      val andorraCountryBoundary = omsBoundariesSelector("andorra/Andorra_AL2.shp").head
+      val andorraCountryBoundary = omsBoundariesSelector("andorra/andorra-AL2.shp").head
 
       And("a 3-point line intersect it, but with a points inside it at least")
       val points = gf.createMultiPoint(Seq(coord_andorra_outside0, coord_andorra_inside, coord_toulouse).toArray);
