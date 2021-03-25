@@ -5,6 +5,7 @@ import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.domain.managers.{CountrySettings, PathManager}
 import it.agilelab.bigdata.gis.domain.models.OSMBoundary
+import org.opengis.feature.simple.SimpleFeature
 
 import java.io.File
 import scala.util.Try
@@ -26,8 +27,19 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
     This is a terrible hack. I'm gonna refactor it soon.
      */
     ShapeFileReader.readMultiPolygonFeatures(source).map { case (multiPolygon, list) =>
-      (list.toArray :+ countryName) -> multiPolygon
+      Array(list, countryName) -> multiPolygon
     }.toIterator
+  }
+
+  def extractISO(iso: String): String = {
+    val parts = iso.split("-")
+    if (parts.length == 1) {
+      parts(0)
+    } else if (parts.length == 2) {
+      parts(1)
+    } else {
+      iso
+    }
   }
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMBoundary = {
@@ -35,14 +47,15 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
     val countryName = fields.last.toString
     val countrySettings: CountrySettings = pathManager.getCountrySetting(countryName).clean
 
-    val administrativeValue = fields(Try(config.getInt("administrative.value")).getOrElse(3)).toString
-    val administrativeLevel = fields(Try(config.getInt("administrative.level")).getOrElse(8)).toString
+    val features: SimpleFeature = fields(0).asInstanceOf[SimpleFeature]
 
+    val administrativeValue = features.getAttribute(config.getString("administrative.value")).toString
+    val administrativeLevel = features.getAttribute(config.getString("administrative.level")).toString
     if (countrySettings.countrySuffixes.contains(administrativeLevel)) {
       OSMBoundary(
         multiPolygon = line,
         country = Some(parseStringName(administrativeValue)),
-        countryCode = Try(fields(2).toString).toOption,
+        countryCode = Try(extractISO(features.getAttribute(config.getString("administrative.country")).toString)).toOption,
         boundaryType = administrativeLevel,
         env = line.getEnvelopeInternal
       )
@@ -57,9 +70,8 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
       OSMBoundary(
         multiPolygon = line,
         county = Some(parseStringName(administrativeValue)),
-        countyCode = Try(fields(14).toString.split("-")(1)).toOption,
-        boundaryType = administrativeLevel,
-        env = line.getEnvelopeInternal
+        countyCode = Try(extractISO(features.getAttribute(config.getString("administrative.county")).toString)).toOption,
+        boundaryType = administrativeLevel, env = line.getEnvelopeInternal
       )
     } else if (countrySettings.citySuffixes.contains(administrativeLevel)) {
       OSMBoundary(

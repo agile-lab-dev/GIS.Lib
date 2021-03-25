@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis.domain.loader
 
 import com.vividsolutions.jts.{geom => jts}
-import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
+import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, MultiPolygon, Point}
 import org.geotools.data.shapefile._
 import org.geotools.data.simple._
 import org.opengis.feature.simple._
@@ -92,9 +92,9 @@ object ShapeFileReader {
     }
   }
 
-  def readMultiPolygonFeatures(path: String): Seq[(jts.MultiPolygon, util.List[AnyRef])] = {
+  def readMultiPolygonFeatures(path: String): Seq[(MultiPolygon, SimpleFeature)] = {
     readSimpleFeatures(path)
-      .flatMap { ft => ft.geom[jts.MultiPolygon].map(mp => (mp, ft.getAttributes)) }
+      .flatMap { ft => ft.geom[jts.MultiPolygon].map(mp => (mp, ft)) }
   }
 
 }
