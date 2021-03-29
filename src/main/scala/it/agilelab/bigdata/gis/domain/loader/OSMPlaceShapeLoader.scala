@@ -27,7 +27,7 @@ class OSMPlaceShapeLoader() extends Loader[OSMPlace] {
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
 
     val poligons: Seq[(Geometry, util.List[AnyRef])] = if (source.endsWith("places_a_free_1.shp")) {
-      ShapeFileReader.readMultiPolygonFeatures(source)
+      ShapeFileReader.readMultiPolygonFeatures(source).map{ case (mp, sp) => (mp, sp.getAttributes)}
     } else if (source.endsWith("places_free_1.shp")) {
       ShapeFileReader.readPointFeaturesToPolygon(source)
     } else {

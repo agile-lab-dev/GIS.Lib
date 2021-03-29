@@ -26,7 +26,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         countyCode = None,
         region = None,
         country = Some("Andorra"),
-        countryCode = Some("AND"),
+        countryCode = Some("AD"), // as per https://www.iso.org/obp/ui/#iso:code:3166:AD
         postalIndex = None,
         addressRange = None,
         speedLimit = None,
@@ -54,7 +54,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         countyCode = Some("TO"),
         region = Some("Piemont"),
         country = Some("Italy"),
-        countryCode = Some("ITA"),
+        countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
         postalIndex = Some("10024"),
         addressRange = Some("10"),
         speedLimit = Some(50),
@@ -72,7 +72,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
     val point = IdentifiableGPSPoint(id, 45.3395, 11.8863, None, System.currentTimeMillis())
 
     val albignasego: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
-    println(albignasego)
+
     val albignasegoExptected: ReverseGeocodingResponse =
       ReverseGeocodingResponse(
         id,
@@ -82,7 +82,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         countyCode = Some("PD"),
         region = Some("Veneto"),
         country = Some("Italy"),
-        countryCode = Some("ITA"),
+        countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
         postalIndex = Some("35020"),
         addressRange = None,
         speedLimit = None,
@@ -110,7 +110,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         countyCode = Some("TO"),
         region = Some("Piemont"),
         country = Some("Italy"),
-        countryCode = Some("ITA"),
+        countryCode = Some("IT"),
         postalIndex = Some("10024"),
         addressRange = Some("9 scala A"),
         speedLimit = None,

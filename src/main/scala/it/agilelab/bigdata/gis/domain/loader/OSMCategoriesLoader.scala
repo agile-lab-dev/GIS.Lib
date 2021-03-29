@@ -26,7 +26,7 @@ class OSMCategoriesLoader(categoryInfoCfg: CategoryInfoCfg) extends Loader[OSMGe
 
     ShapeFileReader.readMultiPolygonFeatures(source)
       .map { case (multiPolygon, list) =>
-        (list.toArray :+ (pattern findFirstIn fileName).getOrElse(UNKNOWN_NAME)) -> multiPolygon
+        (list.getAttributes.toArray :+ (pattern findFirstIn fileName).getOrElse(UNKNOWN_NAME)) -> multiPolygon
       }.toIterator
   }
 
