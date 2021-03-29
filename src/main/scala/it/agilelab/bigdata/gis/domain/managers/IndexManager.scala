@@ -59,9 +59,9 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     logger.info("Done loading OSM boundaries file into GeometryList!")
 
     val roads: List[Path] = multiCountriesPathSet.flatMap(_.roads)
-    val addresses: List[Path] = multiCountriesPathSet.flatMap(_.addresses)
+    val houseNumbers: List[Path] = multiCountriesPathSet.flatMap(_.houseNumbers)
 
-    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads, addresses)
+    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads, houseNumbers)
 
     //trigger garbage collector to remove the addressNumberGeometryList if still in memory
     System.gc()
@@ -142,15 +142,14 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
   }
 
   /** Create the addresses index that will be used to decorate the road index leaves by adding
-   * a sequence of OSMAddress to retrieve the candidate street number
+   * a sequence of [[OSMAddress]] to retrieve the candidate street number
    *
    */
-  def createAddressesIndex(roads: Seq[Path],
-                           addresses: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
-    val countryName = roads.head.split(Pattern.quote(File.separator)).reverse.tail.head
+  def createAddressesIndex(roads: Seq[Path],houseNumbers: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
 
+    val countryName = roads.head.split(Pattern.quote(File.separator)).reverse.tail.head
     logger.info(s"Loading OSM roads of $countryName...")
-    val roadsGeometryList = OSMGenericStreetLoader(roads, addresses).loadIndex(roads: _*)
+    val roadsGeometryList = OSMGenericStreetLoader(roads, houseNumbers).loadIndex(roads: _*)
     logger.info(s"Done loading OSM roads of $countryName!")
 
     roadsGeometryList

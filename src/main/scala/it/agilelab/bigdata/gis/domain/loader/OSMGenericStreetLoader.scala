@@ -3,7 +3,7 @@ package it.agilelab.bigdata.gis.domain.loader
 import com.vividsolutions.jts.geom.{Geometry, GeometryFactory}
 import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.core.utils.{Logger, ManagerUtils}
-import it.agilelab.bigdata.gis.domain.models.{OSMAddress, OSMSmallAddressNumber, OSMStreetAndHouseNumber, OSMStreetType}
+import it.agilelab.bigdata.gis.domain.models.{OSMHouseNumber, OSMSmallAddressNumber, OSMStreetAndHouseNumber, OSMStreetType}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
@@ -40,19 +40,19 @@ trait OSMGenericStreetLoader extends Loader[OSMStreetAndHouseNumber] {
 
 object OSMGenericStreetLoader extends Logger {
 
-  def apply(roadsShapeFile: Seq[String], addresses: Seq[String]): OSMGenericStreetLoader = {
+  def apply(roadsShapeFile: Seq[String], houseNumbers: Seq[String]): OSMGenericStreetLoader = {
 
     val loadStreets = roadsShapeFile.nonEmpty
-    val loadNumber = addresses.nonEmpty
+    val loadNumbers = houseNumbers.nonEmpty
 
     loadStreets match {
 
-      case true if loadNumber =>
-        logger.info("Loading OSM addresses file into GeometryList...")
-        val addressNumberLoader = new OSMAddressesLoader
-        val addressNumberGeometryList: GeometryList[OSMAddress] = addressNumberLoader.loadIndex(addresses: _*)
-        logger.info("Done loading OSM addresses file into GeometryList!")
-        new OSMStreetLoaderWithNumber(addressFunction(addressNumberGeometryList))
+      case true if loadNumbers =>
+        logger.info("Loading OSM house numbers file into GeometryList...")
+        val houseNumberLoader = new OSMHouseNumbersLoader
+        val houseNumberGeometryList: GeometryList[OSMHouseNumber] = houseNumberLoader.loadIndex(houseNumbers: _*)
+        logger.info("Done loading OSM house numbers file into GeometryList!")
+        new OSMStreetLoaderWithNumber(houseNumbersFunction(houseNumberGeometryList))
 
       case true =>
         new OSMStreetLoaderWithoutNumber()
@@ -62,20 +62,15 @@ object OSMGenericStreetLoader extends Logger {
     }
   }
 
-  /** Return a function that retrieve the addresses number and the respective Point for each road of the road index */
-  def addressFunction(addressNumberGeometryList: GeometryList[OSMAddress]): (Geometry, String) => Seq[OSMAddress] = {
+  /** Return a function that retrieve the houses number and the respective Point for each road of the road index */
+  def houseNumbersFunction(houseNumberGeometryList: GeometryList[OSMHouseNumber]): (Geometry, String) => Seq[OSMHouseNumber] = {
     (road: Geometry, streetName: String) => {
       road.getCoordinates
         .flatMap(pt => {
           KNNQueryMem.spatialQueryWithMaxDistance(
-            addressNumberGeometryList,
+            houseNumberGeometryList,
             new GeometryFactory().createPoint(pt),
             ManagerUtils.NUMBERS_MAX_DISTANCE)
-        })
-        //THIS EQUALS WORKS BECAUSE THE SHP OF THE ROADS AND ADDRESSES ARE BOTH OSM AND HAVE THE SAME STREET NAMES
-        //IN CASE OF ETHEROGENEOUS SOURCES THIS SHOULD BE CHANGE WITH A STRING SIMILARITY ALGORITHM
-        .filter(address => {
-          address.street.trim.equalsIgnoreCase(streetName.trim)
         })
         .toSeq
     }
