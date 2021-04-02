@@ -4,13 +4,13 @@ import com.graphhopper.routing.util.EncodingManager
 import com.graphhopper.routing.weighting.FastestWeighting
 import com.graphhopper.util.PMap
 import it.agilelab.bigdata.gis.core.encoder.CarFlagEncoderEnrich
+import it.agilelab.bigdata.gis.core.utils.Logger
 import org.rogach.scallop._
 
 /**
   * @author andreaL
   */
-object ConverterFromOSMToGraphHopperMap extends App {
-  args.foreach(println)
+object ConverterFromOSMToGraphHopperMap extends App with Logger {
 
   case class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
     val graphLocation: ScallopOption[String] = opt[String](name = "graphLocation", required = true)
@@ -18,8 +18,9 @@ object ConverterFromOSMToGraphHopperMap extends App {
     verify()
   }
 
-  val conf: Conf = Conf(args)
+  logger.info("Arguments", args.mkString(" "))
 
+  val conf: Conf = Conf(args)
 
   //We create the graph object
   val hopperOSM = new GraphHopperOSM()
