@@ -7,7 +7,7 @@ jobs:
     env:
       # It might crash with "java.lang.OutOfMemoryError: GC overhead limit exceeded" when loading italy PBF on GH
       # actions runners that have 7 GB of memory.
-      MAVEN_OPTS: "-Xmx7g -Xms7g -XX:-UseGCOverheadLimit"
+      MAVEN_OPTS: "-Xmx7g -Xms6g -XX:-UseGCOverheadLimit"
 
     runs-on: ubuntu-20.04
     steps:
@@ -45,4 +45,4 @@ jobs:
         run: mvn exec:java -Dexec.mainClass=it.agilelab.bigdata.gis.core.apps.ConverterFromOSMToGraphHopperMap -Dexec.args="--graphLocation src/test/resources/graphHopper/ --osmLocation src/test/resources/graphHopperSource/italy-latest.osm.pbf"
 
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots test
+        run: mvn --batch-mode --update-snapshots -Dtest='*,\!GraphHopperSpec*' test
