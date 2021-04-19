@@ -4,8 +4,8 @@ import com.typesafe.config.Config
 import it.agilelab.bigdata.gis.core.utils.ManagerUtils.{BoundaryPathGroup, CountryPathSet, Path}
 import it.agilelab.bigdata.gis.core.utils.{Configuration, Logger, ObjectPickler}
 import it.agilelab.bigdata.gis.domain.configuration.IndexManagerConfiguration
-import it.agilelab.bigdata.gis.domain.loader.{OSMAdministrativeBoundariesLoader, OSMGenericStreetLoader, OSMPostalCodeLoader}
-import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMPostalCode, OSMStreetAndHouseNumber}
+import it.agilelab.bigdata.gis.domain.loader.{OSMAdministrativeBoundariesLoader, OSMGenericStreetLoader, OSMHouseNumbersLoader, OSMPostalCodeLoader}
+import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMHouseNumber, OSMPostalCode, OSMStreetAndHouseNumber}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 import java.io.File
@@ -61,12 +61,14 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     val roads: List[Path] = multiCountriesPathSet.flatMap(_.roads)
     val houseNumbers: List[Path] = multiCountriesPathSet.flatMap(_.houseNumbers)
 
-    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads, houseNumbers)
+    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads)
+
+    val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersIndex(houseNumbers)
 
     //trigger garbage collector to remove the addressNumberGeometryList if still in memory
     System.gc()
 
-    IndexSet(boundariesGeometryList, regionGeometryList, streetsGeometryList)
+    IndexSet(boundariesGeometryList, regionGeometryList, streetsGeometryList, houseNumbersGeometryList)
   }
 
   //TODO review performances
@@ -142,17 +144,26 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
   }
 
   /** Create the addresses index that will be used to decorate the road index leaves by adding
-   * a sequence of [[OSMAddress]] to retrieve the candidate street number
-   *
+   * a sequence of [[OSMStreetAndHouseNumber]] to retrieve the candidate street number
    */
-  def createAddressesIndex(roads: Seq[Path],houseNumbers: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
+  def createAddressesIndex(roads: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
 
     val countryName = roads.head.split(Pattern.quote(File.separator)).reverse.tail.head
     logger.info(s"Loading OSM roads of $countryName...")
-    val roadsGeometryList = OSMGenericStreetLoader(roads, houseNumbers).loadIndex(roads: _*)
+    val roadsGeometryList = OSMGenericStreetLoader(roads, Seq()).loadIndex(roads: _*)
     logger.info(s"Done loading OSM roads of $countryName!")
 
     roadsGeometryList
+  }
+
+  def createHouseNumbersIndex(houseNumbers: List[Path]): GeometryList[OSMHouseNumber] = {
+
+    val countryName = houseNumbers.head.split(Pattern.quote(File.separator)).reverse.tail.head
+    logger.info(s"Loading OSM house numbers of $countryName...")
+    val houseNumbersGeometryList = new OSMHouseNumbersLoader().loadIndex(houseNumbers: _*)
+    logger.info(s"Done loading OSM house numbers of $countryName!")
+
+    houseNumbersGeometryList
   }
 
   private def createIndexSet(inputPaths: List[String]): IndexSet = {
@@ -162,7 +173,8 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
         val boundaries = ObjectPickler.unpickle[GeometryList[OSMBoundary]](bPath)
         val regions = ObjectPickler.unpickle[GeometryList[OSMBoundary]](rPath)
         val streets = ObjectPickler.unpickle[GeometryList[OSMStreetAndHouseNumber]](sPath)
-        IndexSet(boundaries, regions, streets)
+        val houseNumbers = ObjectPickler.unpickle[GeometryList[OSMHouseNumber]](sPath)
+        IndexSet(boundaries, regions, streets, houseNumbers)
       case _ => throw new IllegalArgumentException(s"the list of input paths should be a single path or three " +
         s"different paths (boundaries, regions and streets). The list of input path was: $inputPaths")
     }

@@ -166,9 +166,7 @@ object KNNQueryMem extends Serializable {
         )
         JudgementUsingIndexS
           .invoke[T](spatialList.index, circleEnvelope)
-          .map(r => (r, distanceInMeters(r, queryCenter)))
-          .sortBy(_._2)
-          .map(_._1)
+          .sortBy(r => distanceInMeters(r, queryCenter))
           .toList
       } else {
         List.empty[T]

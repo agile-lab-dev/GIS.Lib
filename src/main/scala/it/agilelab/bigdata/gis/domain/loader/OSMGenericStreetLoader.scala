@@ -9,13 +9,17 @@ import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
 import scala.util.Try
 
-trait OSMGenericStreetLoader extends Loader[OSMStreetAndHouseNumber] {
+trait OSMGenericStreetLoader extends Loader[OSMStreetAndHouseNumber] with Logger {
 
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
-    ShapeFileReader
+    logger.info("Loading file of source {}", source)
+    val start = System.currentTimeMillis()
+    val r = ShapeFileReader
       .readMultiLineFeatures(source)
       .map { case (multiLine, list) => (list.toArray, multiLine) }
       .toIterator
+    logger.info("Loaded file of source {} in {} ms", source, System.currentTimeMillis() - start)
+    r
   }
 
   // references: https://wiki.openstreetmap.org/wiki/Key:highway
@@ -64,13 +68,15 @@ object OSMGenericStreetLoader extends Logger {
 
   /** Return a function that retrieve the houses number and the respective Point for each road of the road index */
   def houseNumbersFunction(houseNumberGeometryList: GeometryList[OSMHouseNumber]): (Geometry, String) => Seq[OSMHouseNumber] = {
+    val geometryFactory = new GeometryFactory()
     (road: Geometry, streetName: String) => {
       road.getCoordinates
         .flatMap(pt => {
           KNNQueryMem.spatialQueryWithMaxDistance(
             houseNumberGeometryList,
-            new GeometryFactory().createPoint(pt),
-            ManagerUtils.NUMBERS_MAX_DISTANCE)
+            geometryFactory.createPoint(pt),
+            ManagerUtils.NUMBERS_MAX_DISTANCE
+          )
         })
         .toSeq
     }
