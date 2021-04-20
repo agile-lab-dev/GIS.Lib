@@ -83,9 +83,20 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
 
     logger.info(s"Start loading boundary of: $countryName...")
 
+    logger.info(s"Enriching cities of country $countryName ...")
+    var start = System.currentTimeMillis()
     val postalCodesWithCities: Seq[OSMBoundary] = enrichCities(cities, postalCodes)
+    logger.info(s"Done enriching cities of country $countryName in {} ms", System.currentTimeMillis() - start)
+
+    start = System.currentTimeMillis()
+    logger.info(s"Merging boundaries postal codes with cities of country $countryName ...")
     val citiesWithCounties: Seq[OSMBoundary] = mergeBoundaries(postalCodesWithCities, counties)
+    logger.info(s"Done merging boundaries postal codes with cities of country $countryName in {} ms", System.currentTimeMillis() - start)
+
+    start = System.currentTimeMillis()
+    logger.info(s"Merging boundaries cities with counties of country $countryName ...")
     val countiesWithRegion: Seq[OSMBoundary] = mergeBoundaries(citiesWithCounties, regions)
+    logger.info(s"Done merging boundaries cities with counties of country $countryName in {} ms", System.currentTimeMillis() - start)
 
     val primaryIndexBoundaries: Seq[OSMBoundary] = countiesWithRegion.map(_.merge(countryBoundary))
 
