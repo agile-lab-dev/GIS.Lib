@@ -120,13 +120,16 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     if (inner.isEmpty) {
       outer
     } else {
-      inner.map { boundary =>
-        outer
-          .filter(_.customCovers(boundary))
-          .find(county => boundary.multiPolygon.getInteriorPoint.coveredBy(county.multiPolygon))
-          .map(boundary.merge)
-          .getOrElse(boundary)
-      }
+      val outerPar = outer.par
+      inner
+        .par
+        .map { boundary =>
+          outerPar
+            .filter(_.customCovers(boundary))
+            .find(county => boundary.multiPolygon.getInteriorPoint.coveredBy(county.multiPolygon))
+            .map(boundary.merge)
+            .getOrElse(boundary)
+      }.seq
     }
 
   /**
@@ -140,13 +143,14 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
   private def enrichCities(cities: Seq[OSMBoundary], postalCodes: Seq[OSMPostalCode]): Seq[OSMBoundary] = {
 
     cities
+      .par
       .filter(_.city.isDefined)
       .map{ city =>
         postalCodes.find(_.point.coveredBy(city.multiPolygon)) match {
           case Some(found) => city.copy(postalCode = found.postalCode)
           case _ => city
        }
-     }
+     }.seq
   }
 
   /** Create the addresses index that will be used to decorate the road index leaves by adding
