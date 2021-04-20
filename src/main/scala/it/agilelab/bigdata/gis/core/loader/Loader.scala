@@ -23,6 +23,7 @@ trait Loader[T <: Geometry] extends Logger {
 
   def loadObjects(sources: String*): List[T] = {
     sources
+      .par
       .foldLeft(Seq.empty[T].toIterator)((acc, source) =>
         acc ++ loadFile(source).map((objectMapping _).tupled))
       .toList
