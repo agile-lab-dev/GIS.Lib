@@ -9,6 +9,7 @@ import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMHouseNumber, OSMPo
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 import java.io.File
+import java.util.concurrent.{Callable, Executors}
 import java.util.regex.Pattern
 
 case class IndexManager(conf: Config) extends Configuration with Logger {
@@ -32,39 +33,58 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
    */
   def makeIndices(upperFolderPath: String): IndexSet = {
 
+    val threadPool = Executors.newCachedThreadPool()
+
     val multiCountriesPathSet: List[CountryPathSet] =
       new File(upperFolderPath)
         .listFiles()
         .map(pathManager.getCountryPathSet)
         .toList
 
-    logger.info("Loading OSM boundaries file into GeometryList...")
 
-    val indexStuffs: List[IndexStuffs] =
-      multiCountriesPathSet
-        .par
-        .map(pathSet => createCountryBoundariesWithPostalCodes(pathSet.boundary, pathSet.postalCodes))
-        .toList
+    val boundariesGeometryList = threadPool.submit(new Callable[GeometryList[OSMBoundary]] {
+      override def call(): GeometryList[OSMBoundary] = {
+        logger.info("Loading OSM boundaries file into GeometryList...")
 
-    val cityIndexStuff: List[OSMBoundary] = indexStuffs.flatMap(_.cityIndex)
+        val indexStuffs: List[IndexStuffs] =
+          multiCountriesPathSet
+            .par
+            .map(pathSet => createCountryBoundariesWithPostalCodes(pathSet.boundary, pathSet.postalCodes))
+            .toList
 
-    val boundariesGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndexStuff)
+        val cityIndexStuff: List[OSMBoundary] = indexStuffs.flatMap(_.cityIndex)
+        val boundariesGeometryList = boundariesLoader.buildIndex(cityIndexStuff)
+        logger.info("Done loading OSM boundaries file into GeometryList!")
+        boundariesGeometryList
+      }
+    })
 
-    logger.info("Done loading OSM boundaries file into GeometryList!")
+    val streetsGeometryList = threadPool.submit(new Callable[GeometryList[OSMStreetAndHouseNumber]] {
+      override def call(): GeometryList[OSMStreetAndHouseNumber] = {
+        logger.info("Loading OSM roads file into GeometryList...")
+        val roads: List[Path] = multiCountriesPathSet.flatMap(_.roads)
+        val streetsGeometryList = createAddressesIndex(roads)
+        logger.info("Done loading OSM roads file into GeometryList!")
+        streetsGeometryList
+      }
+    })
 
-    logger.info("Loading OSM roads file into GeometryList...")
-    val roads: List[Path] = multiCountriesPathSet.flatMap(_.roads)
-    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads)
-    logger.info("Done loading OSM roads file into GeometryList!")
+    val houseNumbersGeometryList = threadPool.submit(new Callable[GeometryList[OSMHouseNumber]] {
+      override def call(): GeometryList[OSMHouseNumber] = {
+        logger.info("Loading OSM house numbers file into GeometryList...")
+        val houseNumbers: List[Path] = multiCountriesPathSet.flatMap(_.houseNumbers)
+        val houseNumbersGeometryList = createHouseNumbersIndex(houseNumbers)
+        logger.info("Done loading OSM house numbers file into GeometryList!")
+        houseNumbersGeometryList
+      }
+    })
 
-    logger.info("Loading OSM house numbers file into GeometryList...")
-    val houseNumbers: List[Path] = multiCountriesPathSet.flatMap(_.houseNumbers)
-    val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersIndex(houseNumbers)
-    logger.info("Done loading OSM house numbers file into GeometryList!")
 
-    System.gc()
+    val indexSet = IndexSet(boundariesGeometryList.get(), streetsGeometryList.get(), houseNumbersGeometryList.get())
 
-    IndexSet(boundariesGeometryList, streetsGeometryList, houseNumbersGeometryList)
+    System.gc() // force GC
+
+    indexSet
   }
 
   //TODO review performances
