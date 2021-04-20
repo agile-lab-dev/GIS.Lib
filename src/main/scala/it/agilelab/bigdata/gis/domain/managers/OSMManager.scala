@@ -55,7 +55,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     if (osmConfig.addressTolMeters > ManagerUtils.NUMBERS_MAX_DISTANCE)
       logger.info("address_tol_meter is greater than the distance used to build the spatial index!")
 
-    queryBoundaryIndices(List(indexManager.indexSet.boundaries, indexManager.indexSet.regions), queryPoint)
+    queryBoundaryIndices(List(indexManager.indexSet.boundaries/*, indexManager.indexSet.regions*/), queryPoint)
   }
 
   private def reverseGeocodeQueryingStreets(queryPoint: Point): Option[OSMStreetAndHouseNumber] = {

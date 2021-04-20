@@ -47,28 +47,24 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
         .toList
 
     val cityIndexStuff: List[OSMBoundary] = indexStuffs.flatMap(_.cityIndex)
-    val regionIndexStuff: List[OSMBoundary] = indexStuffs.flatMap(_.regionIndex)
 
     val boundariesGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndexStuff)
 
-    val regionGeometryList: GeometryList[OSMBoundary] = if (regionIndexStuff.nonEmpty)
-        boundariesLoader.buildIndex(regionIndexStuff)
-      else
-        null
-
     logger.info("Done loading OSM boundaries file into GeometryList!")
 
+    logger.info("Loading OSM roads file into GeometryList...")
     val roads: List[Path] = multiCountriesPathSet.flatMap(_.roads)
-    val houseNumbers: List[Path] = multiCountriesPathSet.flatMap(_.houseNumbers)
-
     val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads)
+    logger.info("Done loading OSM roads file into GeometryList!")
 
+    logger.info("Loading OSM house numbers file into GeometryList...")
+    val houseNumbers: List[Path] = multiCountriesPathSet.flatMap(_.houseNumbers)
     val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersIndex(houseNumbers)
+    logger.info("Done loading OSM house numbers file into GeometryList!")
 
-    //trigger garbage collector to remove the addressNumberGeometryList if still in memory
     System.gc()
 
-    IndexSet(boundariesGeometryList, regionGeometryList, streetsGeometryList, houseNumbersGeometryList)
+    IndexSet(boundariesGeometryList, streetsGeometryList, houseNumbersGeometryList)
   }
 
   //TODO review performances
@@ -92,11 +88,10 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     val countiesWithRegion: Seq[OSMBoundary] = mergeBoundaries(citiesWithCounties, regions)
 
     val primaryIndexBoundaries: Seq[OSMBoundary] = countiesWithRegion.map(_.merge(countryBoundary))
-    val secondaryIndexBoundaries: Seq[OSMBoundary] = regions.map(_.merge(countryBoundary))
 
     logger.info(s"$countryName loaded.")
 
-    IndexStuffs(secondaryIndexBoundaries, primaryIndexBoundaries)
+    IndexStuffs(primaryIndexBoundaries)
   }
 
   /**
@@ -169,12 +164,11 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
   private def createIndexSet(inputPaths: List[String]): IndexSet = {
     inputPaths match {
       case path :: Nil => makeIndices(path)
-      case bPath :: rPath :: sPath :: Nil =>
+      case bPath :: _ :: sPath :: Nil =>
         val boundaries = ObjectPickler.unpickle[GeometryList[OSMBoundary]](bPath)
-        val regions = ObjectPickler.unpickle[GeometryList[OSMBoundary]](rPath)
         val streets = ObjectPickler.unpickle[GeometryList[OSMStreetAndHouseNumber]](sPath)
         val houseNumbers = ObjectPickler.unpickle[GeometryList[OSMHouseNumber]](sPath)
-        IndexSet(boundaries, regions, streets, houseNumbers)
+        IndexSet(boundaries, streets, houseNumbers)
       case _ => throw new IllegalArgumentException(s"the list of input paths should be a single path or three " +
         s"different paths (boundaries, regions and streets). The list of input path was: $inputPaths")
     }
