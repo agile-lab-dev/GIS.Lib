@@ -4,8 +4,8 @@ import com.typesafe.config.Config
 import it.agilelab.bigdata.gis.core.utils.ManagerUtils.{BoundaryPathGroup, CountryPathSet, Path}
 import it.agilelab.bigdata.gis.core.utils.{Configuration, Logger, ObjectPickler}
 import it.agilelab.bigdata.gis.domain.configuration.IndexManagerConfiguration
-import it.agilelab.bigdata.gis.domain.loader.{OSMAdministrativeBoundariesLoader, OSMGenericStreetLoader, OSMPostalCodeLoader}
-import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMPostalCode, OSMStreetAndHouseNumber}
+import it.agilelab.bigdata.gis.domain.loader.{OSMAdministrativeBoundariesLoader, OSMGenericStreetLoader, OSMHouseNumbersLoader, OSMPostalCodeLoader}
+import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMHouseNumber, OSMPostalCode, OSMStreetAndHouseNumber}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 import java.io.File
@@ -47,26 +47,24 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
         .toList
 
     val cityIndexStuff: List[OSMBoundary] = indexStuffs.flatMap(_.cityIndex)
-    val regionIndexStuff: List[OSMBoundary] = indexStuffs.flatMap(_.regionIndex)
 
     val boundariesGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndexStuff)
 
-    val regionGeometryList: GeometryList[OSMBoundary] = if (regionIndexStuff.nonEmpty)
-        boundariesLoader.buildIndex(regionIndexStuff)
-      else
-        null
-
     logger.info("Done loading OSM boundaries file into GeometryList!")
 
+    logger.info("Loading OSM roads file into GeometryList...")
     val roads: List[Path] = multiCountriesPathSet.flatMap(_.roads)
+    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads)
+    logger.info("Done loading OSM roads file into GeometryList!")
+
+    logger.info("Loading OSM house numbers file into GeometryList...")
     val houseNumbers: List[Path] = multiCountriesPathSet.flatMap(_.houseNumbers)
+    val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersIndex(houseNumbers)
+    logger.info("Done loading OSM house numbers file into GeometryList!")
 
-    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads, houseNumbers)
-
-    //trigger garbage collector to remove the addressNumberGeometryList if still in memory
     System.gc()
 
-    IndexSet(boundariesGeometryList, regionGeometryList, streetsGeometryList)
+    IndexSet(boundariesGeometryList, streetsGeometryList, houseNumbersGeometryList)
   }
 
   //TODO review performances
@@ -85,16 +83,26 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
 
     logger.info(s"Start loading boundary of: $countryName...")
 
+    logger.info(s"Enriching cities of country $countryName ...")
+    var start = System.currentTimeMillis()
     val postalCodesWithCities: Seq[OSMBoundary] = enrichCities(cities, postalCodes)
+    logger.info(s"Done enriching cities of country $countryName in {} ms", System.currentTimeMillis() - start)
+
+    start = System.currentTimeMillis()
+    logger.info(s"Merging boundaries postal codes with cities of country $countryName ...")
     val citiesWithCounties: Seq[OSMBoundary] = mergeBoundaries(postalCodesWithCities, counties)
+    logger.info(s"Done merging boundaries postal codes with cities of country $countryName in {} ms", System.currentTimeMillis() - start)
+
+    start = System.currentTimeMillis()
+    logger.info(s"Merging boundaries cities with counties of country $countryName ...")
     val countiesWithRegion: Seq[OSMBoundary] = mergeBoundaries(citiesWithCounties, regions)
+    logger.info(s"Done merging boundaries cities with counties of country $countryName in {} ms", System.currentTimeMillis() - start)
 
     val primaryIndexBoundaries: Seq[OSMBoundary] = countiesWithRegion.map(_.merge(countryBoundary))
-    val secondaryIndexBoundaries: Seq[OSMBoundary] = regions.map(_.merge(countryBoundary))
 
     logger.info(s"$countryName loaded.")
 
-    IndexStuffs(secondaryIndexBoundaries, primaryIndexBoundaries)
+    IndexStuffs(primaryIndexBoundaries)
   }
 
   /**
@@ -112,13 +120,16 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     if (inner.isEmpty) {
       outer
     } else {
-      inner.map { boundary =>
-        outer
-          .filter(_.customCovers(boundary))
-          .find(county => boundary.multiPolygon.getInteriorPoint.coveredBy(county.multiPolygon))
-          .map(boundary.merge)
-          .getOrElse(boundary)
-      }
+      val outerPar = outer.par
+      inner
+        .par
+        .map { boundary =>
+          outerPar
+            .filter(_.customCovers(boundary))
+            .find(county => boundary.multiPolygon.getInteriorPoint.coveredBy(county.multiPolygon))
+            .map(boundary.merge)
+            .getOrElse(boundary)
+      }.seq
     }
 
   /**
@@ -131,38 +142,49 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
    */
   private def enrichCities(cities: Seq[OSMBoundary], postalCodes: Seq[OSMPostalCode]): Seq[OSMBoundary] = {
 
+    val postalCodesPar = postalCodes.par
     cities
+      .par
       .filter(_.city.isDefined)
       .map{ city =>
-        postalCodes.find(_.point.coveredBy(city.multiPolygon)) match {
+        postalCodesPar.find(_.point.coveredBy(city.multiPolygon)) match {
           case Some(found) => city.copy(postalCode = found.postalCode)
           case _ => city
        }
-     }
+     }.seq
   }
 
   /** Create the addresses index that will be used to decorate the road index leaves by adding
-   * a sequence of [[OSMAddress]] to retrieve the candidate street number
-   *
+   * a sequence of [[OSMStreetAndHouseNumber]] to retrieve the candidate street number
    */
-  def createAddressesIndex(roads: Seq[Path],houseNumbers: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
+  def createAddressesIndex(roads: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
 
     val countryName = roads.head.split(Pattern.quote(File.separator)).reverse.tail.head
     logger.info(s"Loading OSM roads of $countryName...")
-    val roadsGeometryList = OSMGenericStreetLoader(roads, houseNumbers).loadIndex(roads: _*)
+    val roadsGeometryList = OSMGenericStreetLoader(roads, Seq()).loadIndex(roads: _*)
     logger.info(s"Done loading OSM roads of $countryName!")
 
     roadsGeometryList
   }
 
+  def createHouseNumbersIndex(houseNumbers: List[Path]): GeometryList[OSMHouseNumber] = {
+
+    val countryName = houseNumbers.head.split(Pattern.quote(File.separator)).reverse.tail.head
+    logger.info(s"Loading OSM house numbers of $countryName...")
+    val houseNumbersGeometryList = new OSMHouseNumbersLoader().loadIndex(houseNumbers: _*)
+    logger.info(s"Done loading OSM house numbers of $countryName!")
+
+    houseNumbersGeometryList
+  }
+
   private def createIndexSet(inputPaths: List[String]): IndexSet = {
     inputPaths match {
       case path :: Nil => makeIndices(path)
-      case bPath :: rPath :: sPath :: Nil =>
+      case bPath :: _ :: sPath :: Nil =>
         val boundaries = ObjectPickler.unpickle[GeometryList[OSMBoundary]](bPath)
-        val regions = ObjectPickler.unpickle[GeometryList[OSMBoundary]](rPath)
         val streets = ObjectPickler.unpickle[GeometryList[OSMStreetAndHouseNumber]](sPath)
-        IndexSet(boundaries, regions, streets)
+        val houseNumbers = ObjectPickler.unpickle[GeometryList[OSMHouseNumber]](sPath)
+        IndexSet(boundaries, streets, houseNumbers)
       case _ => throw new IllegalArgumentException(s"the list of input paths should be a single path or three " +
         s"different paths (boundaries, regions and streets). The list of input path was: $inputPaths")
     }

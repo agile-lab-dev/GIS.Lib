@@ -7,7 +7,7 @@ import it.agilelab.bigdata.gis.domain.configuration.OSMManagerConfiguration
 import it.agilelab.bigdata.gis.domain.exceptions.ReverseGeocodingError
 import it.agilelab.bigdata.gis.domain.graphhopper.IdentifiableGPSPoint
 import it.agilelab.bigdata.gis.domain.loader.ReverseGeocoder
-import it.agilelab.bigdata.gis.domain.models.{KnnResult, OSMBoundary, OSMStreetAndHouseNumber, ReverseGeocodingResponse}
+import it.agilelab.bigdata.gis.domain.models.{KnnResult, OSMBoundary, OSMSmallAddressNumber, OSMStreetAndHouseNumber, ReverseGeocodingResponse}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
@@ -55,7 +55,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     if (osmConfig.addressTolMeters > ManagerUtils.NUMBERS_MAX_DISTANCE)
       logger.info("address_tol_meter is greater than the distance used to build the spatial index!")
 
-    queryBoundaryIndices(List(indexManager.indexSet.boundaries, indexManager.indexSet.regions), queryPoint)
+    queryBoundaryIndices(List(indexManager.indexSet.boundaries/*, indexManager.indexSet.regions*/), queryPoint)
   }
 
   private def reverseGeocodeQueryingStreets(queryPoint: Point): Option[OSMStreetAndHouseNumber] = {
@@ -67,8 +67,19 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
       osmConfig.roadTolMeters
     )
 
+    val houseNumbers = KNNQueryMem.spatialQueryWithMaxDistance(
+      indexManager.indexSet.houseNumbers,
+      queryPoint,
+      ManagerUtils.NUMBERS_MAX_DISTANCE
+    )
+
     //If filterEmptyStreets is enabled then we filter out all the not defined and empty streets
     roadsResult.find(p => !osmConfig.filterEmptyStreets || p.street.exists(_.trim.nonEmpty))
+      .map(s => s.copy(numbers = houseNumbers.map(n => OSMSmallAddressNumber(
+        n.point.getCoordinate.x,
+        n.point.getCoordinate.y,
+        n.number
+      ))))
   }
 
   private def makeAddress(point: IdentifiableGPSPoint,
