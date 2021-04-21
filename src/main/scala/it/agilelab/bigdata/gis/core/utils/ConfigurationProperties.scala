@@ -11,7 +11,9 @@ object ConfigurationProperties {
   case object INDEX extends ConfigurationProperties { override lazy val value: String = "index" }
   case object PATH extends ConfigurationProperties { override lazy val value: String = "path" }
   case object BOUNDARY extends ConfigurationProperties { override lazy val value: String = "boundary" }
+  case object OSM_INDEX_SERIALIZED_INPUT_FLAG extends ConfigurationProperties { override lazy val value: String = "is_serialized_input_paths" }
   case object INPUT_PATHS extends ConfigurationProperties { override lazy val value: String = "input_paths" }
+  case object OSM_INDEX_OUTPUT_PATHS extends ConfigurationProperties { override lazy val value: String = "serialized_output_paths" }
   case object VEHICLE extends ConfigurationProperties { override lazy val value: String = "vehicle" }
   case object FILTER_EMPTY_STREETS extends ConfigurationProperties { override lazy val value: String = "filter_empty_streets" }
   case object READ_TOL_METERS extends ConfigurationProperties { override lazy val value: String = "road_tol_meters" }

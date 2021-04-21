@@ -22,3 +22,4 @@ buildNumber.properties
 src/test/resources/graphHopperSource/*
 src/test/resources/graphHopper/*
 
+src/test/resources/osm/maps-index/
