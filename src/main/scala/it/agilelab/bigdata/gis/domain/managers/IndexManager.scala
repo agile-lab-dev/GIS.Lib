@@ -142,11 +142,12 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
    */
   private def enrichCities(cities: Seq[OSMBoundary], postalCodes: Seq[OSMPostalCode]): Seq[OSMBoundary] = {
 
+    val postalCodesPar = postalCodes.par
     cities
       .par
       .filter(_.city.isDefined)
       .map{ city =>
-        postalCodes.find(_.point.coveredBy(city.multiPolygon)) match {
+        postalCodesPar.find(_.point.coveredBy(city.multiPolygon)) match {
           case Some(found) => city.copy(postalCode = found.postalCode)
           case _ => city
        }
