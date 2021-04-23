@@ -5,12 +5,15 @@ import it.agilelab.bigdata.gis.core.utils.ManagerUtils.{BoundaryPathGroup, Count
 import it.agilelab.bigdata.gis.core.utils.{Configuration, Logger, ObjectPickler}
 import it.agilelab.bigdata.gis.domain.configuration.IndexManagerConfiguration
 import it.agilelab.bigdata.gis.domain.loader.{OSMAdministrativeBoundariesLoader, OSMGenericStreetLoader, OSMHouseNumbersLoader, OSMPostalCodeLoader}
-import it.agilelab.bigdata.gis.domain.managers.IndexManager.recordDuration
+import it.agilelab.bigdata.gis.domain.managers.IndexManager.{load, recordDuration}
 import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMHouseNumber, OSMPostalCode, OSMStreetAndHouseNumber}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 import java.io.File
+import java.lang
+import java.util.concurrent.{Callable, Executors}
 import java.util.regex.Pattern
+import scala.Symbol
 
 case class IndexManager(conf: Config) extends Configuration with Logger {
 
@@ -41,7 +44,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
       throw new IllegalArgumentException(s"$upperFolderPath is not a directory")
     }
     val multiCountriesPathSet: List[CountryPathSet] =
-        mapsFolder
+      mapsFolder
         .listFiles()
         .map(pathManager.getCountryPathSet)
         .toList
@@ -231,16 +234,30 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
       inputPaths match {
         case bPath :: sPath :: hPath :: Nil =>
           logger.info(s"Loading index from files $bPath $sPath $hPath")
-          val boundaries = recordDuration(ObjectPickler.unpickle[GeometryList[OSMBoundary]](bPath), d => {
-            logger.info(s"Loaded boundaries index from file $bPath in $d ms")
-          })
-          val streets = recordDuration(ObjectPickler.unpickle[GeometryList[OSMStreetAndHouseNumber]](sPath), d => {
-            logger.info(s"Loaded streets index from file $sPath in $d ms")
-          })
-          val houseNumbers = recordDuration(ObjectPickler.unpickle[GeometryList[OSMHouseNumber]](hPath), d => {
-            logger.info(s"Loaded house numbers index from file $hPath in $d ms")
-          })
-          IndexSet(boundaries, streets, houseNumbers)
+
+          val threadPool = Executors.newFixedThreadPool(inputPaths.size)
+          val boundaries = threadPool.submit(load(
+            recordDuration(ObjectPickler.unpickle[GeometryList[OSMBoundary]](bPath), d => {
+              logger.info(s"Loaded boundaries index from file $bPath in $d ms")
+              System.gc()
+            })
+          ))
+          val streets = threadPool.submit(load(
+            recordDuration(ObjectPickler.unpickle[GeometryList[OSMStreetAndHouseNumber]](sPath), d => {
+              logger.info(s"Loaded streets index from file $sPath in $d ms")
+              System.gc()
+            })
+          ))
+          val houseNumbers = threadPool.submit(load(
+            recordDuration(ObjectPickler.unpickle[GeometryList[OSMHouseNumber]](hPath), d => {
+              logger.info(s"Loaded house numbers index from file $hPath in $d ms")
+              System.gc()
+            })
+          ))
+
+          val index = IndexSet(boundaries.get(), streets.get(), houseNumbers.get())
+          threadPool.shutdown()
+          index
         case _ => throw new IllegalArgumentException(s"the list of input paths should be three " +
           s"different paths (boundaries, streets, and house numbers). The list of input path was: $inputPaths")
       }
@@ -263,4 +280,7 @@ object IndexManager {
     r
   }
 
+  private def load[T](f: => T): Callable[T] = new Callable[T] {
+    override def call(): T = f
+  }
 }
