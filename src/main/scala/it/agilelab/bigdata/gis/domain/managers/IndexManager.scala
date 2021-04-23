@@ -33,8 +33,15 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
    */
   def makeIndices(upperFolderPath: String, outputPaths: Option[List[String]]): IndexSet = {
 
+    val mapsFolder = new File(upperFolderPath)
+    if (!mapsFolder.exists()) {
+      throw new IllegalArgumentException(s"$upperFolderPath doesn't exist")
+    }
+    if (!mapsFolder.isDirectory) {
+      throw new IllegalArgumentException(s"$upperFolderPath is not a directory")
+    }
     val multiCountriesPathSet: List[CountryPathSet] =
-      new File(upperFolderPath)
+        mapsFolder
         .listFiles()
         .map(pathManager.getCountryPathSet)
         .toList
