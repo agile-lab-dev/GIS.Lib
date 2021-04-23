@@ -39,53 +39,71 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
         .map(pathManager.getCountryPathSet)
         .toList
 
-    logger.info("Loading OSM boundaries file into GeometryList...")
+    val maybeIndex: Option[IndexSet] = if (outputPaths.isDefined) {
+      outputPaths.get match {
+        case bPath :: sPath :: hPath :: Nil =>
+          logger.info(s"Saving OSM index in $bPath $sPath $hPath")
+          recordDuration(ObjectPickler.pickle(createBoundariesGeometryList(multiCountriesPathSet), bPath), d => {
+            logger.info(s"Saved OSM boundaries index in $d ms")
+          })
+          System.gc()
+          recordDuration(ObjectPickler.pickle(createStreetsGeometryList(multiCountriesPathSet), sPath), d => {
+            logger.info(s"Saved OSM streets index in $d ms")
+          })
+          System.gc()
+          recordDuration(ObjectPickler.pickle(createHouseNumbersGeometryList(multiCountriesPathSet), hPath), d => {
+            logger.info(s"Saved OSM house numbers index in $d ms")
+          })
+          System.gc()
+          Some(createIndexSet(indexConfig.copy(
+            isSerializedInputPaths = true,
+            inputPaths = outputPaths.get
+          )))
+        case _ =>
+          logger.warn(s"Index serialization skipped due to unexpected output paths $outputPaths")
+          None
+      }
+    } else {
+      None
+    }
 
+    if (maybeIndex.isDefined) {
+      maybeIndex.get
+    } else {
+      val boundariesGeometryList: GeometryList[OSMBoundary] = createBoundariesGeometryList(multiCountriesPathSet)
+      val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createStreetsGeometryList(multiCountriesPathSet)
+      val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersGeometryList(multiCountriesPathSet)
+      IndexSet(boundariesGeometryList, streetsGeometryList, houseNumbersGeometryList)
+    }
+  }
+
+  private def createHouseNumbersGeometryList(multiCountriesPathSet: List[CountryPathSet]) = {
+    logger.info("Loading OSM house numbers file into GeometryList...")
+    val houseNumbers: List[Path] = multiCountriesPathSet.flatMap(_.houseNumbers)
+    val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersIndex(houseNumbers)
+    logger.info("Done loading OSM house numbers file into GeometryList!")
+    houseNumbersGeometryList
+  }
+
+  private def createStreetsGeometryList(multiCountriesPathSet: List[CountryPathSet]) = {
+    logger.info("Loading OSM roads file into GeometryList...")
+    val roads: List[Path] = multiCountriesPathSet.flatMap(_.roads)
+    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads)
+    logger.info("Done loading OSM roads file into GeometryList!")
+    streetsGeometryList
+  }
+
+  private def createBoundariesGeometryList(multiCountriesPathSet: List[CountryPathSet]) = {
+    logger.info("Loading OSM boundaries file into GeometryList...")
     val indexStuffs: List[IndexStuffs] =
       multiCountriesPathSet
         .par
         .map(pathSet => createCountryBoundariesWithPostalCodes(pathSet.boundary, pathSet.postalCodes))
         .toList
-
     val cityIndexStuff: List[OSMBoundary] = indexStuffs.flatMap(_.cityIndex)
-
     val boundariesGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndexStuff)
-
     logger.info("Done loading OSM boundaries file into GeometryList!")
-
-    logger.info("Loading OSM roads file into GeometryList...")
-    val roads: List[Path] = multiCountriesPathSet.flatMap(_.roads)
-    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createAddressesIndex(roads)
-    logger.info("Done loading OSM roads file into GeometryList!")
-
-    logger.info("Loading OSM house numbers file into GeometryList...")
-    val houseNumbers: List[Path] = multiCountriesPathSet.flatMap(_.houseNumbers)
-    val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersIndex(houseNumbers)
-    logger.info("Done loading OSM house numbers file into GeometryList!")
-
-    System.gc()
-
-    if (outputPaths.isDefined) {
-      outputPaths.get match {
-        case bPath :: sPath :: hPath :: Nil =>
-          logger.info(s"Saving OSM index in $bPath $sPath $hPath")
-          recordDuration(ObjectPickler.pickle(boundariesGeometryList, bPath), d => {
-            logger.info(s"Saved OSM boundaries index in $d ms")
-          })
-          System.gc()
-          recordDuration(ObjectPickler.pickle(streetsGeometryList, sPath), d => {
-            logger.info(s"Saved OSM streets index in $d ms")
-          })
-          System.gc()
-          recordDuration(ObjectPickler.pickle(houseNumbersGeometryList, hPath), d => {
-            logger.info(s"Saved OSM house numbers index in $d ms")
-          })
-          System.gc()
-        case _ =>
-          logger.warn(s"Index serialization skipped due to unexpected output paths $outputPaths")
-      }
-    }
-    IndexSet(boundariesGeometryList, streetsGeometryList, houseNumbersGeometryList)
+    boundariesGeometryList
   }
 
   //TODO review performances
