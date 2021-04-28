@@ -39,31 +39,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
   }
 
   "Reverse geocoding on Italy" should "work" in {
-
-    val id = "abc"
-    val point = IdentifiableGPSPoint(id, 45.068032, 7.643780, None, System.currentTimeMillis())
-
-    val viaAzziActual: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
-
-    val viaAzziExpected: ReverseGeocodingResponse =
-      ReverseGeocodingResponse(
-        id,
-        street = Some("Via Francesco Azzi"),
-        city = Some("Turin"),
-        county = Some("Torino"),
-        countyCode = Some("TO"),
-        region = Some("Piemont"),
-        country = Some("Italy"),
-        countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
-        postalIndex = Some("10024"),
-        addressRange = Some("10"),
-        speedLimit = Some(50),
-        speedCategory = None,
-        roadType = Some("unclassified"),
-        distance = Some(8.934272840344661)
-      )
-
-    viaAzziActual should be(viaAzziExpected)
+    reverseGeocodeTurin(osmManager)
   }
 
   "Reverse geocoding on Italy" should "has correct postalcode valued" in {
@@ -122,6 +98,37 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
     corsoSaccoEVanzettiActual should be(corsoSaccoEVanzettiExpected)
   }
 
+  "OSMManager" should "retrieve OSM index from file and reverse geocode a Turin coordinate" in {
+    val osmManagerIndexRetriever = OSMManager(ConfigFactory.load("reference-osm-file-index.conf").getConfig("osm"))
+    reverseGeocodeTurin(osmManagerIndexRetriever)
+  }
+
+  private def reverseGeocodeTurin(osmManager: OSMManager): Unit = {
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.068032, 7.643780, None, System.currentTimeMillis())
+
+    val viaAzziActual: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
+
+    val viaAzziExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = Some("Via Francesco Azzi"),
+        city = Some("Turin"),
+        county = Some("Torino"),
+        countyCode = Some("TO"),
+        region = Some("Piemont"),
+        country = Some("Italy"),
+        countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
+        postalIndex = Some("10024"),
+        addressRange = Some("10"),
+        speedLimit = Some(50),
+        speedCategory = None,
+        roadType = Some("unclassified"),
+        distance = Some(8.934272840344661)
+      )
+
+    viaAzziActual should be(viaAzziExpected)
+  }
 
   /*-------------------------------*/
   /*LOAD MAP TO REMOVE THIS COMMENT*/
