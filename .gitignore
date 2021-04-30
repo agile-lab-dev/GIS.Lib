@@ -20,6 +20,7 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 
 src/test/resources/graphHopperSource/*
-src/test/resources/graphHopper/*
+src/test/resources/graphhopper/*
+src/test/resources/osm/maps/germany
 
 src/test/resources/osm/maps-index/

@@ -6,6 +6,7 @@ import com.typesafe.config.Config
 import it.agilelab.bigdata.gis.core.utils.Logger
 import it.agilelab.bigdata.gis.domain.configuration.GraphHopperConfiguration
 import it.agilelab.bigdata.gis.domain.exceptions.MatchedRouteError
+import it.agilelab.bigdata.gis.domain.graphhopper.GraphHopperManager.getRouteTypesKm
 import it.agilelab.bigdata.gis.domain.loader.RouteMatcher
 
 import java.util
@@ -28,58 +29,16 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
       val length = calcRoute.getMatchLength
       val time = calcRoute.getMatchMillis
       val edges: Seq[EdgeMatch] = calcRoute.getEdgeMatches
+      val routeTypesKm: Map[String, Double] = getRouteTypesKm(getMappedEdges(calcRoute.getEdgeMatches))
+      val allEdges: Seq[EnrichEdge] = getAllEdges(edges)
+      val points: Seq[TracePoint] = allEdges.filter(_.isInitialNode).map(_.node.get)
 
       if (calcRoute.getMergedPath.calcEdges().nonEmpty) {
-
-        val mappedEdges: Seq[(String, Double)] =
-          edges
-            .map(edge => (graphConf.encoder.getHighwayAsString(edge.getEdgeState), edge.getEdgeState.getDistance))
-            .map {
-              case (null, value) => ("unclassified", value)
-              case x: (String, Double) => x
-            }
 
         //retrieve distance for each pair of points
         val distances = calcRoute.getMergedPath
           .calcDetails(List("distance"), new PathDetailsBuilderFactory, 0)
           .get("distance")
-
-        //retrieve all edges
-        val allEdges: Seq[EnrichEdge] = edges.toList.flatMap(edge => {
-          val gpsExtensions: util.List[GPXExtension] = edge.getGpxExtensions
-          val edgeId = edge.getEdgeState.getBaseNode
-
-          if (gpsExtensions.size() == 0)
-            List(
-              EnrichEdge(edgeId, isInitialNode = false, typeOfRoute(edge), None)
-            )
-          else
-            gpsExtensions.flatMap(item => {
-              List(
-                EnrichEdge(
-                  item.getQueryResult.getClosestNode,
-                  isInitialNode = true,
-                  typeOfRoute(edge),
-                  Some(
-                    TracePoint(
-                      item.getEntry.lat,
-                      item.getEntry.lon,
-                      Some(item.getEntry.ele),
-                      item.getEntry.getTime,
-                      Some(item.getQueryResult.getSnappedPoint.lat),
-                      Some(item.getQueryResult.getSnappedPoint.lon),
-                      Some(item.getQueryResult.getSnappedPoint.ele),
-                      Some(typeOfRoute(edge)),
-                      Some(edge.getEdgeState.getName),
-                      Some(graphConf.encoder.getSpeed(item.getQueryResult.getClosestEdge.getFlags).toInt),
-                      Some(item.getQueryResult.getQueryDistance)
-                    )
-                  )
-                )
-              )
-            })
-
-        })
 
         //union information on edge with information on distances
         val distancesBetweenEdge: Seq[EnrichEdgeWithDistance] =
@@ -98,10 +57,10 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
         val idxInitialNode: Seq[Int] =
           distancesBetweenEdge.zipWithIndex
             .filter {
-              case (edgeWithDistance, idx) => edgeWithDistance.isInitialNode
+              case (edgeWithDistance, _) => edgeWithDistance.isInitialNode
             }
             .map {
-              case (edgeWithDistance, idx) => idx
+              case (_, idx) => idx
             }
 
         // distances between node
@@ -112,7 +71,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
               case (fromIdx, toIdx) =>
                 val subList = distancesBetweenEdge.subList(fromIdx, toIdx + 1)
 
-                val (typesOfRoute, nrOccurrences) =
+                val (typesOfRoute, _) =
                   subList
                     .map(_.typeOfRoute)
                     .groupBy(identity)
@@ -134,13 +93,6 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
                 )
             }
 
-        val routeTypesKm: Map[String, Double] =
-          mappedEdges
-            .groupBy(_._1)
-            .map(x => (x._1, x._2.map(_._2).sum))
-
-        val points: Seq[TracePoint] =
-          allEdges.filter(_.isInitialNode).map(_.node.get)
 
         MatchedRoute(
           points,
@@ -149,13 +101,74 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
           routeTypesKm,
           distancesBetweenNode
         )
-      } else
-          MatchedRoute(gpsPoints.map(_.toTracePoint), length, time, Map.empty, Seq.empty)
+      } else {
+        if (points.nonEmpty) {
+          MatchedRoute(points, length, time, routeTypesKm, Seq.empty)
+        } else {
+          MatchedRoute(gpsPoints.map(_.toTracePoint), length, time, routeTypesKm, Seq.empty)
+        }
+      }
     } match {
       case Success(route) => Right(route)
       case Failure(ex) =>
         logger.error("Failed to match route", ex)
         Left(MatchedRouteError(ex))
     }
+  }
+
+  private def getAllEdges(edges: Seq[EdgeMatch]) = {
+    edges.toList.flatMap(edge => {
+      val gpsExtensions: util.List[GPXExtension] = edge.getGpxExtensions
+      val edgeId = edge.getEdgeState.getBaseNode
+
+      if (gpsExtensions.size() == 0)
+        List(
+          EnrichEdge(edgeId, isInitialNode = false, typeOfRoute(edge), None)
+        )
+      else
+        gpsExtensions.flatMap(item => {
+          List(
+            EnrichEdge(
+              item.getQueryResult.getClosestNode,
+              isInitialNode = true,
+              typeOfRoute(edge),
+              Some(
+                TracePoint(
+                  item.getEntry.lat,
+                  item.getEntry.lon,
+                  Some(item.getEntry.ele),
+                  item.getEntry.getTime,
+                  Some(item.getQueryResult.getSnappedPoint.lat),
+                  Some(item.getQueryResult.getSnappedPoint.lon),
+                  Some(item.getQueryResult.getSnappedPoint.ele),
+                  Some(typeOfRoute(edge)),
+                  Some(edge.getEdgeState.getName),
+                  Some(graphConf.encoder.getSpeed(item.getQueryResult.getClosestEdge.getFlags).toInt),
+                  Some(item.getQueryResult.getQueryDistance)
+                )
+              )
+            )
+          )
+        })
+
+    })
+  }
+
+  private def getMappedEdges(edges: Seq[EdgeMatch]) = {
+    edges
+      .map(edge => (graphConf.encoder.getHighwayAsString(edge.getEdgeState), edge.getEdgeState.getDistance))
+      .map {
+        case (null, value) => ("unclassified", value)
+        case x: (String, Double) => x
+      }
+  }
+}
+
+object GraphHopperManager {
+
+  private def getRouteTypesKm(mappedEdges: Seq[(String, Double)]) = {
+    mappedEdges
+      .groupBy(_._1)
+      .map(x => (x._1, x._2.map(_._2).sum))
   }
 }
