@@ -3,7 +3,7 @@ package it.agilelab.bigdata.gis.core
 import com.typesafe.config.{Config, ConfigFactory}
 import it.agilelab.bigdata.gis.core.apps.ConverterFromOSMToGraphHopperMap
 import it.agilelab.bigdata.gis.core.utils.Logger
-import it.agilelab.bigdata.gis.domain.graphhopper.{GPSPoint, GraphHopperManager}
+import it.agilelab.bigdata.gis.domain.graphhopper.{GPSPoint, GraphHopperManager, MatchedRoute, TracePoint}
 import org.scalatest.{BeforeAndAfterAll, EitherValues, FlatSpec, Matchers}
 
 import java.io.File
@@ -23,7 +23,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val basePath =  Paths.get("src/test/resources/").toFile.getAbsoluteFile
+    val basePath = Paths.get("src/test/resources/").toFile.getAbsoluteFile
 
     val pbfFilePath: String = Paths.get("src/test/resources/graphHopperSource/italy-latest.osm.pbf").toFile.getAbsolutePath
     val graphPath: String = s"$basePath/graphHopper"
@@ -48,6 +48,154 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
     logger.info(s"Init graph from $graphPathOutput")
 
     manager = GraphHopperManager(graphConf)
+  }
+
+  "Given 1 point" should "return a matched route" in {
+
+    val time = 1619780763562L
+    val point1 = GPSPoint(45.0663115866474, 7.637293092568119, None, time)
+
+    val points = Seq(point1)
+
+    scala.Double.NaN
+    val response = manager.matchingRoute(points)
+      .right
+      .value
+
+    val expected = MatchedRoute(
+      points = Seq(TracePoint(
+        latitude = 45.0663115866474,
+        longitude = 7.637293092568119,
+        altitude = None,
+        time = time,
+        matchedLatitude = Some(45.066316193850604),
+        matchedLongitude = Some(7.637272156733646),
+        matchedAltitude = Some(0.0),
+        roadType = Some("secondary_link"),
+        roadName = Some("Corso Trapani"),
+        speedLimit = Some(45),
+        linearDistance = Some(1.7221707379444537)
+      )),
+      length = 0.0,
+      time = 0,
+      routes = Map("secondary_link" -> 470.687),
+      distanceBetweenPoints = Seq()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+  "Given 2 points" should "return matched route" in {
+
+    val point1 = GPSPoint(45.16696, 8.89223, None, 1619275184000L)
+    val point2 = GPSPoint(45.16696, 8.89223, None, 1619275191000L)
+
+    val points = Seq(point1, point2)
+
+    val response = manager.matchingRoute(points).right.value
+
+    val expected = MatchedRoute(
+      List(
+        TracePoint(
+          latitude = 45.16696,
+          longitude = 8.89223,
+          altitude = None,
+          time = 1619275184000L,
+          matchedLatitude = Some(45.16695452670932),
+          matchedLongitude = Some(8.892203898204867),
+          matchedAltitude = Some(0.0),
+          roadType = Some("trunk"),
+          roadName = Some(""),
+          speedLimit = Some(20),
+          linearDistance = Some(2.13489478036631)
+        ),
+        TracePoint(
+          latitude = 45.16696,
+          longitude = 8.89223,
+          altitude = None,
+          time = 1619275191000L,
+          matchedLatitude = Some(45.16695452670932),
+          matchedLongitude = Some(8.892203898204867),
+          matchedAltitude = Some(0.0),
+          roadType = Some("trunk"),
+          roadName = Some(""),
+          speedLimit = Some(20),
+          linearDistance = Some(2.13489478036631)
+        )
+      ),
+      length = 0.0,
+      time = 0,
+      routes = Map("trunk" -> 65.105),
+      distanceBetweenPoints = List()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+  "Given route of a stopped vehicle" should "return a matched route" in {
+
+    val trip =
+      """
+        |45.17264,9.04017,1619089290000
+        |45.17264,9.04016,1619089300000
+        |45.17264,9.04016,1619089310000
+        |45.17264,9.04016,1619089320000
+        |45.17264,9.04016,1619089330000
+        |45.17264,9.04016,1619089340000
+        |45.17264,9.04016,1619089350000
+        |45.17264,9.04016,1619089360000
+        |45.17264,9.04016,1619089370000
+        |45.17264,9.04016,1619089380000
+        |45.17264,9.04016,1619089390000
+        |45.17264,9.04016,1619089400000
+        |45.17264,9.04016,1619089410000
+        |45.17262,9.04016,1619089411000
+        |""".stripMargin
+
+    val points: Seq[GPSPoint] = trip.lines
+      .filter(_.nonEmpty)
+      .map(_.split(","))
+      .map(r => GPSPoint(r.head.toDouble, r(1).toDouble, None, r(2).toLong))
+      .toSeq
+
+    val response = manager.matchingRoute(points).right.value
+
+    val expected = MatchedRoute(
+      points = List(
+        TracePoint(
+          latitude = 45.17264,
+          longitude = 9.04017,
+          altitude = None,
+          time = 1619089290000L,
+          matchedLatitude = Some(45.17239819165617),
+          matchedLongitude = Some(9.040047061706336),
+          matchedAltitude = Some(0.0),
+          roadType = Some("primary"),
+          roadName = Some("Via Stefano Pollini"),
+          speedLimit = Some(30),
+          linearDistance = Some(28.562745223944667)
+        ),
+        TracePoint(
+          latitude = 45.17262,
+          longitude = 9.04016,
+          altitude = None,
+          time = 1619089411000L,
+          matchedLatitude = Some(45.17239815398451),
+          matchedLongitude = Some(9.04004721079609),
+          matchedAltitude = Some(0.0),
+          roadType = Some("primary"),
+          roadName = Some("Via Stefano Pollini"),
+          speedLimit = Some(30),
+          linearDistance = Some(26.20476715546049)
+        )
+      ),
+      length = 0.0,
+      time = 0,
+      routes = Map("primary" -> 159.296),
+      distanceBetweenPoints = List()
+    )
+
+    noneAltitude(response) shouldBe expected
   }
 
   "test carFlagEncoderEnrich" should "retrieve result of map matching and distance for each type of street" in {
@@ -218,6 +366,10 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
 
     assert(distanceBetweenPoints.diffTime == 2000L)
     assert(distanceBetweenPoints.distance > 75 && distanceBetweenPoints.distance < 85)
+  }
+
+  private def noneAltitude(r: MatchedRoute): MatchedRoute = {
+    r.copy(points = r.points.map(_.copy(altitude = None))) // Altitude might be Some(NaN)
   }
 
 }
