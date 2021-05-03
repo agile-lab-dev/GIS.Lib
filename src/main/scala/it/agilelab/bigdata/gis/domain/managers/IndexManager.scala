@@ -14,7 +14,7 @@ import java.util.concurrent.{Callable, Executors, Future}
 import java.util.regex.Pattern
 
 /**
- * [[IndexManager]] creates OSM indices.
+ * [[IndexManager]] creates OSM indices, see [[IndexSet]] for a full list of indices created.
  *
  * @param conf OSM maps configurations.
  */

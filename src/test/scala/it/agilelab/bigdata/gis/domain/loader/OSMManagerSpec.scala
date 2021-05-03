@@ -954,7 +954,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
 
     val leipzig = osmManager.reverseGeocode(point).right.value
 
-    // Note: we don't lead postal codes and house numbers of Germany
+    // Note: we don't load postal codes and house numbers of Germany
     val expected = ReverseGeocodingResponse(
       id = id,
       street = None,
