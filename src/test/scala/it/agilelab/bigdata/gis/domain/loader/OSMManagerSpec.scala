@@ -947,29 +947,29 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
   //    randomPlaceInFranceActual should be (randomPlaceInFranceExpected)
   //  }
 
-  //  "Reverse geocoding on Germany" should "work" in {
-  //
-  //    val id = "abc"
-  //    val point = IdentifiableGPSPoint(id, 51.330432, 12.381331, None, System.currentTimeMillis())
-  //
-  //    val leipzig = osmManager.reverseGeocode(point).right.value
-  //
-  //    // Note: we don't lead postal codes and house numbers of Germany
-  //    val expected = ReverseGeocodingResponse(
-  //      id = id,
-  //      None,
-  //      None,
-  //      None,
-  //      None,
-  //      region = Some("Saxony"),
-  //      country = Some("Germany"),
-  //      countryCode = Some("DE"),
-  //      None,
-  //      None,
-  //      None
-  //    )
-  //
-  //    leipzig shouldBe expected
-  //  }
+  "Reverse geocoding on Germany" should "work" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 51.330432, 12.381331, None, System.currentTimeMillis())
+
+    val leipzig = osmManager.reverseGeocode(point).right.value
+
+    // Note: we don't lead postal codes and house numbers of Germany
+    val expected = ReverseGeocodingResponse(
+      id = id,
+      street = None,
+      city = None,
+      county = Some("Leipzig"),
+      countyCode = None,
+      region = Some("Saxony"),
+      country = Some("Germany"),
+      countryCode = Some("DE"),
+      postalIndex = None,
+      addressRange = None,
+      speedLimit = None
+    )
+
+    leipzig shouldBe expected
+  }
 }
 

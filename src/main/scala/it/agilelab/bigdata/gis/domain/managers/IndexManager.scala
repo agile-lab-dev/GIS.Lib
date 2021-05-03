@@ -35,7 +35,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
    */
   def makeIndices(upperFolderPath: String, outputPaths: Option[List[String]]): IndexSet = {
 
-    // Check whether the input folder in a directory
+    // Check whether the input folder is a directory
     val mapsFolder = new File(upperFolderPath)
     if (!mapsFolder.exists()) {
       throw new IllegalArgumentException(s"$upperFolderPath doesn't exist")
