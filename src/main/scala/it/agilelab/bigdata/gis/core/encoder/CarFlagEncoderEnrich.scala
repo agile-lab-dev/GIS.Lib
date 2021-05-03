@@ -1,19 +1,22 @@
 package it.agilelab.bigdata.gis.core.encoder
 
-import java.util
-
 import com.graphhopper.reader.ReaderWay
 import com.graphhopper.routing.util.{CarFlagEncoder, EncodedDoubleValue, EncodedValue}
 import com.graphhopper.util.EdgeIteratorState
+import it.agilelab.bigdata.gis.core.utils.Logger
 
+import java.util
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 /**
  * @author andreaL
  */
-class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnCosts: Int = 0) extends CarFlagEncoder(speedBits, speedFactor, maxTurnCosts) {
+class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnCosts: Int = 0) extends CarFlagEncoder(speedBits, speedFactor, maxTurnCosts) with Logger {
 
   final private val highwayMap: util.Map[String, Integer] = new util.HashMap[String, Integer]
+  final private val highwayMapIndex: mutable.Map[Int, String] = mutable.Map()
+
   private var highwayEncoder: EncodedValue = _
 
   defaultSpeedMap.put("steps", 0)
@@ -31,6 +34,7 @@ class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnC
 
   highwayList.zipWithIndex.foreach { case (value, idx) =>
     highwayMap.put(value, idx)
+    highwayMapIndex.put(idx, value)
   }
 
 
@@ -78,24 +82,11 @@ class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnC
   def getHighwayAsString(edge: EdgeIteratorState): String = {
     val v: Int = getHighway(edge)
 
-    highwayMap.entrySet().find(e => e.getValue == v) match {
-      case Some(value) => value.getKey
-      case None => null
+    highwayMapIndex.get(v) match {
+      case Some(value) => value
+      case None =>
+        logger.warn(s"Highway $v not found in ${highwayMap.mkString(",")}")
+        null
     }
-
-  }
-
-  private def getHighwaySpeedMap(map: util.Map[String, Double]): Seq[Double] = {
-
-    if (map == null)
-      throw new IllegalArgumentException("Map cannot be null when calling getHighwaySpeedMap")
-
-    map.entrySet().map(e => {
-      val key: Integer = highwayMap.get(e.getKey)
-      if (key == null) throw new IllegalArgumentException("Graph not prepared for highway=" + e.getKey)
-      if (e.getValue < 0) throw new IllegalArgumentException("Negative speed " + e.getValue + " not allowed. highway=" + e.getKey)
-      e.getValue
-    }).toSeq
-
   }
 }

@@ -158,7 +158,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
     edges
       .map(edge => (graphConf.encoder.getHighwayAsString(edge.getEdgeState), edge.getEdgeState.getDistance))
       .map {
-        case (null, value) => ("unclassified", value)
+        case (null, distance) => ("unclassified", distance)
         case x: (String, Double) => x
       }
   }
