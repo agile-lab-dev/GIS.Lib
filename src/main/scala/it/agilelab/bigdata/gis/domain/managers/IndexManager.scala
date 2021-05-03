@@ -90,7 +90,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     }
   }
 
-  private def createIndexSet(multiCountriesPathSet: List[CountryPathSet]) = {
+  private def createIndexSet(multiCountriesPathSet: List[CountryPathSet]): IndexSet = {
     val boundariesGeometryList: List[GeometryList[OSMBoundary]] = createBoundariesGeometryList(multiCountriesPathSet)
     val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createStreetsGeometryList(multiCountriesPathSet)
     val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersGeometryList(multiCountriesPathSet)
