@@ -6,7 +6,7 @@ import com.typesafe.config.Config
 import it.agilelab.bigdata.gis.core.utils.Logger
 import it.agilelab.bigdata.gis.domain.configuration.GraphHopperConfiguration
 import it.agilelab.bigdata.gis.domain.exceptions.MatchedRouteError
-import it.agilelab.bigdata.gis.domain.graphhopper.GraphHopperManager.getRouteTypesKm
+import it.agilelab.bigdata.gis.domain.graphhopper.GraphHopperManager.{Edge, getRouteTypesKm}
 import it.agilelab.bigdata.gis.domain.loader.RouteMatcher
 
 import java.util
@@ -16,11 +16,6 @@ import scala.util.{Failure, Success, Try}
 case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
   val graphConf: GraphHopperConfiguration = GraphHopperConfiguration(conf)
-
-  def typeOfRoute(edge: EdgeMatch): String =
-    Option(graphConf.encoder.getHighwayAsString(edge.getEdgeState))
-      //TODO is this right?
-      .getOrElse("unclassified")
 
   override def matchingRoute(gpsPoints: Seq[GPSPoint]): Either[MatchedRouteError, MatchedRoute] = {
     Try {
@@ -154,21 +149,28 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
     })
   }
 
-  private def getMappedEdges(edges: Seq[EdgeMatch]) = {
-    edges
-      .map(edge => (graphConf.encoder.getHighwayAsString(edge.getEdgeState), edge.getEdgeState.getDistance))
-      .map {
-        case (null, distance) => ("unclassified", distance)
-        case x: (String, Double) => x
-      }
-  }
+  private def getMappedEdges(edges: Seq[EdgeMatch]): Seq[Edge] =
+    edges.map(edge => (graphConf.encoder.getHighwayAsString(edge.getEdgeState), edge.getEdgeState.getDistance))
+
+  private def typeOfRoute(edge: EdgeMatch): String =
+    graphConf.encoder.getHighwayAsString(edge.getEdgeState)
+
 }
 
 object GraphHopperManager {
 
-  private def getRouteTypesKm(mappedEdges: Seq[(String, Double)]) = {
+  type Edge = (String, Double)
+
+  /** Get total distance by highway.
+   *
+   * @param mappedEdges mapped edges
+   * @return total distance by highway
+   */
+  private def getRouteTypesKm(mappedEdges: Seq[Edge]): Map[String, Double] = {
     mappedEdges
-      .groupBy(_._1)
-      .map(x => (x._1, x._2.map(_._2).sum))
+      .groupBy { case (highway, _) => highway }
+      .map { case (highway, distances) => (highway, distances.map { case (_, distance) => distance }.sum) }
   }
 }
+
+

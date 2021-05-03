@@ -17,6 +17,8 @@ class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnC
   final private val highwayMap: util.Map[String, Integer] = new util.HashMap[String, Integer]
   final private val highwayMapIndex: mutable.Map[Int, String] = mutable.Map()
 
+  private final val unknownHighway = "unclassified"
+
   private var highwayEncoder: EncodedValue = _
 
   defaultSpeedMap.put("steps", 0)
@@ -86,7 +88,7 @@ class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnC
       case Some(value) => value
       case None =>
         logger.warn(s"Highway $v not found in ${highwayMap.mkString(",")}")
-        null
+         unknownHighway
     }
   }
 }
