@@ -50,7 +50,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
         .map(pathManager.getCountryPathSet)
         .toList
 
-    // If an output path is defined, we create indices and serialized the in the specified directory.
+    // If an output path is defined, we create indices and serialize them in the specified output directory.
     val maybeIndex: Option[IndexSet] = if (outputPaths.isDefined) {
       outputPaths.get match {
         case bPath :: sPath :: hPath :: Nil =>
@@ -90,6 +90,12 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     }
   }
 
+  /**
+   * Loads and creates an index set from the given input directories.
+   *
+   * @param multiCountriesPathSet input paths
+   * @return index set
+   */
   private def createIndexSet(multiCountriesPathSet: List[CountryPathSet]): IndexSet = {
     val boundariesGeometryList: List[GeometryList[OSMBoundary]] = createBoundariesGeometryList(multiCountriesPathSet)
     val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createStreetsGeometryList(multiCountriesPathSet)
@@ -97,6 +103,18 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     createIndexSet(boundariesGeometryList, streetsGeometryList, houseNumbersGeometryList)
   }
 
+  /**
+   * Creates an index set using the given geometry lists.
+   *
+   * @param boundariesGeometryList   list of boundaries geometry list.
+   *                                 Elements:
+   *                                - 1: Boundaries geometry list
+   *                                - 2: Regions geometry list (Optional)
+   *                                  Constraint: 1 <= size <= 2.
+   * @param streetsGeometryList      geometry list of streets.
+   * @param houseNumbersGeometryList geometry list for house numbers
+   * @return index set
+   */
   private def createIndexSet(boundariesGeometryList: List[GeometryList[OSMBoundary]],
                              streetsGeometryList: GeometryList[OSMStreetAndHouseNumber],
                              houseNumbersGeometryList: GeometryList[OSMHouseNumber]): IndexSet = {
@@ -268,6 +286,12 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     houseNumbersGeometryList
   }
 
+  /**
+   * Creates indices and serializes them in the configured output directory if specified.
+   *
+   * @param config indices configuration
+   * @return a set of indices we care about.
+   */
   private def createIndexSet(config: IndexManagerConfiguration): IndexSet = {
     val inputPaths = config.inputPaths
     if (config.isSerializedInputPaths) {
