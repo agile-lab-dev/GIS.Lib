@@ -1,9 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>it.agilelab.bigdata</groupId>
-	<artifactId>gis.lib</artifactId>
-	<version>1.2.0-SNAPSHOT</version>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>it.agilelab.bigdata</groupId>
+    <artifactId>gis.lib</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
 
     <repositories>
         <repository>
@@ -13,8 +13,8 @@
     </repositories>
 
     <name>${project.groupId}:${project.artifactId}</name>
-	<description>Gis Library</description>
-	<packaging>jar</packaging>
+    <description>Gis Library</description>
+    <packaging>jar</packaging>
 
     <licenses>
         <license>
@@ -60,10 +60,11 @@
         </developer>
 
     </developers>
-    
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.version>2.11.2</scala.version>
+        <scala.version.major>2.11</scala.version.major>
         <org.slf4j.api.version>1.7.26</org.slf4j.api.version>
         <org.rogach.scallop.version>3.5.1</org.rogach.scallop.version>
         <com.typesafe.config.version>1.2.1</com.typesafe.config.version>
@@ -78,8 +79,8 @@
         <com.github.scala-incubator.io.version>0.4.3-1</com.github.scala-incubator.io.version>
         <org.scalatest.version>3.0.4</org.scalatest.version>
     </properties>
-	
-	<dependencies>
+
+    <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
@@ -125,10 +126,10 @@
         </dependency>
 
         <dependency>
-			<groupId>org.datasyslab</groupId>
-			<artifactId>JTSplus</artifactId>
-			<version>${org.datasyslab.jtsplus.version}</version>
-		</dependency>
+            <groupId>org.datasyslab</groupId>
+            <artifactId>JTSplus</artifactId>
+            <version>${org.datasyslab.jtsplus.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.geotools</groupId>
@@ -142,17 +143,17 @@
             </exclusions>
         </dependency>
 
-		<dependency>
-			<groupId>org.wololo</groupId>
-			<artifactId>jts2geojson</artifactId>
-			<version>${org.wololo.jts2geojson.version}</version>
-			<exclusions>
-				<exclusion>
-			<groupId>com.vividsolutions</groupId>
-			<artifactId>jts</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+        <dependency>
+            <groupId>org.wololo</groupId>
+            <artifactId>jts2geojson</artifactId>
+            <version>${org.wololo.jts2geojson.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vividsolutions</groupId>
+                    <artifactId>jts</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!-- GraphHopper dependencies -->
 
@@ -198,8 +199,8 @@
 
 
     </dependencies>
-	
-	<build>
+
+    <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
 
         <plugins>
@@ -256,13 +257,30 @@
                 </executions>
             </plugin>
 
-		</plugins>
+            <plugin>
+                <groupId>org.antipathy</groupId>
+                <artifactId>mvn-scalafmt_${scala.version.major}</artifactId>
+                <version>1.0.1619963427.2a09daa</version>
+                <configuration>
+                    <configLocation>${project.basedir}/.scalafmt.conf</configLocation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-		<resources>
-			<resource>
-				<directory>src/resource</directory>
-			</resource>
-		</resources>
-	</build>
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/resource</directory>
+            </resource>
+        </resources>
+    </build>
 </project>
   
