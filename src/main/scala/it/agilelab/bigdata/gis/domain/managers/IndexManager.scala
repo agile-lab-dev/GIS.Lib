@@ -10,11 +10,14 @@ import it.agilelab.bigdata.gis.domain.models.{OSMBoundary, OSMHouseNumber, OSMPo
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 import java.io.File
-import java.lang
-import java.util.concurrent.{Callable, Executors}
+import java.util.concurrent.{Callable, Executors, Future}
 import java.util.regex.Pattern
-import scala.Symbol
 
+/**
+ * [[IndexManager]] creates OSM indices, see [[IndexSet]] for a full list of indices created.
+ *
+ * @param conf OSM maps configurations.
+ */
 case class IndexManager(conf: Config) extends Configuration with Logger {
 
   val indexConfig: IndexManagerConfiguration = IndexManagerConfiguration(conf)
@@ -25,17 +28,14 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
   val indexSet: IndexSet = createIndexSet(indexConfig)
 
   /**
-   * 2.shp identifica la Nazione [Country]
-   * 4.shp identifica la Regione [Regions]
-   * 5.shp identifica la YYYY (mutualmente esclusivo con XXX.shp)
-   * 6.shp identifica la Provincia [County]
-   * 7.shp identifica il Comune [Municipality]
-   * 8.shp identifica il Comune (mutualmente esclusivo con 7.shp)
+   * [[makeIndices()]] creates indices, see [[IndexSet]] for the full list of indices created.
    *
-   * @param upperFolderPath path delle mappe
+   * @param upperFolderPath OSM index input path.
+   * @param outputPaths     serialized indices output path.
    */
   def makeIndices(upperFolderPath: String, outputPaths: Option[List[String]]): IndexSet = {
 
+    // Check whether the input folder is a directory
     val mapsFolder = new File(upperFolderPath)
     if (!mapsFolder.exists()) {
       throw new IllegalArgumentException(s"$upperFolderPath doesn't exist")
@@ -43,12 +43,14 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     if (!mapsFolder.isDirectory) {
       throw new IllegalArgumentException(s"$upperFolderPath is not a directory")
     }
+
     val multiCountriesPathSet: List[CountryPathSet] =
       mapsFolder
         .listFiles()
         .map(pathManager.getCountryPathSet)
         .toList
 
+    // If an output path is defined, we create indices and serialize them in the specified output directory.
     val maybeIndex: Option[IndexSet] = if (outputPaths.isDefined) {
       outputPaths.get match {
         case bPath :: sPath :: hPath :: Nil =>
@@ -80,10 +82,48 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     if (maybeIndex.isDefined) {
       maybeIndex.get
     } else {
-      val boundariesGeometryList: GeometryList[OSMBoundary] = createBoundariesGeometryList(multiCountriesPathSet)
-      val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createStreetsGeometryList(multiCountriesPathSet)
-      val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersGeometryList(multiCountriesPathSet)
-      IndexSet(boundariesGeometryList, streetsGeometryList, houseNumbersGeometryList)
+      logger.info("Creating in memory indices ...")
+      val indexSet = recordDuration(createIndexSet(multiCountriesPathSet), d => {
+        logger.info(s"Created in memory indices in $d ms")
+      })
+      indexSet
+    }
+  }
+
+  /**
+   * Loads and creates an index set from the given input directories.
+   *
+   * @param multiCountriesPathSet input paths
+   * @return index set
+   */
+  private def createIndexSet(multiCountriesPathSet: List[CountryPathSet]): IndexSet = {
+    val boundariesGeometryList: List[GeometryList[OSMBoundary]] = createBoundariesGeometryList(multiCountriesPathSet)
+    val streetsGeometryList: GeometryList[OSMStreetAndHouseNumber] = createStreetsGeometryList(multiCountriesPathSet)
+    val houseNumbersGeometryList: GeometryList[OSMHouseNumber] = createHouseNumbersGeometryList(multiCountriesPathSet)
+    createIndexSet(boundariesGeometryList, streetsGeometryList, houseNumbersGeometryList)
+  }
+
+  /**
+   * Creates an index set using the given geometry lists.
+   *
+   * @param boundariesGeometryList   list of boundaries geometry list.
+   *                                 Elements:
+   *                                - 1: Boundaries geometry list
+   *                                - 2: Regions geometry list (Optional)
+   *                                  Constraint: 1 <= size <= 2.
+   * @param streetsGeometryList      geometry list of streets.
+   * @param houseNumbersGeometryList geometry list for house numbers
+   * @return index set
+   */
+  private def createIndexSet(boundariesGeometryList: List[GeometryList[OSMBoundary]],
+                             streetsGeometryList: GeometryList[OSMStreetAndHouseNumber],
+                             houseNumbersGeometryList: GeometryList[OSMHouseNumber]): IndexSet = {
+    if (boundariesGeometryList.size >= 2) {
+      IndexSet(boundariesGeometryList.head, boundariesGeometryList(1), streetsGeometryList, houseNumbersGeometryList)
+    } else if (boundariesGeometryList.size == 1) {
+      IndexSet(boundariesGeometryList.head, null, streetsGeometryList, houseNumbersGeometryList)
+    } else {
+      throw new IllegalArgumentException("No boundaries geometry lists found")
     }
   }
 
@@ -103,21 +143,38 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     streetsGeometryList
   }
 
-  private def createBoundariesGeometryList(multiCountriesPathSet: List[CountryPathSet]) = {
+  /**
+   * createBoundariesGeometryList creates a list of geometry list.
+   *
+   * @param multiCountriesPathSet country path set, see [[PathManager.getCountryPathSet()]]
+   * @return
+   */
+  private def createBoundariesGeometryList(multiCountriesPathSet: List[CountryPathSet]): List[GeometryList[OSMBoundary]] = {
     logger.info("Loading OSM boundaries file into GeometryList...")
-    val indexStuffs: List[IndexStuffs] =
+
+    val boundariesIndices: List[BoundaryIndices] =
       multiCountriesPathSet
         .par
         .map(pathSet => createCountryBoundariesWithPostalCodes(pathSet.boundary, pathSet.postalCodes))
         .toList
-    val cityIndexStuff: List[OSMBoundary] = indexStuffs.flatMap(_.cityIndex)
-    val boundariesGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndexStuff)
+
+    val cityIndex: List[OSMBoundary] = boundariesIndices.flatMap(_.cityIndex)
+    val cityBoundaryGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndex)
+
+    val regionIndex: List[OSMBoundary] = boundariesIndices.flatMap(_.regionIndex)
+
+    val cityAndMaybeRegionGeometryLists: List[GeometryList[OSMBoundary]] = if (regionIndex.nonEmpty)
+      List(cityBoundaryGeometryList, boundariesLoader.buildIndex(regionIndex))
+    else
+      List(cityBoundaryGeometryList)
+
     logger.info("Done loading OSM boundaries file into GeometryList!")
-    boundariesGeometryList
+
+    cityAndMaybeRegionGeometryLists
   }
 
   //TODO review performances
-  def createCountryBoundariesWithPostalCodes(paths: BoundaryPathGroup, postalCodesPath: Array[Path]): IndexStuffs = {
+  def createCountryBoundariesWithPostalCodes(paths: BoundaryPathGroup, postalCodesPath: Array[Path]): BoundaryIndices = {
 
     val loadPostalCode: Seq[Path] => Seq[OSMPostalCode] = pathList => pathList.flatMap(postalCodeLoader.loadObjects(_))
     val loadBoundaries: Seq[Path] => Seq[OSMBoundary] = pathList => pathList.flatMap(boundariesLoader.loadObjects(_))
@@ -147,11 +204,12 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
       logger.info(s"Done merging boundaries cities with counties of country $countryName in $d ms")
     })
 
-    val primaryIndexBoundaries: Seq[OSMBoundary] = countiesWithRegion.map(_.merge(countryBoundary))
+    val cityIndex: Seq[OSMBoundary] = countiesWithRegion.map(_.merge(countryBoundary))
+    val regionIndex: Seq[OSMBoundary] = regions.map(_.merge(countryBoundary))
 
     logger.info(s"$countryName loaded.")
 
-    IndexStuffs(primaryIndexBoundaries)
+    BoundaryIndices(regionIndex, cityIndex)
   }
 
   /**
@@ -228,6 +286,12 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     houseNumbersGeometryList
   }
 
+  /**
+   * Creates indices and serializes them in the configured output directory if specified.
+   *
+   * @param config indices configuration
+   * @return a set of indices we care about.
+   */
   private def createIndexSet(config: IndexManagerConfiguration): IndexSet = {
     val inputPaths = config.inputPaths
     if (config.isSerializedInputPaths) {
@@ -236,8 +300,8 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
           logger.info(s"Loading index from files $bPath $sPath $hPath")
 
           val threadPool = Executors.newFixedThreadPool(inputPaths.size)
-          val boundaries = threadPool.submit(load(
-            recordDuration(ObjectPickler.unpickle[GeometryList[OSMBoundary]](bPath), d => {
+          val boundaries: Future[List[GeometryList[OSMBoundary]]] = threadPool.submit(load(
+            recordDuration(ObjectPickler.unpickle[List[GeometryList[OSMBoundary]]](bPath), d => {
               logger.info(s"Loaded boundaries index from file $bPath in $d ms")
               System.gc()
             })
@@ -255,7 +319,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
             })
           ))
 
-          val index = IndexSet(boundaries.get(), streets.get(), houseNumbers.get())
+          val index = createIndexSet(boundaries.get(), streets.get(), houseNumbers.get())
           threadPool.shutdown()
           index
         case _ => throw new IllegalArgumentException(s"the list of input paths should be three " +
