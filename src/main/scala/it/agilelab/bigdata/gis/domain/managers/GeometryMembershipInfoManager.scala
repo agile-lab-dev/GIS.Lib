@@ -1,18 +1,21 @@
 package it.agilelab.bigdata.gis.domain.managers
-import com.vividsolutions.jts.geom.{GeometryFactory, MultiPoint, Point}
+import com.vividsolutions.jts.geom.{ GeometryFactory, MultiPoint, Point }
 import it.agilelab.bigdata.gis.core.utils.Logger
 import it.agilelab.bigdata.gis.domain.loader.OSMCategoriesLoader
 import it.agilelab.bigdata.gis.domain.managers.GeometryMembershipInfoManager.OSMGeoCategories
-import it.agilelab.bigdata.gis.domain.models.CategoriesCfg.{CategoryInfoCfg, Country => CountryCfg, Custom => CustomCfg}
-import it.agilelab.bigdata.gis.domain.models.{CategoriesCfg, CategoryMembershipOutput, InputCategory, OSMGeoCategory}
-import it.agilelab.bigdata.gis.domain.models.InputCategory.{Country, Custom}
+import it.agilelab.bigdata.gis.domain.models.CategoriesCfg.{
+  CategoryInfoCfg,
+  Country => CountryCfg,
+  Custom => CustomCfg
+}
+import it.agilelab.bigdata.gis.domain.models.{ CategoriesCfg, CategoryMembershipOutput, InputCategory, OSMGeoCategory }
+import it.agilelab.bigdata.gis.domain.models.InputCategory.{ Country, Custom }
 import scalaz.Kleisli
 
 import scala.collection.parallel.ParSeq
 import scala.util.Try
 
-
-class GeometryMembershipInfoManager private(categoriesInfo: Map[InputCategory, OSMGeoCategories]) {
+class GeometryMembershipInfoManager private (categoriesInfo: Map[InputCategory, OSMGeoCategories]) {
 
   private val geoFactory = new GeometryFactory()
 
@@ -22,10 +25,14 @@ class GeometryMembershipInfoManager private(categoriesInfo: Map[InputCategory, O
   def getFirstGeoMembershipInfoOf(category: InputCategory, geometry: Point): Option[CategoryMembershipOutput] =
     findFirst(setupCategory(category))(_.covers(geometry))
 
-  def getGeoMembershipInfoOf(category: InputCategory, geometry: MultiPoint, strictMembership: Boolean = false): Seq[CategoryMembershipOutput] = {
+  def getGeoMembershipInfoOf(
+      category: InputCategory,
+      geometry: MultiPoint,
+      strictMembership: Boolean = false
+  ): Seq[CategoryMembershipOutput] = {
     val shapes = setupCategory(category)
-    if (strictMembership && geometry.getCoordinates.exists(p =>
-      shapes.forall(_.disjoint(geoFactory.createPoint(p))))) Seq()
+    if (strictMembership && geometry.getCoordinates.exists(p => shapes.forall(_.disjoint(geoFactory.createPoint(p)))))
+      Seq()
     else findAll(shapes)(_.intersects(geometry))
   }
 
@@ -58,29 +65,28 @@ object GeometryMembershipInfoManager extends Logger {
   def apply(config: CategoriesCfg): Try[GeometryMembershipInfoManager] = {
 
     val categoryPathListResolver: Kleisli[Try, String, Seq[String]] =
-      Kleisli(s => {
+      Kleisli { s =>
         Try(config.geoDataPath.resolve(s).toFile.listFiles().map(_.getAbsolutePath).filter(_.endsWith(SHP_EXTENSION)))
-      })
+      }
 
     for {
       groupByCategory <- Try { (cfg: CategoryInfoCfg, input: InputCategory) =>
-        categoryPathListResolver(cfg.label).map(files => Map(input -> new OSMCategoriesLoader(cfg).loadObjects(files: _*)))
+        categoryPathListResolver(cfg.label).map(files =>
+          Map(input -> new OSMCategoriesLoader(cfg).loadObjects(files: _*)))
       }
 
       catInfo <- config.categoryInfo
-        .foldLeft(Try(Map[InputCategory, OSMGeoCategories]())) {
-          (tryAcc, cfg) =>
-            for {
-              acc <- tryAcc
-              x <- cfg match {
-                case cfg: CountryCfg => groupByCategory(cfg, Country)
-                case cfg: CustomCfg => groupByCategory(cfg, Custom(cfg.label))
-              }
-            } yield acc ++ x
+        .foldLeft(Try(Map[InputCategory, OSMGeoCategories]())) { (tryAcc, cfg) =>
+          for {
+            acc <- tryAcc
+            x <- cfg match {
+              case cfg: CountryCfg => groupByCategory(cfg, Country)
+              case cfg: CustomCfg  => groupByCategory(cfg, Custom(cfg.label))
+            }
+          } yield acc ++ x
         }
     } yield new GeometryMembershipInfoManager(catInfo)
 
   }
 
 }
-

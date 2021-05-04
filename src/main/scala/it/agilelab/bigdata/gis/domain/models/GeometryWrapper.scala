@@ -6,8 +6,8 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 class GeometryWrapper[T <: Geometry](id: String, geometry: T) extends Geometry(geometry.getFactory) {
 
   /** As seen from class Street, the missing signatures are as follows.
-   * For convenience, these are usable as stub implementations.
-   */
+    * For convenience, these are usable as stub implementations.
+    */
   def apply(filter: CoordinateFilter): Unit = geometry.apply(filter)
 
   def apply(filter: CoordinateSequenceFilter): Unit = geometry.apply(filter)
@@ -16,17 +16,15 @@ class GeometryWrapper[T <: Geometry](id: String, geometry: T) extends Geometry(g
 
   def apply(filter: GeometryComponentFilter): Unit = geometry.apply(filter)
 
-  def getCoordinateSequence: CoordinateArraySequence = {
+  def getCoordinateSequence: CoordinateArraySequence =
     new CoordinateArraySequence(getCoordinates)
-  }
 
-  override def computeEnvelopeInternal(): Envelope = {
+  override def computeEnvelopeInternal(): Envelope =
     if (isEmpty) {
       new Envelope
     } else {
       getCoordinateSequence.expandEnvelope(new Envelope)
     }
-  }
 
   override def getBoundary: Geometry = geometry.getBoundary
 
@@ -47,8 +45,8 @@ class GeometryWrapper[T <: Geometry](id: String, geometry: T) extends Geometry(g
     if (i < getNumPoints)
       1
     else if (j < s.getNumPoints)
-           -1
-         else 0
+      -1
+    else 0
   }
 
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {

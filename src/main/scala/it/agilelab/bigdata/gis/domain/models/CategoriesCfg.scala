@@ -7,7 +7,7 @@ import pureconfig.ConvertHelpers._
 import pureconfig.generic.auto._
 
 import java.nio.file.Path
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 case class CategoriesCfg(geoDataPath: Path, categoryInfo: Seq[CategoryInfoCfg])
 
@@ -30,7 +30,8 @@ object CategoriesCfg {
     def label: String = "country"
   }
 
-  case class Custom(label: String, geoMeta: Map[Int, GeoMetadataCfg], geometryDescriptionIndex: Int) extends CategoryInfoCfg
+  case class Custom(label: String, geoMeta: Map[Int, GeoMetadataCfg], geometryDescriptionIndex: Int)
+      extends CategoryInfoCfg
 
   def load: Try[CategoriesCfg] =
     ConfigSource.default

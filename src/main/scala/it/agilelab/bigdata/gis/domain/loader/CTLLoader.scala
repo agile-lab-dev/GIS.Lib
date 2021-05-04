@@ -3,21 +3,20 @@ package it.agilelab.bigdata.gis.domain.loader
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
 import it.agilelab.bigdata.gis.core.loader.Loader
-import it.agilelab.bigdata.gis.domain.models.{HereMapsStreet, HereMapsStreetType}
+import it.agilelab.bigdata.gis.domain.models.{ HereMapsStreet, HereMapsStreetType }
 import it.agilelab.bigdata.gis.domain.spatialList._
 
 import scala.io.Source
 
-/**
-  * Created by paolo on 12/09/2017.
+/** Created by paolo on 12/09/2017.
   */
-object CTLLoader{
+object CTLLoader {
 
   //Pay attention to side effects
 
   var index: GeometryList[HereMapsStreet] = _
   def getStreetIndex(path: String): GeometryList[HereMapsStreet] = {
-    if (index == null){
+    if (index == null) {
       index = new CTLLoader(7).loadIndex(path)
     }
     index
@@ -25,7 +24,7 @@ object CTLLoader{
 
 }
 
-class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
+class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet] {
 
   val separator = """\|\|"""
   val geoSeparator = ';'
@@ -52,54 +51,40 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
     val fromSpeed: Integer = stringFields(16).toInt
     val toSpeed: Integer = stringFields(17).toInt
 
-    HereMapsStreet(
-      line,
-      street,
-      city,
-      county,
-      state,
-      country,
-      Math.max(fromSpeed, toSpeed),
-      biDirected,
-      length,
-      st)
+    HereMapsStreet(line, street, city, county, state, country, Math.max(fromSpeed, toSpeed), biDirected, length, st)
   }
 
-
-
-
-  override def loadFile(source: String): Iterator[(Array[AnyRef],Geometry)] = {
+  override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
 
     var data = false
-    val reader = Source.fromFile(source,"UTF-8")
+    val reader = Source.fromFile(source, "UTF-8")
 
-
-    reader.getLines.flatMap(line => {
+    reader.getLines.flatMap { line =>
       val ls: Option[(Array[AnyRef], Geometry)] = if (!data) {
         data = if (line == "BEGINDATA") true else false
-        Option.empty[(Array[AnyRef],Geometry)]
+        Option.empty[(Array[AnyRef], Geometry)]
       } else {
 
         val fields: Array[String] = line.split(separator)
-        if(fields.length == 0){
+        if (fields.length == 0) {
           println("bad splitting")
-          Option.empty[(Array[AnyRef],LineString)]
-        }else {
+          Option.empty[(Array[AnyRef], LineString)]
+        } else {
           val geometry = fields(geometryPosition)
           val lineString = buildGeometry(geometry)
           lineString.map(ls => (fields.map(_.asInstanceOf[AnyRef]), ls))
         }
       }
       ls
-    })
+    }
   }
 
   def buildGeometry(geoStr: String): Option[Geometry] = {
     val fields = parseGeometry(geoStr)
 
-    if(fields.length == 205){
+    if (fields.length == 205) {
       Some(buildGeometry(fields))
-    }else{
+    } else {
       println(fields.length)
       None
     }
@@ -107,39 +92,38 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet]{
 
   def buildGeometry(fields: Array[String]): Geometry = {
     val geotype = fields(0)
-    if(geotype == "2002") {
+    if (geotype == "2002") {
       val lonlat = fields.slice(105, fields.length)
       val lonlatGood = lonlat.filterNot(_.isEmpty)
-      val coordinates: Iterator[Coordinate] = lonlatGood.sliding(2, 2).map(ll => new Coordinate(ll(0).replace(',', '.').toDouble, ll(1).replace(',', '.').toDouble))
+      val coordinates: Iterator[Coordinate] = lonlatGood
+        .sliding(2, 2)
+        .map(ll => new Coordinate(ll(0).replace(',', '.').toDouble, ll(1).replace(',', '.').toDouble))
 
       sridFactory8003.createLineString(coordinates.toArray)
-    }else{
+    } else {
       throw new NotImplementedError("Only lines are handled")
     }
   }
 
-  def parseGeometry(geoStr: String): Array[String] = {
-    if(geoStr.head == openStep){
+  def parseGeometry(geoStr: String): Array[String] =
+    if (geoStr.head == openStep) {
       parseGeometry(geoStr.tail)
-    }else{
-      val cleanGeoStr = if(geoStr.head == closeStep) geoStr.tail else geoStr
+    } else {
+      val cleanGeoStr = if (geoStr.head == closeStep) geoStr.tail else geoStr
       val sepPos = cleanGeoStr.indexOf(geoSeparator)
-      if(sepPos == -1) {
+      if (sepPos == -1) {
         val closePos = cleanGeoStr.indexOf(closeStep)
         if (closePos != -1) {
           val newField = cleanGeoStr.substring(0, closePos)
           Array(newField)
-        }else{
+        } else {
           Array.empty[String]
         }
-      }
-      else {
+      } else {
         val newField = cleanGeoStr.substring(0, sepPos)
         val otherPart = cleanGeoStr.substring(sepPos + 2)
         parseGeometry(otherPart).+:(newField)
       }
     }
-
-  }
 
 }

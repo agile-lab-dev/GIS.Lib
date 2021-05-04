@@ -1,6 +1,6 @@
 package it.agilelab.bigdata.gis.core.utils
 
-import java.io.{FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.io.{ FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream }
 import java.nio.file.Paths
 
 object ObjectPickler {
@@ -13,20 +13,14 @@ object ObjectPickler {
     }
 
     val oos = new ObjectOutputStream(new FileOutputStream(path))
-    try {
-      oos.writeObject(item)
-    } finally {
-      oos.close()
-    }
+    try oos.writeObject(item)
+    finally oos.close()
   }
 
   def unpickle[T](path: String): T = {
     val ois = new ObjectInputStream(new FileInputStream(path))
-    try {
-      ois.readObject.asInstanceOf[T]
-    } finally {
-      ois.close()
-    }
+    try ois.readObject.asInstanceOf[T]
+    finally ois.close()
   }
 
 }

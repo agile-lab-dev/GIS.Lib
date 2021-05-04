@@ -3,14 +3,16 @@ package it.agilelab.bigdata.gis.domain.models
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
-case class OSMPlace(polygon: Geometry,
-                    name: String,
-                    placeType: String,
-                    firstField: String,
-                    secondField: Int,
-                    fourthField: Long) extends Geometry(polygon.getFactory) {
+case class OSMPlace(
+    polygon: Geometry,
+    name: String,
+    placeType: String,
+    firstField: String,
+    secondField: Int,
+    fourthField: Long
+) extends Geometry(polygon.getFactory) {
 
-  override def toString: String = {
+  override def toString: String =
     s"""Line: ${polygon.toString}
        |Name: $name
        |PlaceType: $placeType
@@ -18,7 +20,6 @@ case class OSMPlace(polygon: Geometry,
        |SecondField: $secondField
        |FourthField: $fourthField
        """.stripMargin
-  }
 
   /** As seen from class Street, the missing signatures are as follows.
     *  For convenience, these are usable as stub implementations.
@@ -31,17 +32,14 @@ case class OSMPlace(polygon: Geometry,
 
   def apply(filter: GeometryComponentFilter): Unit = polygon.apply(filter)
 
-  def getCoordinateSequence: CoordinateArraySequence = {
+  def getCoordinateSequence: CoordinateArraySequence =
     new CoordinateArraySequence(getCoordinates)
-  }
 
-  override def computeEnvelopeInternal(): Envelope = {
+  override def computeEnvelopeInternal(): Envelope =
     if (isEmpty)
       new Envelope
     else
       getCoordinateSequence.expandEnvelope(new Envelope)
-
-  }
 
   override def getBoundary: Geometry = polygon.getBoundary
 
@@ -57,7 +55,7 @@ case class OSMPlace(polygon: Geometry,
       j += 1
     }
 
-    if (i < getNumPoints)1
+    if (i < getNumPoints) 1
     else if (j < s.getNumPoints) -1
     else 0
   }
@@ -86,6 +84,5 @@ case class OSMPlace(polygon: Geometry,
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = polygon.equalsExact(other, tolerance)
 
   override def getNumPoints: Int = polygon.getNumPoints
-
 
 }

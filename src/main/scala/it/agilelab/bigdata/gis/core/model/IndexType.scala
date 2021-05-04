@@ -1,7 +1,6 @@
 package it.agilelab.bigdata.gis.core.model
 
-/**
-  * @author andreaL
+/** @author andreaL
   */
 
 sealed trait IndexType

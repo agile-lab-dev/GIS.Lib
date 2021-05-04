@@ -1,9 +1,14 @@
 package it.agilelab.bigdata.gis.domain.loader
 
-import com.vividsolutions.jts.geom.{Geometry, GeometryFactory}
+import com.vividsolutions.jts.geom.{ Geometry, GeometryFactory }
 import it.agilelab.bigdata.gis.core.loader.Loader
-import it.agilelab.bigdata.gis.core.utils.{Logger, ManagerUtils}
-import it.agilelab.bigdata.gis.domain.models.{OSMHouseNumber, OSMSmallAddressNumber, OSMStreetAndHouseNumber, OSMStreetType}
+import it.agilelab.bigdata.gis.core.utils.{ Logger, ManagerUtils }
+import it.agilelab.bigdata.gis.domain.models.{
+  OSMHouseNumber,
+  OSMSmallAddressNumber,
+  OSMStreetAndHouseNumber,
+  OSMStreetType
+}
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
 
@@ -38,7 +43,16 @@ trait OSMGenericStreetLoader extends Loader[OSMStreetAndHouseNumber] with Logger
     val isTunnel: Option[Boolean] = Try(fields(10).toString != "F").toOption
     //val toSpeed: Integer = fields(6).toInt
 
-    OSMStreetAndHouseNumber(osm_id, pointsArray, street, st, Seq.empty[OSMSmallAddressNumber], speedLimit, isBridge, isTunnel, oneway)
+    OSMStreetAndHouseNumber(
+      osm_id,
+      pointsArray,
+      street,
+      st,
+      Seq.empty[OSMSmallAddressNumber],
+      speedLimit,
+      isBridge,
+      isTunnel,
+      oneway)
   }
 }
 
@@ -67,19 +81,17 @@ object OSMGenericStreetLoader extends Logger {
   }
 
   /** Return a function that retrieve the houses number and the respective Point for each road of the road index */
-  def houseNumbersFunction(houseNumberGeometryList: GeometryList[OSMHouseNumber]): (Geometry, String) => Seq[OSMHouseNumber] = {
+  def houseNumbersFunction(
+      houseNumberGeometryList: GeometryList[OSMHouseNumber]
+  ): (Geometry, String) => Seq[OSMHouseNumber] = {
     val geometryFactory = new GeometryFactory()
-    (road: Geometry, streetName: String) => {
-      road.getCoordinates
-        .flatMap(pt => {
-          KNNQueryMem.spatialQueryWithMaxDistance(
-            houseNumberGeometryList,
-            geometryFactory.createPoint(pt),
-            ManagerUtils.NUMBERS_MAX_DISTANCE
-          )
-        })
-        .toSeq
-    }
+    (road: Geometry, streetName: String) =>
+      road.getCoordinates.flatMap { pt =>
+        KNNQueryMem.spatialQueryWithMaxDistance(
+          houseNumberGeometryList,
+          geometryFactory.createPoint(pt),
+          ManagerUtils.NUMBERS_MAX_DISTANCE
+        )
+      }.toSeq
   }
 }
-

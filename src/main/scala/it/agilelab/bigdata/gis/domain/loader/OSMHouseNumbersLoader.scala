@@ -18,11 +18,9 @@ object OSMHouseNumbersLoader {
 }
 
 class OSMHouseNumbersLoader() extends Loader[OSMHouseNumber] {
-  override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
+  override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] =
     ShapeFileReader.readPointFeatures(source).map { case (point, list) => list.toArray -> point }.toIterator
-  }
 
-  protected def objectMapping(fields: Array[AnyRef], point: Geometry): OSMHouseNumber = {
+  protected def objectMapping(fields: Array[AnyRef], point: Geometry): OSMHouseNumber =
     OSMHouseNumber(point, Option(fields(1)).map(_.toString).getOrElse(""))
-  }
 }

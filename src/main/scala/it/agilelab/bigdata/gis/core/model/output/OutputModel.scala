@@ -1,6 +1,5 @@
 package it.agilelab.bigdata.gis.core.model.output
 
-/**
-  * @author andreaL
+/** @author andreaL
   */
 trait OutputModel

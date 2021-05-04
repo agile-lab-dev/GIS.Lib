@@ -2,7 +2,7 @@ package it.agilelab.bigdata.gis.domain.managers
 
 import com.typesafe.config.Config
 import it.agilelab.bigdata.gis.core.utils.Configuration
-import it.agilelab.bigdata.gis.core.utils.ManagerUtils.{BoundaryPathGroup, CountryPathSet, Path}
+import it.agilelab.bigdata.gis.core.utils.ManagerUtils.{ BoundaryPathGroup, CountryPathSet, Path }
 import it.agilelab.bigdata.gis.domain.configuration.PathManagerConfiguration
 
 import java.io.File
@@ -18,21 +18,22 @@ case class PathManager(conf: Config) extends Configuration {
 
   val pathConfig: PathManagerConfiguration = PathManagerConfiguration(conf)
 
-  def getCountrySetting(countryName: String): CountrySettings = {
+  def getCountrySetting(countryName: String): CountrySettings =
     (for {
-      countryConfig <- read[Config](conf, countryName)
+      countryConfig     <- read[Config](conf, countryName)
       countrySuffixList <- read[List[String]](countryConfig, Bound.COUNTRY)
-      regionSuffixList <- read[List[String]](countryConfig, Bound.REGION)
-      countySuffixList <- read[List[String]](countryConfig, Bound.COUNTY)
-      citySuffixList <- read[List[String]](countryConfig, Bound.CITY)
+      regionSuffixList  <- read[List[String]](countryConfig, Bound.REGION)
+      countySuffixList  <- read[List[String]](countryConfig, Bound.COUNTY)
+      citySuffixList    <- read[List[String]](countryConfig, Bound.CITY)
     } yield CountrySettings(countrySuffixList, regionSuffixList, countySuffixList, citySuffixList)).get
-  }
 
   def getCountryPathSet(countryFolder: File): CountryPathSet = {
     val boundaryPathGroup: BoundaryPathGroup = getBoundaryPathGroup(countryFolder)
-    val postalCodesPath: Array[Path] = countryFolder.listFiles().map(_.getAbsolutePath).filter(_.endsWith("gis-postalcodes.shp"))
+    val postalCodesPath: Array[Path] =
+      countryFolder.listFiles().map(_.getAbsolutePath).filter(_.endsWith("gis-postalcodes.shp"))
     val roadsPath: Array[Path] = countryFolder.listFiles().map(_.getAbsolutePath).filter(_.endsWith("gis-roads.shp"))
-    val houseNumbersPath: Option[Path] = countryFolder.listFiles().map(_.getAbsolutePath).find(_.endsWith("gis-housenumbers.shp"))
+    val houseNumbersPath: Option[Path] =
+      countryFolder.listFiles().map(_.getAbsolutePath).find(_.endsWith("gis-housenumbers.shp"))
     CountryPathSet(boundaryPathGroup, postalCodesPath, roadsPath, houseNumbersPath)
   }
 
@@ -40,10 +41,14 @@ case class PathManager(conf: Config) extends Configuration {
     val countrySettings: CountrySettings = getCountrySetting(countryFolder.getName)
     val paths: Array[Path] = countryFolder.listFiles().map(_.getAbsolutePath)
 
-    val countryPathList: List[Path] = countrySettings.countrySuffixes.flatMap(validSuffix => paths.filter(_.endsWith(validSuffix)))
-    val regionPathList: List[Path] = countrySettings.regionSuffixes.flatMap(validSuffix => paths.filter(_.endsWith(validSuffix)))
-    val countyPathList: List[Path] = countrySettings.countySuffixes.flatMap(validSuffix => paths.filter(_.endsWith(validSuffix)))
-    val cityPathList: List[Path] = countrySettings.citySuffixes.flatMap(validSuffix => paths.filter(_.endsWith(validSuffix)))
+    val countryPathList: List[Path] =
+      countrySettings.countrySuffixes.flatMap(validSuffix => paths.filter(_.endsWith(validSuffix)))
+    val regionPathList: List[Path] =
+      countrySettings.regionSuffixes.flatMap(validSuffix => paths.filter(_.endsWith(validSuffix)))
+    val countyPathList: List[Path] =
+      countrySettings.countySuffixes.flatMap(validSuffix => paths.filter(_.endsWith(validSuffix)))
+    val cityPathList: List[Path] =
+      countrySettings.citySuffixes.flatMap(validSuffix => paths.filter(_.endsWith(validSuffix)))
 
     BoundaryPathGroup(
       country = countryPathList,
@@ -54,18 +59,18 @@ case class PathManager(conf: Config) extends Configuration {
   }
 }
 
-case class CountrySettings(countrySuffixes: List[String],
-                           regionSuffixes: List[String],
-                           countySuffixes: List[String],
-                           citySuffixes: List[String]
-                          ) {
+case class CountrySettings(
+    countrySuffixes: List[String],
+    regionSuffixes: List[String],
+    countySuffixes: List[String],
+    citySuffixes: List[String]
+) {
 
-  def clean: CountrySettings = {
+  def clean: CountrySettings =
     CountrySettings(
       this.countrySuffixes.map(_.split('.').head),
       this.regionSuffixes.map(_.split('.').head),
       this.countySuffixes.map(_.split('.').head),
       this.citySuffixes.map(_.split('.').head)
     )
-  }
 }

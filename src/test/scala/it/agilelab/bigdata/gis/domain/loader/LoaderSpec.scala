@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis.domain.loader
 
 import it.agilelab.bigdata.gis.core.utils.Logger
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 class LoaderSpec extends FlatSpec with Matchers with Logger {
 

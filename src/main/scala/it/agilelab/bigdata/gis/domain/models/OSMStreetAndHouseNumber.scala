@@ -1,8 +1,7 @@
 package it.agilelab.bigdata.gis.domain.models
 
-/**
- * @author Gloria Lovera
- */
+/** @author Gloria Lovera
+  */
 
 import com.graphhopper.util.Helper
 import com.vividsolutions.jts.geom._
@@ -10,15 +9,17 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
 object OSMStreetAndHouseNumber {
 
-  def decorateWithNumbers(roadEL: OSMStreetAndHouseNumber, houseNumberEls: Seq[OSMHouseNumber]): OSMStreetAndHouseNumber = {
+  def decorateWithNumbers(
+      roadEL: OSMStreetAndHouseNumber,
+      houseNumberEls: Seq[OSMHouseNumber]
+  ): OSMStreetAndHouseNumber = {
     val numbersEls =
-      houseNumberEls.map(
-        houseNumber => OSMSmallAddressNumber(
-            houseNumber.point.getCoordinate.x,
-            houseNumber.point.getCoordinate.y,
-            houseNumber.number
-        )
-      )
+      houseNumberEls.map(houseNumber =>
+        OSMSmallAddressNumber(
+          houseNumber.point.getCoordinate.x,
+          houseNumber.point.getCoordinate.y,
+          houseNumber.number
+        ))
 
     roadEL.copy(numbers = numbersEls)
   }
@@ -28,24 +29,24 @@ case class OSMAddressNumber(point: Geometry, number: String)
 
 case class OSMSmallAddressNumber(x: Double, y: Double, number: String)
 
-case class OSMStreetAndHouseNumber(osm_id: String,
-                                   pointsArray: Array[Double],
-                                   street: Option[String],
-                                   streetType: Option[OSMStreetType],
-                                   numbers: Seq[OSMSmallAddressNumber],
-                                   speedLimit: Option[Int],
-                                   isBridge: Option[Boolean],
-                                   isTunnel: Option[Boolean],
-                                   oneway: Option[Boolean]
-                            )
-  extends Geometry(GeometryFactoryOSM.factory) {
+case class OSMStreetAndHouseNumber(
+    osm_id: String,
+    pointsArray: Array[Double],
+    street: Option[String],
+    streetType: Option[OSMStreetType],
+    numbers: Seq[OSMSmallAddressNumber],
+    speedLimit: Option[Int],
+    isBridge: Option[Boolean],
+    isTunnel: Option[Boolean],
+    oneway: Option[Boolean]
+) extends Geometry(GeometryFactoryOSM.factory) {
 
   def getDistanceAndNumber(queryPoint: Point, threshold: Double): (Double, Option[String]) = {
     val number = numbers
-      .map(a => {
+      .map { a =>
         val distance = Helper.DIST_EARTH.calcDist(a.y, a.x, queryPoint.getY, queryPoint.getX)
         (distance, a.number)
-      })
+      }
       .filter(_._1 <= threshold)
       .sortBy(_._1)
       .headOption
@@ -56,7 +57,7 @@ case class OSMStreetAndHouseNumber(osm_id: String,
       (getCoordinates.map(p1 => Helper.DIST_EARTH.calcDist(p1.y, p1.x, queryPoint.getY, queryPoint.getX)).min, None)
   }
 
-  override def toString: String = {
+  override def toString: String =
     s"""
        |Line (LINE REMOVED)
        |Street: ${street.getOrElse("N.D")}
@@ -67,18 +68,15 @@ case class OSMStreetAndHouseNumber(osm_id: String,
        |isBridge: ${isBridge.map(_.toString).getOrElse("N.D")}
        |isTunnel: ${isTunnel.map(_.toString).getOrElse("N.D")}
     """.stripMargin
-  }
 
-  def getCoordinateSequence: CoordinateArraySequence = {
+  def getCoordinateSequence: CoordinateArraySequence =
     new CoordinateArraySequence(getCoordinates)
-  }
 
-  override def computeEnvelopeInternal(): Envelope = {
+  override def computeEnvelopeInternal(): Envelope =
     if (isEmpty)
       new Envelope
     else
       getCoordinateSequence.expandEnvelope(new Envelope)
-  }
 
   override def getBoundary: Geometry = getBoundary
 
@@ -114,17 +112,17 @@ case class OSMStreetAndHouseNumber(osm_id: String,
 
   def getCoordinateN(n: Int): Coordinate = new Coordinate(pointsArray(getXIndex(n)), pointsArray(getYIndex(n)))
 
-  def isClosed: Boolean = {
+  def isClosed: Boolean =
     if (this.isEmpty)
       false
     else
       this.getCoordinateN(0).equals2D(this.getCoordinateN(this.getNumPoints - 1))
-  }
 
-  def getLineString: LineString = factory.createLineString(pointsArray.sliding(2, 2).map(ll => new Coordinate(ll(0), ll(1))).toArray)
+  def getLineString: LineString =
+    factory.createLineString(pointsArray.sliding(2, 2).map(ll => new Coordinate(ll(0), ll(1))).toArray)
 
-
-  override def getCoordinates: Array[Coordinate] = this.pointsArray.sliding(dimensionPoints, dimensionPoints).map(e => new Coordinate(e(0), e(1))).toArray
+  override def getCoordinates: Array[Coordinate] =
+    this.pointsArray.sliding(dimensionPoints, dimensionPoints).map(e => new Coordinate(e(0), e(1))).toArray
 
   override def getDimension: Int = 1
 
@@ -140,7 +138,7 @@ case class OSMStreetAndHouseNumber(osm_id: String,
 
   override def reverse(): Geometry = getLineString.reverse()
 
-  override def equalsExact(other: Geometry, tolerance: Double): Boolean = {
+  override def equalsExact(other: Geometry, tolerance: Double): Boolean =
     if (!this.isEquivalentClass(other) || !other.isInstanceOf[OSMStreetAndHouseNumber]) false
     else {
       val otherLine = other.asInstanceOf[OSMStreetAndHouseNumber]
@@ -149,12 +147,10 @@ case class OSMStreetAndHouseNumber(osm_id: String,
         this.getCoordinates.zip(otherLine.getCoordinates).forall(e => coordinateEqual(e._1, e._2, tolerance))
       }
     }
-  }
 
-  protected def coordinateEqual(a: Coordinate, b: Coordinate, tolerance: Double): Boolean = {
-    if (tolerance == 0.0D) a == b
+  protected def coordinateEqual(a: Coordinate, b: Coordinate, tolerance: Double): Boolean =
+    if (tolerance == 0.0d) a == b
     else a.distance(b) <= tolerance
-  }
 
   override def getNumPoints: Int = pointsArray.length / dimensionPoints
 

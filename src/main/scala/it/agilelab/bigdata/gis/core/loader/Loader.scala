@@ -5,10 +5,8 @@ import it.agilelab.bigdata.gis.core.model.IndexType
 import it.agilelab.bigdata.gis.core.utils.Logger
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
-
-/**
- * Created by paolo on 25/01/2017.
- */
+/** Created by paolo on 25/01/2017.
+  */
 trait Loader[T <: Geometry] extends Logger {
 
   protected def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)]
@@ -17,16 +15,13 @@ trait Loader[T <: Geometry] extends Logger {
 
   def loadIndex(sources: String*): GeometryList[T] = loadIndexWithFilter(sources: _*)()
 
-  def loadIndexWithFilter(sources: String*)(filterFunc: T => Boolean = _ => true): GeometryList[T] = {
+  def loadIndexWithFilter(sources: String*)(filterFunc: T => Boolean = _ => true): GeometryList[T] =
     buildIndex(loadObjects(sources: _*).filter(filterFunc))
-  }
 
-  def loadObjects(sources: String*): List[T] = {
+  def loadObjects(sources: String*): List[T] =
     sources
-      .foldLeft(Seq.empty[T].toIterator)((acc, source) =>
-        acc ++ loadFile(source).map((objectMapping _).tupled))
+      .foldLeft(Seq.empty[T].toIterator)((acc, source) => acc ++ loadFile(source).map((objectMapping _).tupled))
       .toList
-  }
 
   def buildIndex(objects: List[T]): GeometryList[T] = {
     logger.info("Starting to build R-Tree")
@@ -37,4 +32,3 @@ trait Loader[T <: Geometry] extends Logger {
     objectIndex
   }
 }
-
