@@ -2,14 +2,13 @@ package it.agilelab.bigdata.gis.core.model.geometry
 
 import java.io.Serializable
 
-import com.vividsolutions.jts.geom.{Coordinate, Envelope, GeometryFactory, Point}
+import com.vividsolutions.jts.geom.{ Coordinate, Envelope, GeometryFactory, Point }
 
-/**
-  * @author andreaL
+/** @author andreaL
   */
 object Circle {
-  /**
-    * MB rto circle.
+
+  /** MB rto circle.
     *
     * @param mbr the mbr
     * @return the circle
@@ -23,11 +22,9 @@ object Circle {
   }
 }
 
+case class Circle(center: Point, radius: Double) extends Serializable {
 
-case class Circle(center: Point, radius: Double) extends Serializable{
-
-  /**
-    * Gets the mbr.
+  /** Gets the mbr.
     *
     * @return the mbr
     */
@@ -39,36 +36,29 @@ case class Circle(center: Point, radius: Double) extends Serializable{
       center.getY + radius
     )
 
-  /**
-    * Contains.
+  /** Contains.
     *
     * @param point the point
     * @return true, if successful
     */
-  def contains(point: Point): Boolean = {
+  def contains(point: Point): Boolean =
     if (center.distance(point) < radius)
-       true
+      true
     else
       false
 
-  }
-
-  /**
-    * Intersects.
+  /** Intersects.
     *
     * @param point the point
     * @return true, if successful
     */
-  def intersects(point: Point): Boolean = {
+  def intersects(point: Point): Boolean =
     if (this.center.distance(point) <= this.radius)
       true
     else
       false
-  }
 
-
-  /**
-    * Intersects.
+  /** Intersects.
     *
     * @param e the e
     * @return true, if successful
@@ -86,20 +76,16 @@ case class Circle(center: Point, radius: Double) extends Serializable{
 
     if (circleDistancex > (rectwidth / 2 + radius))
       false
-
     else if (circleDistancey > (rectheight / 2 + radius))
       false
-
     else if (circleDistancex <= (rectwidth / 2))
       true
-
     else if (circleDistancey <= (rectheight / 2))
-       true
-
-    else{
+      true
+    else {
       val cornerDistance_sq: Double =
         (circleDistancex - rectwidth / 2) * (circleDistancex - rectwidth / 2) +
-        (circleDistancey - rectheight / 2) * (circleDistancey - rectheight / 2)
+          (circleDistancey - rectheight / 2) * (circleDistancey - rectheight / 2)
 
       cornerDistance_sq <= (radius * radius)
     }

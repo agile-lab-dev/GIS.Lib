@@ -3,14 +3,11 @@ package it.agilelab.bigdata.gis.core.knnJudgement
 import java.io.Serializable
 import java.util.Comparator
 
-import com.vividsolutions.jts.geom.{Envelope, Point}
+import com.vividsolutions.jts.geom.{ Envelope, Point }
 
-/**
-  * @author andreaL
+/** @author andreaL
   */
-class RectangleDistanceComparator(var queryCenter: Point)
-
-  extends Comparator[Envelope] with Serializable {
+class RectangleDistanceComparator(var queryCenter: Point) extends Comparator[Envelope] with Serializable {
 
   /* (non-Javadoc)
    * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)

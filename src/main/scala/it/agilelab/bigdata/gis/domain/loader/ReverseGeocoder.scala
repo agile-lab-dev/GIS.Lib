@@ -6,6 +6,6 @@ import it.agilelab.bigdata.gis.domain.models.ReverseGeocodingResponse
 
 trait ReverseGeocoder {
 
-  def reverseGeocode(point: IdentifiableGPSPoint) : Either[ReverseGeocodingError, ReverseGeocodingResponse]
+  def reverseGeocode(point: IdentifiableGPSPoint): Either[ReverseGeocodingError, ReverseGeocodingResponse]
 
 }

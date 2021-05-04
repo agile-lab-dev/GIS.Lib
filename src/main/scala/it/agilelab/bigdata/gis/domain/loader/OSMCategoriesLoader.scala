@@ -2,12 +2,11 @@ package it.agilelab.bigdata.gis.domain.loader
 
 import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.bigdata.gis.core.loader.Loader
-import it.agilelab.bigdata.gis.domain.models.{OSMGeoCategory, OSMGeoMetadata}
+import it.agilelab.bigdata.gis.domain.models.{ OSMGeoCategory, OSMGeoMetadata }
 import it.agilelab.bigdata.gis.domain.models.CategoriesCfg.CategoryInfoCfg
 
 import java.io.File
 import java.util.regex.Pattern
-
 
 class OSMCategoriesLoader(categoryInfoCfg: CategoryInfoCfg) extends Loader[OSMGeoCategory] {
 
@@ -24,10 +23,12 @@ class OSMCategoriesLoader(categoryInfoCfg: CategoryInfoCfg) extends Loader[OSMGe
      This is a terrible hack. I'm gonna refactor it soon.
      */
 
-    ShapeFileReader.readMultiPolygonFeatures(source)
+    ShapeFileReader
+      .readMultiPolygonFeatures(source)
       .map { case (multiPolygon, list) =>
         (list.getAttributes.toArray :+ (pattern findFirstIn fileName).getOrElse(UNKNOWN_NAME)) -> multiPolygon
-      }.toIterator
+      }
+      .toIterator
   }
 
   protected def objectMapping(fields: Array[AnyRef], geometry: Geometry): OSMGeoCategory = {
@@ -38,10 +39,11 @@ class OSMCategoriesLoader(categoryInfoCfg: CategoryInfoCfg) extends Loader[OSMGe
     OSMGeoCategory(
       categoryInfoCfg.label,
       OSMGeoMetadata(
-        categoryInfoCfg.geoMeta.foldLeft(Map[String, AnyRef]()) {
-          (acc, t) => acc ++ (if (fields.isDefinedAt(t._1)) Map(t._2.rawData -> fields(t._1)) else Map.empty)
+        categoryInfoCfg.geoMeta.foldLeft(Map[String, AnyRef]()) { (acc, t) =>
+          acc ++ (if (fields.isDefinedAt(t._1)) Map(t._2.rawData -> fields(t._1)) else Map.empty)
         } + (DESCRIPTION_META_KEY -> description),
-        description.toString),
+        description.toString
+      ),
       geometry
     )
 
@@ -53,5 +55,3 @@ object OSMCategoriesLoader {
   private final val UNKNOWN_NAME = "Unknown_name"
   private final val DESCRIPTION_META_KEY = "Description"
 }
-
-

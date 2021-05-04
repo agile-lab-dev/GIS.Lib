@@ -1,10 +1,10 @@
 package it.agilelab.bigdata.gis.domain.loader
 
-import com.typesafe.config.{Config, ConfigFactory}
-import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory}
+import com.typesafe.config.{ Config, ConfigFactory }
+import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory }
 import it.agilelab.bigdata.gis.domain.managers.PathManager
 import it.agilelab.bigdata.gis.domain.models.OSMBoundary
-import org.scalatest.{FeatureSpec, GivenWhenThen, Matchers}
+import org.scalatest.{ FeatureSpec, GivenWhenThen, Matchers }
 import scala.collection.JavaConversions._
 
 class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen with Matchers {
@@ -22,8 +22,8 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
   val boundaryConf: Config = indexConf.getConfig("boundary")
   val pathConf: Config = indexConf.getConfig("path")
   val pathManager: PathManager = PathManager(pathConf)
-  val omsBoundariesSelector: String => List[OSMBoundary] = (s: String) => OSMAdministrativeBoundariesLoader(boundaryConf, pathManager).loadObjects(s"${inputPaths.head}/$s")
-
+  val omsBoundariesSelector: String => List[OSMBoundary] = (s: String) =>
+    OSMAdministrativeBoundariesLoader(boundaryConf, pathManager).loadObjects(s"${inputPaths.head}/$s")
 
   feature("Issue#14 Check if a Point is Inside a Polygon - State of the art") {
 
@@ -60,7 +60,8 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
 
       Then("the 'covers' functionality exposed should verify it")
       andorraCountryBoundary.covers(aPoint) shouldBe true
-      And("the 'contains' functionality exposed should NOT verify it - it means the point resides on the border actually")
+      And(
+        "the 'contains' functionality exposed should NOT verify it - it means the point resides on the border actually")
       andorraCountryBoundary.contains(aPoint) shouldBe false
     }
 

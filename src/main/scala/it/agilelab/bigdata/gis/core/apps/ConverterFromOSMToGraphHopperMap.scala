@@ -7,8 +7,7 @@ import it.agilelab.bigdata.gis.core.encoder.CarFlagEncoderEnrich
 import it.agilelab.bigdata.gis.core.utils.Logger
 import org.rogach.scallop._
 
-/**
-  * @author andreaL
+/** @author andreaL
   */
 object ConverterFromOSMToGraphHopperMap extends App with Logger {
 

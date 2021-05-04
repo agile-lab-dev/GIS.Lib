@@ -5,25 +5,26 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
 
 object OSMStreet {}
 
-case class OSMStreet(multiLineString: Geometry,
-                     street: Option[String],
-                     code: Option[String],
-                     isBridge: Option[Boolean],
-                     isTunnel: Option[Boolean],
-                     speedLimit: Option[Int],
-                     bidirected: Option[Boolean],
-                     streetType: Option[OSMStreetType])
-  extends MultiLineString(
-    {
-      val length = multiLineString.getNumGeometries
-      (0 until length).map {
-        x => multiLineString.getGeometryN(x).asInstanceOf[LineString]
-      }
-    }.toArray,
-    multiLineString.getFactory
-  ) {
+case class OSMStreet(
+    multiLineString: Geometry,
+    street: Option[String],
+    code: Option[String],
+    isBridge: Option[Boolean],
+    isTunnel: Option[Boolean],
+    speedLimit: Option[Int],
+    bidirected: Option[Boolean],
+    streetType: Option[OSMStreetType]
+) extends MultiLineString(
+      {
+        val length = multiLineString.getNumGeometries
+        (0 until length).map { x =>
+          multiLineString.getGeometryN(x).asInstanceOf[LineString]
+        }
+      }.toArray,
+      multiLineString.getFactory
+    ) {
 
-  override def toString: String = {
+  override def toString: String =
     s"""
        |Line: ${multiLineString.toString}
        |Street: ${street.map(_.toString)}
@@ -34,17 +35,13 @@ case class OSMStreet(multiLineString: Geometry,
        |isBridge: ${isBridge.map(_.toString)}
        |isTunnel: ${isTunnel.map(_.toString)}
     """.stripMargin
-  }
 
-  def getCoordinateSequence: CoordinateArraySequence = {
+  def getCoordinateSequence: CoordinateArraySequence =
     new CoordinateArraySequence(getCoordinates)
-  }
 
-  override def computeEnvelopeInternal(): Envelope = {
+  override def computeEnvelopeInternal(): Envelope =
     if (isEmpty) new Envelope
     else getCoordinateSequence.expandEnvelope(new Envelope)
-
-  }
 
   override def getBoundary: Geometry = multiLineString.getBoundary
 
@@ -93,12 +90,12 @@ case class OSMStreet(multiLineString: Geometry,
 
   def isNotForCar: Boolean = streetType.exists {
     case OSMStreetType.CYCLEWAY => true
-    case _ => isForPedestrian
+    case _                      => isForPedestrian
   }
 
   def isForPedestrian: Boolean = streetType.exists {
     case OSMStreetType.PEDESTRIAN | OSMStreetType.FOOTWAY | OSMStreetType.STEPS => true
-    case _ => false
+    case _                                                                      => false
   }
 
 }

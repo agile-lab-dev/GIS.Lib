@@ -3,13 +3,12 @@ package it.agilelab.bigdata.gis.domain.loader
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.bigdata.gis.core.loader.Loader
-import it.agilelab.bigdata.gis.domain.managers.{CountrySettings, PathManager}
+import it.agilelab.bigdata.gis.domain.managers.{ CountrySettings, PathManager }
 import it.agilelab.bigdata.gis.domain.models.OSMBoundary
 import org.opengis.feature.simple.SimpleFeature
 
 import java.io.File
 import scala.util.Try
-
 
 case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathManager) extends Loader[OSMBoundary] {
 
@@ -26,9 +25,12 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
     We need to propagate the country name to the object mapping function, called after the current one.
     This is a terrible hack. I'm gonna refactor it soon.
      */
-    ShapeFileReader.readMultiPolygonFeatures(source).map { case (multiPolygon, list) =>
-      Array(list, countryName) -> multiPolygon
-    }.toIterator
+    ShapeFileReader
+      .readMultiPolygonFeatures(source)
+      .map { case (multiPolygon, list) =>
+        Array(list, countryName) -> multiPolygon
+      }
+      .toIterator
   }
 
   def extractISO(iso: String): String = {
@@ -55,7 +57,8 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
       OSMBoundary(
         multiPolygon = line,
         country = Some(parseStringName(administrativeValue)),
-        countryCode = Try(extractISO(features.getAttribute(config.getString("administrative.country")).toString)).toOption,
+        countryCode =
+          Try(extractISO(features.getAttribute(config.getString("administrative.country")).toString)).toOption,
         boundaryType = administrativeLevel,
         env = line.getEnvelopeInternal
       )
@@ -70,8 +73,10 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
       OSMBoundary(
         multiPolygon = line,
         county = Some(parseStringName(administrativeValue)),
-        countyCode = Try(extractISO(features.getAttribute(config.getString("administrative.county")).toString)).toOption,
-        boundaryType = administrativeLevel, env = line.getEnvelopeInternal
+        countyCode =
+          Try(extractISO(features.getAttribute(config.getString("administrative.county")).toString)).toOption,
+        boundaryType = administrativeLevel,
+        env = line.getEnvelopeInternal
       )
     } else if (countrySettings.citySuffixes.contains(administrativeLevel)) {
       OSMBoundary(
@@ -82,12 +87,11 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
       )
     } else {
       throw new IllegalArgumentException(
-      s"Unrecognized administrative level: $administrativeLevel [administrativeValue: $administrativeValue] in any of $countrySettings"
+        s"Unrecognized administrative level: $administrativeLevel [administrativeValue: $administrativeValue] in any of $countrySettings"
       )
     }
   }
 
-  protected def parseStringName(string: String): String = {
+  protected def parseStringName(string: String): String =
     new String(string.getBytes("ISO-8859-1"), "UTF-8")
-  }
 }

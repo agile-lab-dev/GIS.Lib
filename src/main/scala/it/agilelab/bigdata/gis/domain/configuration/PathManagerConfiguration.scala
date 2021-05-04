@@ -6,11 +6,6 @@ case class PathManagerConfiguration()
 
 object PathManagerConfiguration {
 
-  def apply(config: Config): PathManagerConfiguration = {
-      PathManagerConfiguration()
-  }
+  def apply(config: Config): PathManagerConfiguration =
+    PathManagerConfiguration()
 }
-
-
-
-

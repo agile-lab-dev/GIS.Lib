@@ -8,7 +8,12 @@ object ManagerUtils {
 
   case class BoundaryPathGroup(country: List[Path], region: List[Path], county: List[Path], city: List[Path])
 
-  case class CountryPathSet(boundary: BoundaryPathGroup, postalCodes: Array[Path], roads: Array[Path], houseNumbers: Option[Path])
+  case class CountryPathSet(
+      boundary: BoundaryPathGroup,
+      postalCodes: Array[Path],
+      roads: Array[Path],
+      houseNumbers: Option[Path]
+  )
 
   val FOLD_CITY_ON_COUNTY = 0
   val FOLD_COUNTY_ON_REGION = 1
@@ -16,5 +21,5 @@ object ManagerUtils {
   val DONE = 3
 
   //maximum distance for kNN.
-  val NUMBERS_MAX_DISTANCE = 200D
+  val NUMBERS_MAX_DISTANCE = 200d
 }

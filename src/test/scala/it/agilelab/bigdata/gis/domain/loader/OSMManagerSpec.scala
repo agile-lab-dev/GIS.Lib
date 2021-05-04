@@ -1,10 +1,10 @@
 package it.agilelab.bigdata.gis.domain.loader
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigFactory }
 import it.agilelab.bigdata.gis.domain.graphhopper.IdentifiableGPSPoint
 import it.agilelab.bigdata.gis.domain.managers.OSMManager
 import it.agilelab.bigdata.gis.domain.models.ReverseGeocodingResponse
-import org.scalatest.{BeforeAndAfterAll, EitherValues, FlatSpec, Matchers}
+import org.scalatest.{ BeforeAndAfterAll, EitherValues, FlatSpec, Matchers }
 
 class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with BeforeAndAfterAll {
 
@@ -179,7 +179,6 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
   //
   //    randomPlaceInSarajevoActual should be(randomPlaceInSarajevoExpected)
   //  }
-
 
   //  "Reverse geocoding on Bulgaria" should "work" in {
   //    val lat = 42.720754
@@ -972,4 +971,3 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
     leipzig shouldBe expected
   }
 }
-

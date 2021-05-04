@@ -1,17 +1,16 @@
 package it.agilelab.bigdata.gis.core
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{ Config, ConfigFactory }
 import it.agilelab.bigdata.gis.core.apps.ConverterFromOSMToGraphHopperMap
 import it.agilelab.bigdata.gis.core.utils.Logger
-import it.agilelab.bigdata.gis.domain.graphhopper.{GPSPoint, GraphHopperManager, MatchedRoute, TracePoint}
-import org.scalatest.{BeforeAndAfterAll, EitherValues, FlatSpec, Matchers}
+import it.agilelab.bigdata.gis.domain.graphhopper.{ GPSPoint, GraphHopperManager, MatchedRoute, TracePoint }
+import org.scalatest.{ BeforeAndAfterAll, EitherValues, FlatSpec, Matchers }
 
 import java.io.File
 import java.nio.file.Paths
 
-/**
- * @author andreaL
- */
+/** @author andreaL
+  */
 //Before run this test read Readme section `Test GraphHopper`,
 //download file `italy-latest.osm.pbf` and insert in test/resources/graphHopperSource/
 
@@ -25,7 +24,8 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
     super.beforeAll()
     val basePath = Paths.get("src/test/resources/").toFile.getAbsoluteFile
 
-    val pbfFilePath: String = Paths.get("src/test/resources/graphHopperSource/italy-latest.osm.pbf").toFile.getAbsolutePath
+    val pbfFilePath: String =
+      Paths.get("src/test/resources/graphHopperSource/italy-latest.osm.pbf").toFile.getAbsolutePath
     val graphPath: String = s"$basePath/graphHopper"
     val graphPathOutput: File = Paths.get(graphPath).toFile
 
@@ -58,24 +58,23 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
     val points = Seq(point1)
 
     scala.Double.NaN
-    val response = manager.matchingRoute(points)
-      .right
-      .value
+    val response = manager.matchingRoute(points).right.value
 
     val expected = MatchedRoute(
-      points = Seq(TracePoint(
-        latitude = 45.0663115866474,
-        longitude = 7.637293092568119,
-        altitude = None,
-        time = time,
-        matchedLatitude = Some(45.066316193850604),
-        matchedLongitude = Some(7.637272156733646),
-        matchedAltitude = Some(0.0),
-        roadType = Some("secondary_link"),
-        roadName = Some("Corso Trapani"),
-        speedLimit = Some(45),
-        linearDistance = Some(1.7221707379444537)
-      )),
+      points = Seq(
+        TracePoint(
+          latitude = 45.0663115866474,
+          longitude = 7.637293092568119,
+          altitude = None,
+          time = time,
+          matchedLatitude = Some(45.066316193850604),
+          matchedLongitude = Some(7.637272156733646),
+          matchedAltitude = Some(0.0),
+          roadType = Some("secondary_link"),
+          roadName = Some("Corso Trapani"),
+          speedLimit = Some(45),
+          linearDistance = Some(1.7221707379444537)
+        )),
       length = 0.0,
       time = 0,
       routes = Map("secondary_link" -> 470.687),
@@ -368,8 +367,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
     assert(distanceBetweenPoints.distance > 75 && distanceBetweenPoints.distance < 85)
   }
 
-  private def noneAltitude(r: MatchedRoute): MatchedRoute = {
+  private def noneAltitude(r: MatchedRoute): MatchedRoute =
     r.copy(points = r.points.map(_.copy(altitude = None))) // Altitude might be Some(NaN)
-  }
 
 }

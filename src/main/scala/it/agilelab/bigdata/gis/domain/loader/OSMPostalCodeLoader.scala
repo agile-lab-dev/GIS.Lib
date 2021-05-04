@@ -4,16 +4,15 @@ import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.domain.models.OSMPostalCode
 
-
 case class OSMPostalCodeLoader() extends Loader[OSMPostalCode] {
 
-  override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
-
-    ShapeFileReader.readPointFeatures(source).map { case (point, list) =>
-      (list.toArray) -> point
-    }.toIterator
-
-  }
+  override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] =
+    ShapeFileReader
+      .readPointFeatures(source)
+      .map { case (point, list) =>
+        (list.toArray) -> point
+      }
+      .toIterator
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMPostalCode = {
 
@@ -27,7 +26,6 @@ case class OSMPostalCodeLoader() extends Loader[OSMPostalCode] {
     )
   }
 
-  protected def parseStringName(string: String): String = {
+  protected def parseStringName(string: String): String =
     new String(string.getBytes("ISO-8859-1"), "UTF-8")
-  }
 }

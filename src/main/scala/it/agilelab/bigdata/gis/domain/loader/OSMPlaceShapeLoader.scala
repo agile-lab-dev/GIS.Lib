@@ -7,7 +7,6 @@ import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 
 import java.util
 
-
 object OSMPlaceShapeLoader {
 
   //Pay attention to side effects
@@ -27,7 +26,7 @@ class OSMPlaceShapeLoader() extends Loader[OSMPlace] {
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
 
     val poligons: Seq[(Geometry, util.List[AnyRef])] = if (source.endsWith("places_a_free_1.shp")) {
-      ShapeFileReader.readMultiPolygonFeatures(source).map{ case (mp, sp) => (mp, sp.getAttributes)}
+      ShapeFileReader.readMultiPolygonFeatures(source).map { case (mp, sp) => (mp, sp.getAttributes) }
     } else if (source.endsWith("places_free_1.shp")) {
       ShapeFileReader.readPointFeaturesToPolygon(source)
     } else {
