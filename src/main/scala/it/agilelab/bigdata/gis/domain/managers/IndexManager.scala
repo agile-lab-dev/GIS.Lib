@@ -183,9 +183,9 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
       loadBoundaries(paths)
         .groupBy(_.boundaryType)
         .toList
-        .sortBy(_._1)(Ordering.String.reverse)
+        .sortBy(_._1.toLong)
         .map(_._2)
-        .reduce(mergeBoundaries)
+        .reduce((a, b) => mergeBoundaries(b, a))
         .flatMap(osm => enrichCities(Seq(osm), loadPostalCode(postalCodesPath)))
         .toList
 
