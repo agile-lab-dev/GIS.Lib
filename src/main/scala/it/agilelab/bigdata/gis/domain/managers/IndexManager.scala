@@ -211,7 +211,9 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
       inner.par.map { boundary =>
         outerPar
           .filter(_.customCovers(boundary))
-          .find(county => boundary.multiPolygon.getInteriorPoint.coveredBy(county.multiPolygon))
+          .find(county =>
+            boundary.multiPolygon.getInteriorPoint.coveredBy(county.multiPolygon) ||
+            county.multiPolygon.getInteriorPoint.coveredBy(boundary))
           .map(boundary.merge)
           .getOrElse(boundary)
       }.seq
