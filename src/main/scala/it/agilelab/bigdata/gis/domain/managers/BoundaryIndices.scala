@@ -7,4 +7,4 @@ import it.agilelab.bigdata.gis.domain.models.OSMBoundary
   * @param regionIndex region boundary index.
   * @param cityIndex   city boundary index.
   */
-case class BoundaryIndices(regionIndex: Seq[OSMBoundary], cityIndex: Seq[OSMBoundary])
+case class BoundaryIndices(indices: Seq[List[OSMBoundary]])

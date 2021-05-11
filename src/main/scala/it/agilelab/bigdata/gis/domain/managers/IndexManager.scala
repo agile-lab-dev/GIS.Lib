@@ -1,7 +1,7 @@
 package it.agilelab.bigdata.gis.domain.managers
 
 import com.typesafe.config.Config
-import it.agilelab.bigdata.gis.core.utils.ManagerUtils.{ BoundaryPathGroup, CountryPathSet, Path }
+import it.agilelab.bigdata.gis.core.utils.ManagerUtils.{ CountryPathSet, Path }
 import it.agilelab.bigdata.gis.core.utils.{ Configuration, Logger, ObjectPickler }
 import it.agilelab.bigdata.gis.domain.configuration.IndexManagerConfiguration
 import it.agilelab.bigdata.gis.domain.loader.{
@@ -156,30 +156,19 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
   ): List[GeometryList[OSMBoundary]] = {
     logger.info("Loading OSM boundaries file into GeometryList...")
 
-    val boundariesIndices: List[BoundaryIndices] =
-      multiCountriesPathSet.par
-        .map(pathSet => createCountryBoundariesWithPostalCodes(pathSet.boundary, pathSet.postalCodes))
-        .toList
-
-    val cityIndex: List[OSMBoundary] = boundariesIndices.flatMap(_.cityIndex)
-    val cityBoundaryGeometryList: GeometryList[OSMBoundary] = boundariesLoader.buildIndex(cityIndex)
-
-    val regionIndex: List[OSMBoundary] = boundariesIndices.flatMap(_.regionIndex)
-
-    val cityAndMaybeRegionGeometryLists: List[GeometryList[OSMBoundary]] =
-      if (regionIndex.nonEmpty)
-        List(cityBoundaryGeometryList, boundariesLoader.buildIndex(regionIndex))
-      else
-        List(cityBoundaryGeometryList)
+    val boundariesIndices: List[GeometryList[OSMBoundary]] = multiCountriesPathSet.par
+      .map(pathSet => createCountryBoundariesWithPostalCodes(pathSet.boundary, pathSet.postalCodes))
+      .flatMap(_.indices.map(boundariesLoader.buildIndex))
+      .toList
 
     logger.info("Done loading OSM boundaries file into GeometryList!")
 
-    cityAndMaybeRegionGeometryLists
+    boundariesIndices
   }
 
   //TODO review performances
   def createCountryBoundariesWithPostalCodes(
-      paths: BoundaryPathGroup,
+      paths: Array[Path],
       postalCodesPath: Array[Path]
   ): BoundaryIndices = {
 
@@ -187,36 +176,21 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     val loadBoundaries: Seq[Path] => Seq[OSMBoundary] = pathList => pathList.flatMap(boundariesLoader.loadObjects(_))
 
     val postalCodes: Seq[OSMPostalCode] = loadPostalCode(postalCodesPath)
-    val cities: Seq[OSMBoundary] = loadBoundaries(paths.city)
-    val counties: Seq[OSMBoundary] = loadBoundaries(paths.county)
-    val regions: Seq[OSMBoundary] = loadBoundaries(paths.region)
-    val countryBoundary: OSMBoundary = loadBoundaries(paths.country).head
+    val boundaries: Seq[OSMBoundary] = loadBoundaries(paths)
 
-    val countryName = countryBoundary.country.getOrElse("UNDEFINED COUNTRY")
+    val countryName = paths.headOption.map(_.split("/")).map(_.reverse.tail.head).getOrElse("UNDEFINED COUNTRY")
 
     logger.info(s"Start loading boundary of: $countryName...")
 
     logger.info(s"Enriching cities of country $countryName ...")
     val postalCodesWithCities: Seq[OSMBoundary] = recordDuration(
-      enrichCities(cities, postalCodes),
-      d => logger.info(s"Done enriching cities of country $countryName in $d ms"))
-
-    logger.info(s"Merging boundaries postal codes with cities of country $countryName ...")
-    val citiesWithCounties: Seq[OSMBoundary] = recordDuration(
-      mergeBoundaries(postalCodesWithCities, counties),
-      d => logger.info(s"Done merging boundaries postal codes with cities of country $countryName in $d ms"))
-
-    logger.info(s"Merging boundaries cities with counties of country $countryName ...")
-    val countiesWithRegion: Seq[OSMBoundary] = recordDuration(
-      mergeBoundaries(citiesWithCounties, regions),
-      d => logger.info(s"Done merging boundaries cities with counties of country $countryName in $d ms"))
-
-    val cityIndex: Seq[OSMBoundary] = countiesWithRegion.map(_.merge(countryBoundary))
-    val regionIndex: Seq[OSMBoundary] = regions.map(_.merge(countryBoundary))
+      enrichCities(boundaries, postalCodes),
+      d => logger.info(s"Done enriching cities of country $countryName in $d ms")
+    )
 
     logger.info(s"$countryName loaded.")
 
-    BoundaryIndices(regionIndex, cityIndex)
+    BoundaryIndices(Seq(postalCodesWithCities.toList))
   }
 
   /** Merges the inner boundaries with the additional attributes of the matching outers.

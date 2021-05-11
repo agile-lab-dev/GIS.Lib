@@ -28,13 +28,15 @@ case class PathManager(conf: Config) extends Configuration {
     } yield CountrySettings(countrySuffixList, regionSuffixList, countySuffixList, citySuffixList)).get
 
   def getCountryPathSet(countryFolder: File): CountryPathSet = {
-    val boundaryPathGroup: BoundaryPathGroup = getBoundaryPathGroup(countryFolder)
+//    val boundaryPathGroup: BoundaryPathGroup = getBoundaryPathGroup(countryFolder)
     val postalCodesPath: Array[Path] =
       countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*postalcodes.*.shp"))
     val roadsPath: Array[Path] = countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*roads.*.shp"))
     val houseNumbersPath: Array[Path] =
       countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*housenumbers.*.shp"))
-    CountryPathSet(boundaryPathGroup, postalCodesPath, roadsPath, houseNumbersPath)
+    val adminLevels: Array[Path] =
+      countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*admin.*.shp"))
+    CountryPathSet(adminLevels, postalCodesPath, roadsPath, houseNumbersPath)
   }
 
   private def getBoundaryPathGroup(countryFolder: File): BoundaryPathGroup = {

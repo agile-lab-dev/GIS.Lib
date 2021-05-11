@@ -9,7 +9,7 @@ object ManagerUtils {
   case class BoundaryPathGroup(country: List[Path], region: List[Path], county: List[Path], city: List[Path])
 
   case class CountryPathSet(
-      boundary: BoundaryPathGroup,
+      boundary: Array[Path],
       postalCodes: Array[Path],
       roads: Array[Path],
       houseNumbers: Array[Path]
