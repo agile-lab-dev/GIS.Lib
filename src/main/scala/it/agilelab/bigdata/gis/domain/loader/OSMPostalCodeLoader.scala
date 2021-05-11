@@ -5,6 +5,8 @@ import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.domain.models.OSMPostalCode
 import org.opengis.feature.simple.SimpleFeature
 
+import scala.collection.JavaConverters._
+
 case class OSMPostalCodeLoader() extends Loader[OSMPostalCode] {
 
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] =
@@ -18,6 +20,8 @@ case class OSMPostalCodeLoader() extends Loader[OSMPostalCode] {
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMPostalCode = {
 
     val features: SimpleFeature = fields(0).asInstanceOf[SimpleFeature]
+
+    logger.info(s"features ${features.getProperties.asScala.map(_.getName.toString)}")
 
     val postalCodeValue = Option(features.getAttribute("addrpostco").toString)
     val cityValue = Option(features.getAttribute("addrcity").toString)
