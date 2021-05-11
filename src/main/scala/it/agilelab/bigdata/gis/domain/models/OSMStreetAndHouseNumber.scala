@@ -30,7 +30,6 @@ case class OSMAddressNumber(point: Geometry, number: String)
 case class OSMSmallAddressNumber(x: Double, y: Double, number: String)
 
 case class OSMStreetAndHouseNumber(
-    osm_id: String,
     pointsArray: Array[Double],
     street: Option[String],
     streetType: Option[OSMStreetType],

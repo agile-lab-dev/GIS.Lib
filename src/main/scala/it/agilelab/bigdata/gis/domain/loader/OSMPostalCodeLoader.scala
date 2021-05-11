@@ -3,6 +3,7 @@ package it.agilelab.bigdata.gis.domain.loader
 import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.bigdata.gis.core.loader.Loader
 import it.agilelab.bigdata.gis.domain.models.OSMPostalCode
+import org.opengis.feature.simple.SimpleFeature
 
 case class OSMPostalCodeLoader() extends Loader[OSMPostalCode] {
 
@@ -10,14 +11,16 @@ case class OSMPostalCodeLoader() extends Loader[OSMPostalCode] {
     ShapeFileReader
       .readPointFeatures(source)
       .map { case (point, list) =>
-        (list.toArray) -> point
+        Array(list, point) -> point
       }
       .toIterator
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMPostalCode = {
 
-    val postalCodeValue = Option(fields(1).toString)
-    val cityValue = Option(fields(2).toString)
+    val features: SimpleFeature = fields(0).asInstanceOf[SimpleFeature]
+
+    val postalCodeValue = Option(features.getAttribute("addrpostco").toString)
+    val cityValue = Option(features.getAttribute("addrcity").toString)
 
     OSMPostalCode(
       point = line,
@@ -25,7 +28,4 @@ case class OSMPostalCodeLoader() extends Loader[OSMPostalCode] {
       city = cityValue
     )
   }
-
-  protected def parseStringName(string: String): String =
-    new String(string.getBytes("ISO-8859-1"), "UTF-8")
 }

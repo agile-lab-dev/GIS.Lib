@@ -51,13 +51,13 @@ object ShapeFileReader {
     }
   }
 
-  def readPointFeatures(path: String): Seq[(jts.Point, util.List[AnyRef])] =
-    readSimpleFeatures(path).flatMap(ft => ft.geom[jts.Point].map(e => (e, ft.getAttributes)))
+  def readPointFeatures(path: String): Seq[(jts.Point, SimpleFeature)] =
+    readSimpleFeatures(path).flatMap(ft => ft.geom[jts.Point].map(e => (e, ft)))
 
-  def readPointFeaturesToPolygon(path: String): Seq[(jts.Polygon, util.List[AnyRef])] = {
+  def readPointFeaturesToPolygon(path: String): Seq[(jts.Polygon, SimpleFeature)] = {
 
-    val points: Seq[(Point, util.List[AnyRef])] = readSimpleFeatures(path)
-      .flatMap(ft => ft.geom[jts.Point].map(e => (e, ft.getAttributes)))
+    val points: Seq[(Point, SimpleFeature)] = readSimpleFeatures(path)
+      .flatMap(ft => ft.geom[jts.Point].map(e => (e, ft)))
 
     val fact = new GeometryFactory()
 
@@ -79,15 +79,15 @@ object ShapeFileReader {
   def readLineFeatures(path: String): Seq[jts.LineString] =
     readSimpleFeatures(path).flatMap(ft => ft.geom[jts.LineString])
 
-  def readPolygonFeatures(path: String): Seq[(jts.Polygon, util.List[AnyRef])] =
+  def readPolygonFeatures(path: String): Seq[(jts.Polygon, SimpleFeature)] =
     readSimpleFeatures(path)
-      .flatMap(ft => ft.geom[jts.Polygon].map(e => (e, ft.getAttributes)))
+      .flatMap(ft => ft.geom[jts.Polygon].map(e => (e, ft)))
 
-  def readMultiPointFeatures(path: String): Seq[(jts.MultiPoint, util.List[AnyRef])] =
+  def readMultiPointFeatures(path: String): Seq[(jts.MultiPoint, SimpleFeature)] =
     readSimpleFeatures(path)
       .flatMap { ft =>
         ft.geom[jts.MultiPoint]
-          .map(e => (e, ft.getAttributes))
+          .map(e => (e, ft))
       }
 
   def readMultiLineFeatures(path: String): Seq[(jts.MultiLineString, util.List[AnyRef])] =

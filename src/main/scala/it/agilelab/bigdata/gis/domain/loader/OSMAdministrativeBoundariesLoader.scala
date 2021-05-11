@@ -33,21 +33,12 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
       .toIterator
   }
 
-  def extractISO(iso: String): String = {
-    val parts = iso.split("-")
-    if (parts.length == 1) {
-      parts(0)
-    } else if (parts.length == 2) {
-      parts(1)
-    } else {
-      iso
-    }
-  }
-
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMBoundary = {
 
     val countryName = fields.last.toString
     val countrySettings: CountrySettings = pathManager.getCountrySetting(countryName).clean
+
+    logger.info(s"Country settings $countrySettings")
 
     val features: SimpleFeature = fields(0).asInstanceOf[SimpleFeature]
 
@@ -92,6 +83,18 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
     }
   }
 
-  protected def parseStringName(string: String): String =
+  private def parseStringName(string: String): String =
     new String(string.getBytes("ISO-8859-1"), "UTF-8")
+
+  def extractISO(iso: String): String = {
+    val parts = iso.split("-")
+    if (parts.length == 1) {
+      parts(0)
+    } else if (parts.length == 2) {
+      parts(1)
+    } else {
+      iso
+    }
+  }
+
 }

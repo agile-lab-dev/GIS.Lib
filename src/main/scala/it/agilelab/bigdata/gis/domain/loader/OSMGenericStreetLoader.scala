@@ -11,6 +11,7 @@ import it.agilelab.bigdata.gis.domain.models.{
 }
 import it.agilelab.bigdata.gis.domain.spatialList.GeometryList
 import it.agilelab.bigdata.gis.domain.spatialOperator.KNNQueryMem
+import org.opengis.feature.simple.SimpleFeature
 
 import scala.util.Try
 
@@ -21,7 +22,7 @@ trait OSMGenericStreetLoader extends Loader[OSMStreetAndHouseNumber] with Logger
     val start = System.currentTimeMillis()
     val r = ShapeFileReader
       .readMultiLineFeatures(source)
-      .map { case (multiLine, list) => (list.toArray, multiLine) }
+      .map { case (multiLine, list) => (Array(list, multiLine), multiLine) }
       .toIterator
     logger.info("Loaded file of source {} in {} ms", source, System.currentTimeMillis() - start)
     r
@@ -29,22 +30,21 @@ trait OSMGenericStreetLoader extends Loader[OSMStreetAndHouseNumber] with Logger
 
   // references: https://wiki.openstreetmap.org/wiki/Key:highway
   override def objectMapping(fields: Array[AnyRef], line: Geometry): OSMStreetAndHouseNumber = {
+
+    val features: SimpleFeature = fields(0).asInstanceOf[SimpleFeature]
     val pointsArray = line.getCoordinates.flatMap(coord => Array(coord.x, coord.y))
 
-    val osm_id = fields(1).toString
-    val streetType = Try(Option(fields(3)).map(_.toString).getOrElse("")).toOption
-    val street = Try(new String(fields(4).toString.getBytes("ISO-8859-1"), "UTF-8")).toOption
+    val streetType = Try(Option(features.getAttribute("fclass")).map(_.toString).getOrElse("")).toOption
+    val street = Try(new String(features.getAttribute("name").toString.getBytes("ISO-8859-1"), "UTF-8")).toOption
 
     val st: Option[OSMStreetType] = streetType.map(OSMStreetType.fromValue)
 
-    val oneway: Option[Boolean] = Try(fields(6).toString != "F").toOption
-    val speedLimit: Option[Int] = Try(fields(7).toString.toInt).toOption.filter(_ != 0)
-    val isBridge: Option[Boolean] = Try(fields(9).toString != "F").toOption
-    val isTunnel: Option[Boolean] = Try(fields(10).toString != "F").toOption
-    //val toSpeed: Integer = fields(6).toInt
+    val oneway: Option[Boolean] = Try(features.getAttribute("oneway").toString != "F").toOption
+    val speedLimit: Option[Int] = Try(features.getAttribute("maxspeed").toString.toInt).toOption.filter(_ != 0)
+    val isBridge: Option[Boolean] = Try(features.getAttribute("bridge").toString != "F").toOption
+    val isTunnel: Option[Boolean] = Try(features.getAttribute("tunnel") != "F").toOption
 
     OSMStreetAndHouseNumber(
-      osm_id,
       pointsArray,
       street,
       st,
