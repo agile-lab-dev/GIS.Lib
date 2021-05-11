@@ -1,14 +1,13 @@
 package it.agilelab.bigdata.gis.domain.loader
 
-import com.vividsolutions.jts.{ geom => jts }
 import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, MultiPolygon, Point }
+import com.vividsolutions.jts.{ geom => jts }
 import org.geotools.data.shapefile._
 import org.geotools.data.simple._
 import org.opengis.feature.simple._
 
 import java.io.File
 import java.net.URL
-import java.util
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
@@ -90,9 +89,9 @@ object ShapeFileReader {
           .map(e => (e, ft))
       }
 
-  def readMultiLineFeatures(path: String): Seq[(jts.MultiLineString, util.List[AnyRef])] =
+  def readMultiLineFeatures(path: String): Seq[(jts.MultiLineString, SimpleFeature)] =
     readSimpleFeatures(path).flatMap { ft =>
-      ft.geom[jts.MultiLineString].map(e => (e, ft.getAttributes))
+      ft.geom[jts.MultiLineString].map(e => (e, ft))
     }
 
   def readMultiPolygonFeatures(path: String): Seq[(MultiPolygon, SimpleFeature)] =

@@ -38,8 +38,6 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
     val countryName = fields.last.toString
     val countrySettings: CountrySettings = pathManager.getCountrySetting(countryName).clean
 
-    logger.info(s"Country settings $countrySettings")
-
     val features: SimpleFeature = fields(0).asInstanceOf[SimpleFeature]
 
     val administrativeValue = features.getAttribute(config.getString("administrative.value")).toString
