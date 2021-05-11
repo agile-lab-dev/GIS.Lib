@@ -183,7 +183,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
       loadBoundaries(paths)
         .groupBy(_.boundaryType)
         .toList
-        .sortBy(_._1)
+        .sortBy(_._1)(Ordering.String.reverse)
         .map(_._2)
         .reduce(mergeBoundaries)
         .flatMap(osm => enrichCities(Seq(osm), loadPostalCode(postalCodesPath)))
@@ -211,9 +211,7 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
       inner.par.map { boundary =>
         outerPar
           .filter(_.customCovers(boundary))
-          .find(county =>
-            boundary.multiPolygon.getInteriorPoint.coveredBy(county.multiPolygon) ||
-            county.multiPolygon.getInteriorPoint.coveredBy(boundary))
+          .find(county => boundary.multiPolygon.getInteriorPoint.coveredBy(county.multiPolygon))
           .map(boundary.merge)
           .getOrElse(boundary)
       }.seq
