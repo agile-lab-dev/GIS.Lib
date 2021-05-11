@@ -184,15 +184,14 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
         .groupBy(_.boundaryType)
         .toList
         .sortBy(_._1.toLong)
-        .reduce { case ((adminLevel1, boundary1), (adminLevel2, boundary2)) =>
-          recordDuration(
-            mergeBoundaries(boundary2, boundary1),
-            d =>
-              logger.info(
-                s"Merged admin level $adminLevel1 and $adminLevel2 of country $countryName in $d ms"
-              )
+        .reduce { (a1: (String, Seq[OSMBoundary]), a2: (String, Seq[OSMBoundary])) =>
+          val merged: Seq[OSMBoundary] = recordDuration(
+            mergeBoundaries(a2._2, a1._2),
+            d => logger.info(s"Merged admin level ${a1._1} and ${a2._1} of country $countryName in $d ms")
           )
+          (a2._1, merged)
         }
+        ._2
 
     val postalCodes = recordDuration(loadPostalCode(postalCodesPath), d => logger.info(s"Loaded postal codes in $d ms"))
 

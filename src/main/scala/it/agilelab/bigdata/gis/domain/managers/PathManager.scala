@@ -68,7 +68,7 @@ case class CountrySettings(
     citySuffixes: List[String]
 ) {
 
-  def clean: CountrySettings = {
+  def clean: CountrySettings =
     // Take only admin level from a string like "8.shp" => "8"
     CountrySettings(
       this.countrySuffixes.map(_.split('.').head),
@@ -76,5 +76,4 @@ case class CountrySettings(
       this.countySuffixes.map(_.split('.').head),
       this.citySuffixes.map(_.split('.').head)
     )
-  }
 }
