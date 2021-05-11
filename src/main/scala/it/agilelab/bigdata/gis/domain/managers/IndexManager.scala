@@ -175,22 +175,23 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     val loadPostalCode: Seq[Path] => Seq[OSMPostalCode] = pathList => pathList.flatMap(postalCodeLoader.loadObjects(_))
     val loadBoundaries: Seq[Path] => Seq[OSMBoundary] = pathList => pathList.flatMap(boundariesLoader.loadObjects(_))
 
-    val postalCodes: Seq[OSMPostalCode] = loadPostalCode(postalCodesPath)
-    val boundaries: Seq[OSMBoundary] = loadBoundaries(paths)
-
     val countryName = paths.headOption.map(_.split("/")).map(_.reverse.tail.head).getOrElse("UNDEFINED COUNTRY")
 
     logger.info(s"Start loading boundary of: $countryName...")
 
-    logger.info(s"Enriching cities of country $countryName ...")
-    val postalCodesWithCities: Seq[OSMBoundary] = recordDuration(
-      enrichCities(boundaries, postalCodes),
-      d => logger.info(s"Done enriching cities of country $countryName in $d ms")
-    )
+    val boundaries: Seq[OSMBoundary] =
+      loadBoundaries(paths)
+        .groupBy(_.boundaryType)
+        .toList
+        .sortBy(_._1)
+        .map(_._2)
+        .reduce(mergeBoundaries)
+        .flatMap(osm => enrichCities(Seq(osm), loadPostalCode(postalCodesPath)))
+        .toList
 
     logger.info(s"$countryName loaded.")
 
-    BoundaryIndices(Seq(postalCodesWithCities.toList))
+    BoundaryIndices(Seq(boundaries.toList))
   }
 
   /** Merges the inner boundaries with the additional attributes of the matching outers.
