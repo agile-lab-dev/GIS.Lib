@@ -184,14 +184,27 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
         .groupBy(_.boundaryType)
         .toList
         .sortBy(_._1.toLong)
-        .map(_._2)
-        .reduce((a, b) => mergeBoundaries(b, a))
-        .flatMap(osm => enrichCities(Seq(osm), loadPostalCode(postalCodesPath)))
-        .toList
+        .reduce { case ((adminLevel1, boundary1), (adminLevel2, boundary2)) =>
+          recordDuration(
+            mergeBoundaries(boundary2, boundary1),
+            d =>
+              logger.info(
+                s"Merged admin level $adminLevel1 and $adminLevel2 of country $countryName in $d ms"
+              )
+          )
+        }
+
+    val postalCodes = recordDuration(loadPostalCode(postalCodesPath), d => logger.info(s"Loaded postal codes in $d ms"))
+
+    logger.info(s"Enriching ${boundaries.size} boundaries with ${postalCodes.size} postal codes")
+
+    val boundariesWithPostalCodes = boundaries
+      .flatMap(osm => enrichCities(Seq(osm), postalCodes))
+      .toList
 
     logger.info(s"$countryName loaded.")
 
-    BoundaryIndices(Seq(boundaries.toList))
+    BoundaryIndices(Seq(boundariesWithPostalCodes))
   }
 
   /** Merges the inner boundaries with the additional attributes of the matching outers.
@@ -210,7 +223,6 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
       val outerPar = outer.par
       inner.par.map { boundary =>
         outerPar
-          .filter(_.customCovers(boundary))
           .find(county => boundary.multiPolygon.getInteriorPoint.coveredBy(county.multiPolygon))
           .map(boundary.merge)
           .getOrElse(boundary)
