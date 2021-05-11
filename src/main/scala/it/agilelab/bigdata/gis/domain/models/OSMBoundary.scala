@@ -111,11 +111,17 @@ case class OSMBoundary(
     */
   def merge(other: OSMBoundary): OSMBoundary =
     this.copy(
-      city = this.city.orElse(other.city),
-      county = this.county.orElse(other.county),
-      region = this.region.orElse(other.region),
-      country = this.country.orElse(other.country),
-      countryCode = this.countryCode.orElse(other.countryCode),
-      countyCode = this.countyCode.orElse(other.countyCode)
+      city = emptyToNone(this.city).orElse(emptyToNone(other.city)),
+      county = emptyToNone(this.county).orElse(emptyToNone(other.county)),
+      region = emptyToNone(this.region).orElse(emptyToNone(other.region)),
+      country = emptyToNone(this.country).orElse(emptyToNone(other.country)),
+      countryCode = emptyToNone(this.countryCode).orElse(emptyToNone(other.countryCode)),
+      countyCode = emptyToNone(this.countyCode).orElse(emptyToNone(other.countyCode))
     )
+
+  def emptyToNone(s: Option[String]): Option[String] =
+    s match {
+      case Some(s) => if (s.trim.isEmpty) None else Some(s.trim)
+      case None    => None
+    }
 }
