@@ -5,6 +5,7 @@ import com.vividsolutions.jts.{ geom => jts }
 import org.geotools.data.shapefile._
 import org.geotools.data.simple._
 import org.opengis.feature.simple._
+import org.slf4j.LoggerFactory
 
 import java.io.File
 import java.net.URL
@@ -12,6 +13,8 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
 object ShapeFileReader {
+
+  private val logger = LoggerFactory.getLogger(ShapeFileReader.getClass)
 
   implicit class SimpleFeatureWrapper(ft: SimpleFeature) {
 
@@ -40,14 +43,15 @@ object ShapeFileReader {
     val ds: ShapefileDataStore = new ShapefileDataStore(new URL(url))
     val ftItr: SimpleFeatureIterator = ds.getFeatureSource.getFeatures.features
 
-    try {
-      val simpleFeatures = ListBuffer[SimpleFeature]()
-      while (ftItr.hasNext) simpleFeatures += ftItr.next()
-      simpleFeatures.toList
+    val simpleFeatures = ListBuffer[SimpleFeature]()
+    try while (ftItr.hasNext) simpleFeatures += ftItr.next()
+    catch {
+      case e: Exception => logger.warn(s"Exception occurred - num features read so far ${simpleFeatures.size}", e)
     } finally {
       ftItr.close()
       ds.dispose()
     }
+    simpleFeatures
   }
 
   def readPointFeatures(path: String): Seq[(jts.Point, SimpleFeature)] =
