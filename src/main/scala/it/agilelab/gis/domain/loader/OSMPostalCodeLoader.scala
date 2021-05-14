@@ -2,27 +2,30 @@ package it.agilelab.gis.domain.loader
 
 import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.loader.Loader
-import it.agilelab.gis.domain.models.OSMPostalCode
+import it.agilelab.gis.domain.models.OSMBoundary
+import org.opengis.feature.simple.SimpleFeature
 
-case class OSMPostalCodeLoader() extends Loader[OSMPostalCode] {
+case class OSMPostalCodeLoader() extends Loader[OSMBoundary] {
 
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] =
     ShapeFileReader
-      .readPointFeatures(source)
+      .readMultiPolygonFeatures(source)
       .map { case (point, list) =>
-        (list.toArray) -> point
+        Array[AnyRef](list) -> point
       }
       .toIterator
 
-  protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMPostalCode = {
+  protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMBoundary = {
 
-    val postalCodeValue = Option(fields(1).toString)
-    val cityValue = Option(fields(2).toString)
+    val features: SimpleFeature = fields(0).asInstanceOf[SimpleFeature]
 
-    OSMPostalCode(
-      point = line,
-      postalCode = postalCodeValue,
-      city = cityValue
+    val postalCodeValue = Option(features.getAttribute("CAP").toString)
+
+    OSMBoundary(
+      multiPolygon = line,
+      env = line.getEnvelopeInternal,
+      boundaryType = "",
+      postalCode = postalCodeValue
     )
   }
 

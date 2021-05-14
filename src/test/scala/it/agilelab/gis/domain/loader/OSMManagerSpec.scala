@@ -59,7 +59,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Veneto"),
         country = Some("Italy"),
         countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
-        postalIndex = Some("35020"),
+        postalIndex = None,
         addressRange = None,
         speedLimit = None,
         speedCategory = None,
@@ -68,6 +68,62 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
       )
 
     albignasego should be(albignasegoExptected)
+  }
+
+  "Reverse geocoding in east Milan" should "work" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.4582, 9.11905, None, System.currentTimeMillis())
+
+    val milan: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
+
+    val milanExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = None,
+        city = Some("Milan"),
+        county = Some("Milan"),
+        countyCode = Some("MI"),
+        region = Some("Lombardy"),
+        country = Some("Italy"),
+        countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
+        postalIndex = Some("20152"),
+        addressRange = None,
+        speedLimit = None,
+        speedCategory = None,
+        roadType = None,
+        distance = None
+      )
+
+    milan should be(milanExpected)
+  }
+
+  "Reverse geocoding in west Milan" should "work" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.4854, 9.2202, None, System.currentTimeMillis())
+
+    val milan: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
+
+    val milanExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = None,
+        city = Some("Milan"),
+        county = Some("Milan"),
+        countyCode = Some("MI"),
+        region = Some("Lombardy"),
+        country = Some("Italy"),
+        countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
+        postalIndex = Some("20131"),
+        addressRange = None,
+        speedLimit = None,
+        speedCategory = None,
+        roadType = None,
+        distance = None
+      )
+
+    milan should be(milanExpected)
   }
 
   "Reverse geocoding on Italy" should "has correct house number valued" in {
@@ -87,7 +143,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Piemont"),
         country = Some("Italy"),
         countryCode = Some("IT"),
-        postalIndex = Some("10024"),
+        postalIndex = None,
         addressRange = Some("9 scala A"),
         speedLimit = None,
         speedCategory = None,
@@ -119,7 +175,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Piemont"),
         country = Some("Italy"),
         countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
-        postalIndex = Some("10024"),
+        postalIndex = None,
         addressRange = Some("10"),
         speedLimit = Some(50),
         speedCategory = None,
