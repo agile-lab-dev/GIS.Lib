@@ -1,20 +1,13 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>it.agilelab.bigdata</groupId>
+    <groupId>it.agilelab</groupId>
     <artifactId>gis.lib</artifactId>
     <version>1.2.0-SNAPSHOT</version>
-
-    <repositories>
-        <repository>
-            <id>geo</id>
-            <url>https://repo.osgeo.org/repository/release/</url>
-        </repository>
-    </repositories>
-
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Gis Library</description>
     <packaging>jar</packaging>
+    <url>https://github.com/agile-lab-dev/GIS.Lib</url>
 
     <licenses>
         <license>
@@ -24,17 +17,31 @@
         </license>
     </licenses>
 
-    <distributionManagement>
+    <repositories>
         <repository>
-            <id>bintray-agile-lab-dev-GIS-Lib</id>
-            <name>agile-lab-dev-GIS-Lib</name>
-            <url>https://api.bintray.com/maven/agile-lab-dev/GIS-Lib/gis-lib/;publish=1</url>
+            <id>geo</id>
+            <url>https://repo.osgeo.org/repository/release/</url>
         </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-        </snapshotRepository>
-    </distributionManagement>
+        <repository>
+            <id>Central Maven repository</id>
+            <name>Central Maven repository https</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>Restlet Releases</id>
+            <name>Restlet Releases Repository</name>
+            <url>http://maven.restlet.com/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+    <scm>
+        <connection>scm:git:git:github.com:agile-lab-dev/GIS.Lib.git</connection>
+        <developerConnection>scm:git:git:github.com:agile-lab-dev/GIS.Lib.git</developerConnection>
+        <url>https://github.com/agile-lab-dev/GIS.Lib</url>
+    </scm>
 
     <developers>
 
@@ -61,6 +68,18 @@
 
     </developers>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.version>2.11.2</scala.version>
@@ -78,6 +97,10 @@
         <com.graphhopper.mapmatching.version>0.11.0-4</com.graphhopper.mapmatching.version>
         <com.github.scala-incubator.io.version>0.4.3-1</com.github.scala-incubator.io.version>
         <org.scalatest.version>3.0.4</org.scalatest.version>
+        <maven.source.plugin.version>2.2.1</maven.source.plugin.version>
+        <maven.gpg.plugin.version>1.5</maven.gpg.plugin.version>
+        <maven.javadoc.plugin.version>2.9.1</maven.javadoc.plugin.version>
+        <nexus.staging.maven.plugin.version>1.6.7</nexus.staging.maven.plugin.version>
     </properties>
 
     <dependencies>
@@ -197,7 +220,6 @@
             <scope>test</scope>
         </dependency>
 
-
     </dependencies>
 
     <build>
@@ -224,8 +246,16 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>attach-scaladocs</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>doc-jar</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -257,6 +287,35 @@
                 </executions>
             </plugin>
 
+            <!-- To get Javadoc and Source jar files generated, you have to configure the javadoc and source Maven plugins.-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven.source.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- scalafmt -->
             <plugin>
                 <groupId>org.antipathy</groupId>
                 <artifactId>mvn-scalafmt_${scala.version.major}</artifactId>
@@ -272,6 +331,34 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- The Maven GPG plugin is used to sign the components with the following configuration. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven.gpg.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>${nexus.staging.maven.plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
             </plugin>
 
         </plugins>
