@@ -17,5 +17,5 @@ Create graph:
 
 ```
 export MAVEN_OPTS = "-Xmx6G -Xms6G"
-mvn exec:java -Dexec.mainClass=it.agilelab.bigdata.gis.core.apps.ConverterFromOSMToGraphHopperMap -Dexec.args="--graphLocation graphHopperMap/ --osmLocation merge.osm.pbf"
+mvn exec:java -Dexec.mainClass=it.agilelab.gis.core.apps.ConverterFromOSMToGraphHopperMap -Dexec.args="--graphLocation graphHopperMap/ --osmLocation merge.osm.pbf"
 ```
