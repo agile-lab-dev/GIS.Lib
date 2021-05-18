@@ -19,7 +19,15 @@ case class OSMPostalCodeLoader() extends Loader[OSMBoundary] {
 
     val features: SimpleFeature = fields(0).asInstanceOf[SimpleFeature]
 
-    val postalCodeValue = Option(features.getAttribute("CAP").toString)
+    val postalCodeValue = Option(features.getAttribute("NCOMCP").toString)
+      .flatMap(pc =>
+        // Format: "<City> - <PostalCode>"
+        pc.split("-") match {
+          case Array(_, pc) => Some(pc.trim)
+          case pcParts =>
+            logger.warn(s"""Unable to decode postal code from $pc, parts ${pcParts.mkString(",")}""")
+            None
+        })
 
     OSMBoundary(
       multiPolygon = line,

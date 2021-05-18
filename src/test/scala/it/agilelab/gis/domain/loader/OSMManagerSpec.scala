@@ -87,7 +87,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Lombardy"),
         country = Some("Italy"),
         countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
-        postalIndex = Some("20152"),
+        postalIndex = Some("20147"),
         addressRange = None,
         speedLimit = None,
         speedCategory = None,
