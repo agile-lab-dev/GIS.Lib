@@ -82,7 +82,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.11.2</scala.version>
+        <scala.version>2.11.12</scala.version>
         <scala.version.major>2.11</scala.version.major>
         <org.slf4j.api.version>1.7.26</org.slf4j.api.version>
         <org.rogach.scallop.version>3.5.1</org.rogach.scallop.version>
