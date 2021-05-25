@@ -1,18 +1,17 @@
 package it.agilelab.gis.core.encoder
 
 import com.graphhopper.reader.ReaderWay
-import com.graphhopper.routing.util.{ CarFlagEncoder, EncodedDoubleValue, EncodedValue }
+import com.graphhopper.routing.util.{ CarFlagEncoder, EncodedValue }
 import com.graphhopper.util.EdgeIteratorState
-import java.util
-
 import it.agilelab.gis.core.utils.Logger
 
+import java.util
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
 /** @author andreaL
   */
-class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnCosts: Int = 0)
+class CarFlagEncoderEnrich(speedBits: Int = 8, speedFactor: Double = 1, maxTurnCosts: Int = 0)
     extends CarFlagEncoder(speedBits, speedFactor, maxTurnCosts)
     with Logger {
 
@@ -28,6 +27,11 @@ class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnC
   defaultSpeedMap.put("footway", 0)
   defaultSpeedMap.put("path", 0)
   defaultSpeedMap.put("cycleway", 0)
+  defaultSpeedMap.put("bridleway", 30)
+  defaultSpeedMap.put("raceway", 90)
+  defaultSpeedMap.put("escape", 30)
+  defaultSpeedMap.put("busway", 45)
+  defaultSpeedMap.put("bus_guideway", 45)
 
   val highwayList: Seq[String] = Seq(
     /* reserve index=0 for unset roads (not accessible) */
@@ -56,6 +60,8 @@ class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnC
     "pedestrian"
   )
 
+  logger.info(highwayList.diff(defaultSpeedMap.keySet().toSeq).toString())
+
   highwayList.zipWithIndex.foreach { case (value, idx) =>
     highwayMap.put(value, idx)
     highwayMapIndex.put(idx, value)
@@ -76,20 +82,16 @@ class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnC
       Option(highwayMap.get(highwayValue).asInstanceOf[Int]).getOrElse(0)
   }
 
+  override def handleWayTags(way: ReaderWay, allowed: Long, relationFlags: Long): Long = {
+    val hwValue = getHighwayValue(way)
+    highwayEncoder.setValue(super.handleWayTags(way, allowed, relationFlags), hwValue)
+  }
+
   override def defineWayBits(index: Int, shift: Int): Int = {
-    // first two bits are reserved for route handling in superclass
-
+    // first bits are reserved for route handling in superclass
     val _shift: Int = super.defineWayBits(index, shift)
-    speedEncoder = new EncodedDoubleValue(
-      "Speed",
-      _shift,
-      speedBits,
-      speedFactor,
-      defaultSpeedMap.get("secondary").asInstanceOf[Int],
-      maxPossibleSpeed
-    )
 
-    highwayEncoder = new EncodedValue("highway", _shift, 5, 1, 0, highwayMap.size, true)
+    highwayEncoder = new EncodedValue("highway", _shift, speedBits, speedFactor, 0, highwayMap.size, true)
 
     _shift + highwayEncoder.getBits
   }
@@ -107,5 +109,24 @@ class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnC
         logger.warn(s"Highway $v not found in ${highwayMap.mkString(",")}")
         unknownHighway
     }
+  }
+
+  /*
+
+  Override reasoning: CarFlagEncoder.applyMaxSpeed implementation is:
+
+        double maxSpeed = getMaxSpeed(way);
+        // We obey speed limits
+        if (maxSpeed >= 0) {
+            // We assume that the average speed is 90% of the allowed maximum
+            return maxSpeed * 0.9;
+        }
+        return speed;
+
+   That 0.9 factor is not what we want.
+   */
+  override def applyMaxSpeed(way: ReaderWay, speed: Double): Double = getMaxSpeed(way) match {
+    case max: Double if max >= 0 => max
+    case _                       => speed
   }
 }
