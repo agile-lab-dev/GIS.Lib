@@ -1,20 +1,23 @@
 package it.agilelab.gis.core
 
-import java.io.File
-import java.nio.file.Paths
-
 import com.typesafe.config.{ Config, ConfigFactory }
 import it.agilelab.gis.core.apps.ConverterFromOSMToGraphHopperMap
 import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.graphhopper.{ GPSPoint, GraphHopperManager, MatchedRoute, TracePoint }
-import org.scalatest.{ BeforeAndAfterAll, EitherValues, FlatSpec, Matchers }
+import org.scalatest._
+
+import java.io.File
+import java.nio.file.Paths
 
 /** @author andreaL
   */
-//Before run this test read Readme section `Test GraphHopper`,
-//download file `italy-latest.osm.pbf` and insert in test/resources/graphHopperSource/
-
-class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with BeforeAndAfterAll with Logger {
+class GraphHopperSpec
+    extends FlatSpec
+    with Matchers
+    with EitherValues
+    with TryValues
+    with BeforeAndAfterAll
+    with Logger {
 
   val conf: Config = ConfigFactory.load()
   val graphConf: Config = conf.getConfig("graph")
@@ -57,7 +60,6 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
 
     val points = Seq(point1)
 
-    scala.Double.NaN
     val response = manager.matchingRoute(points).right.value
 
     val expected = MatchedRoute(
@@ -70,14 +72,14 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
           matchedLatitude = Some(45.066316193850604),
           matchedLongitude = Some(7.637272156733646),
           matchedAltitude = Some(0.0),
-          roadType = Some("secondary_link"),
+          roadType = Some("primary"),
           roadName = Some("Corso Trapani"),
-          speedLimit = Some(45),
+          speedLimit = Some(50),
           linearDistance = Some(1.7221707379444537)
         )),
       length = 0.0,
       time = 0,
-      routes = Map("secondary_link" -> 470.687),
+      routes = Map("primary" -> 470.687),
       distanceBetweenPoints = Seq()
     )
 
@@ -93,6 +95,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
 
     val response = manager.matchingRoute(points).right.value
 
+    // FIXME road type should be residential https://nominatim.openstreetmap.org/ui/details.html?osmtype=W&osmid=221099743&class=highway
     val expected = MatchedRoute(
       List(
         TracePoint(
@@ -103,7 +106,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
           matchedLatitude = Some(45.16695452670932),
           matchedLongitude = Some(8.892203898204867),
           matchedAltitude = Some(0.0),
-          roadType = Some("trunk"),
+          roadType = Some("service"),
           roadName = Some(""),
           speedLimit = Some(20),
           linearDistance = Some(2.13489478036631)
@@ -116,7 +119,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
           matchedLatitude = Some(45.16695452670932),
           matchedLongitude = Some(8.892203898204867),
           matchedAltitude = Some(0.0),
-          roadType = Some("trunk"),
+          roadType = Some("service"),
           roadName = Some(""),
           speedLimit = Some(20),
           linearDistance = Some(2.13489478036631)
@@ -124,7 +127,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
       ),
       length = 0.0,
       time = 0,
-      routes = Map("trunk" -> 65.105),
+      routes = Map("service" -> 65.105),
       distanceBetweenPoints = List()
     )
 
@@ -159,6 +162,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
 
     val response = manager.matchingRoute(points).right.value
 
+    // https://nominatim.openstreetmap.org/ui/details.html?osmtype=N&osmid=4332601289&class=amenity
     val expected = MatchedRoute(
       points = List(
         TracePoint(
@@ -169,7 +173,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
           matchedLatitude = Some(45.17239819165617),
           matchedLongitude = Some(9.040047061706336),
           matchedAltitude = Some(0.0),
-          roadType = Some("primary"),
+          roadType = Some("residential"),
           roadName = Some("Via Stefano Pollini"),
           speedLimit = Some(30),
           linearDistance = Some(28.562745223944667)
@@ -182,7 +186,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
           matchedLatitude = Some(45.17239815398451),
           matchedLongitude = Some(9.04004721079609),
           matchedAltitude = Some(0.0),
-          roadType = Some("primary"),
+          roadType = Some("residential"),
           roadName = Some("Via Stefano Pollini"),
           speedLimit = Some(30),
           linearDistance = Some(26.20476715546049)
@@ -190,7 +194,7 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
       ),
       length = 0.0,
       time = 0,
-      routes = Map("primary" -> 159.296),
+      routes = Map("residential" -> 159.296),
       distanceBetweenPoints = List()
     )
 
@@ -206,14 +210,13 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
       GPSPoint(45.075511, 7.643988, None, 1552910930000L)
     )
 
-    val res = manager.matchingRoute(gpsPoint)
+    val response = manager.matchingRoute(gpsPoint).right.value
 
-    val matchingRoute = res.right.value
-
-    assert(matchingRoute.length > 150 && matchingRoute.length < 200)
-    assert(matchingRoute.getKmType("trunk_link").isSuccess)
-    assert(matchingRoute.getKmType("secondary_link").isSuccess)
-
+    assert(response.length > 150 && response.length < 200)
+    // https://nominatim.openstreetmap.org/ui/details.html?osmtype=N&osmid=332648726&class=railway
+    assert(response.getKmType("primary").isSuccess)
+    // https://nominatim.openstreetmap.org/ui/details.html?osmtype=N&osmid=4480107446&class=place
+    assert(response.getKmType("residential").isSuccess)
   }
 
   "test with point near sea" should "exclude ferries" in {
@@ -225,11 +228,13 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
       GPSPoint(38.1302, 13.3644, None, 1552910930000L)
     )
 
-    val res = manager.matchingRoute(gpsPoint)
+    val response = manager.matchingRoute(gpsPoint).right.value
 
-    val matchingRoute = res.right.value
-
-    assert(matchingRoute.length > 1700 && matchingRoute.length < 3200)
+    assert(response.length > 1700 && response.length < 3200)
+    // https://nominatim.openstreetmap.org/ui/details.html?osmtype=W&osmid=176323423&class=highway
+    assert(response.getKmType("service").isSuccess)
+    // https://nominatim.openstreetmap.org/ui/details.html?osmtype=N&osmid=3385101726&class=amenity
+    assert(response.getKmType("secondary").isSuccess)
   }
 
   "test with point near sea or in sea" should "exclude ferries" in {
@@ -253,14 +258,12 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
       GPSPoint(45.418, 12.372, None, 0L)
     )
 
-    val res = manager.matchingRoute(gpsPoint)
+    val response = manager.matchingRoute(gpsPoint).right.value
 
-    val matchingRoute = res.right.value
-
-    assert(matchingRoute.length > 10500 && matchingRoute.length < 11500)
+    assert(response.length > 10500 && response.length < 11500)
   }
 
-  "test with point near pedonal area" should "exclude pedonal area" in {
+  "test with point near pedestrian area" should "exclude pedestrian area" in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(45.075757, 7.671996, None, 0L),
@@ -370,4 +373,176 @@ class GraphHopperSpec extends FlatSpec with Matchers with EitherValues with Befo
   private def noneAltitude(r: MatchedRoute): MatchedRoute =
     r.copy(points = r.points.map(_.copy(altitude = None))) // Altitude might be Some(NaN)
 
+  it should "match route motorway road type in Rome" in {
+
+    val gpsPoint: List[GPSPoint] = List(
+      GPSPoint(41.511383, 13.650297, None, 1568268784000L),
+      GPSPoint(41.511383, 13.650297, None, 1568268786000L)
+    )
+
+    val response = manager.matchingRoute(gpsPoint).right.value
+
+    val expected = MatchedRoute(
+      points = List(
+        TracePoint(
+          latitude = 41.511383,
+          longitude = 13.650297,
+          altitude = None,
+          time = 1568268784000L,
+          matchedLatitude = Some(41.51142257124358),
+          matchedLongitude = Some(13.650327262988895),
+          matchedAltitude = Some(0.0),
+          roadType = Some("motorway"),
+          roadName = Some("Autostrada del Sole, A1"),
+          speedLimit = Some(130),
+          linearDistance = Some(5.070578365616436)
+        ),
+        TracePoint(
+          latitude = 41.511383,
+          longitude = 13.650297,
+          altitude = None,
+          time = 1568268786000L,
+          matchedLatitude = Some(41.51142257124358),
+          matchedLongitude = Some(13.650327262988895),
+          matchedAltitude = Some(0.0),
+          roadType = Some("motorway"),
+          roadName = Some("Autostrada del Sole, A1"),
+          speedLimit = Some(130),
+          linearDistance = Some(5.070578365616436)
+        )
+      ),
+      length = 0.0,
+      time = 0,
+      routes = Map("motorway" -> 4534.341),
+      distanceBetweenPoints = List()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+  it should "match route road type residential in Rome" in {
+    val gpsPoint: List[GPSPoint] = List(GPSPoint(41.79416, 12.43534, None, 1568268784000L))
+
+    val response = manager.matchingRoute(gpsPoint).right.value
+
+    // https://nominatim.openstreetmap.org/ui/details.html?osmtype=N&osmid=1762469004&class=highway
+    val expected = MatchedRoute(
+      points = List(
+        TracePoint(
+          latitude = 41.79416,
+          longitude = 12.43534,
+          altitude = None,
+          time = 1568268784000L,
+          matchedLatitude = Some(41.79415698265517),
+          matchedLongitude = Some(12.435335536254428),
+          matchedAltitude = Some(0.0),
+          roadType = Some("residential"),
+          roadName = Some("Via Armando Brasini"),
+          speedLimit = Some(50),
+          linearDistance = Some(0.4995042875174139)
+        )
+      ),
+      length = 0.0,
+      time = 0,
+      routes = Map("residential" -> 175.438),
+      distanceBetweenPoints = List()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+  it should "match route road type motorway in Rome" in {
+
+    val gpsPoint: List[GPSPoint] = List(GPSPoint(41.82721, 12.71078, None, 1568268784000L))
+
+    val response = manager.matchingRoute(gpsPoint).right.value
+
+    // https://nominatim.openstreetmap.org/ui/details.html?osmtype=W&osmid=330339383&class=highway
+    val expected = MatchedRoute(
+      points = List(
+        TracePoint(
+          latitude = 41.82721,
+          longitude = 12.71078,
+          altitude = None,
+          time = 1568268784000L,
+          matchedLatitude = Some(41.827229072913404),
+          matchedLongitude = Some(12.710784455770657),
+          matchedAltitude = Some(0.0),
+          roadType = Some("motorway"),
+          roadName = Some("Diramazione Roma Sud, A1"),
+          speedLimit = Some(130),
+          linearDistance = Some(2.15270662458055)
+        )
+      ),
+      length = 0.0,
+      time = 0,
+      routes = Map("motorway" -> 189.24),
+      distanceBetweenPoints = List()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+  it should "match route road type motorway in Rome with max speed enrichment" in {
+    val gpsPoint: List[GPSPoint] = List(GPSPoint(41.82244, 12.75443, None, 1568268784000L))
+
+    val response = manager.matchingRoute(gpsPoint).right.value
+
+    // https://nominatim.openstreetmap.org/ui/details.html?osmtype=W&osmid=13276603&class=highway
+    val expected = MatchedRoute(
+      points = List(
+        TracePoint(
+          latitude = 41.82244,
+          longitude = 12.75443,
+          altitude = None,
+          time = 1568268784000L,
+          matchedLatitude = Some(41.82246520227082),
+          matchedLongitude = Some(12.754441399762891),
+          matchedAltitude = Some(0.0),
+          roadType = Some("motorway"),
+          roadName = Some("Diramazione Roma Sud, A1"),
+          speedLimit = Some(100),
+          linearDistance = Some(2.9572919270786806)
+        )
+      ),
+      length = 0.0,
+      time = 0,
+      routes = Map("motorway" -> 1562.871),
+      distanceBetweenPoints = List()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+  it should "match route road type secondary in Rome" in {
+    val gpsPoint: List[GPSPoint] = List(
+      GPSPoint(41.82716, 12.70839, None, 1568268784000L)
+    )
+
+    val response = manager.matchingRoute(gpsPoint).right.value
+
+    val expected = MatchedRoute(
+      points = List(
+        TracePoint(
+          latitude = 41.82716,
+          longitude = 12.70839,
+          altitude = None,
+          time = 1568268784000L,
+          matchedLatitude = Some(41.82715787130136),
+          matchedLongitude = Some(12.708415820027746),
+          matchedAltitude = Some(0.0),
+          roadType = Some("secondary"),
+          roadName = Some("Via Fontana Candida"),
+          speedLimit = Some(60),
+          linearDistance = Some(2.1524503899857126)
+        )
+      ),
+      length = 0.0,
+      time = 0,
+      routes = Map("secondary" -> 89.541),
+      distanceBetweenPoints = List()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
 }
