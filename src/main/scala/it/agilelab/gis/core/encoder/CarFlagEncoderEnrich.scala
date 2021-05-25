@@ -53,13 +53,7 @@ class CarFlagEncoderEnrich(speedBits: Int = 5, speedFactor: Double = 5, maxTurnC
     "cycleway",
     "path",
     "footway",
-    "pedestrian",
-    "bus_guideway",
-    "escape",
-    "raceway",
-    "busway",
-    "bridleway",
-    "steps"
+    "pedestrian"
   )
 
   highwayList.zipWithIndex.foreach { case (value, idx) =>
