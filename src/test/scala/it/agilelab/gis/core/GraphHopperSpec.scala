@@ -29,7 +29,7 @@ class GraphHopperSpec
     val basePath = Paths.get("src/test/resources/").toFile.getAbsoluteFile
 
     val pbfFilePath: String =
-      Paths.get("src/test/resources/graphHopperSource/italy-latest.osm.pbf").toFile.getAbsolutePath
+      Paths.get("src/test/resources/graphHopperSource/milan.osm.pbf").toFile.getAbsolutePath
     val graphPath: String = s"$basePath/graphHopper"
     val graphPathOutput: File = Paths.get(graphPath).toFile
 
@@ -89,7 +89,7 @@ class GraphHopperSpec
   "Given 2 point in Milan in a motorway road" should "return a matched route" in {
 
     val point1 = GPSPoint(45.48237, 9.25148, None, 1619275184000L)
-    val point2 = GPSPoint(45.48271,9.25139, None, 1619275191000L)
+    val point2 = GPSPoint(45.48271, 9.25139, None, 1619275191000L)
 
     val points = Seq(point1, point2)
 
@@ -132,7 +132,6 @@ class GraphHopperSpec
 
     noneAltitude(response) shouldBe expected
   }
-
 
   "Given 1 point" should "return a matched route" taggedAs Slow in {
 

@@ -1,0 +1,43 @@
+name: Scalafmt
+on:
+  push:
+    branches: [ "master", "release/*" ]
+  pull_request:
+    branches: [ "master", "release/*" ]
+jobs:
+  verify-style:
+    env:
+      MAVEN_OPTS: "-Xmx6g -Xms6g"
+
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Compile
+        run: mvn --batch-mode --update-snapshots -DskipTests package
+
+      - name: Verify
+        shell: bash
+        run: |
+          # From: https://backreference.org/2009/12/23/how-to-match-newlines-in-sed/
+          # This is to leverage this workaround:
+          # https://github.com/actions/toolkit/issues/193#issuecomment-605394935
+          function urlencode() {
+            sed ':begin;$!N;s/\n/%0A/;tbegin'
+          }
+          if [[ -z "$(git status --porcelain)" ]]; then
+              echo "Up to date."
+          else
+              echo "Found diffs in: $(git diff-index --name-only HEAD --)"
+              for x in $(git diff-index --name-only HEAD --); do
+                  echo "::error file=$x::Please run ./hack/generate-graph.sh.%0A$(git diff $x | urlencode)"
+              done
+              echo "${{ github.repository }} is out of date. Please run hack/generate-graph.sh"
+              exit 1
+          fi
