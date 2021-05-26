@@ -26,4 +26,25 @@ jobs:
         run: mvn --batch-mode --update-snapshots compile
 
       - name: Create Graph
+        shell: bash
         run: ./hack/generate-graph.sh
+
+      - name: Verify
+        shell: bash
+        run: |
+          # From: https://backreference.org/2009/12/23/how-to-match-newlines-in-sed/
+          # This is to leverage this workaround:
+          # https://github.com/actions/toolkit/issues/193#issuecomment-605394935
+          function urlencode() {
+            sed ':begin;$!N;s/\n/%0A/;tbegin'
+          }
+          if [[ -z "$(git status --porcelain)" ]]; then
+              echo "Up to date."
+          else
+              echo "Found diffs in: $(git diff-index --name-only HEAD --)"
+              for x in $(git diff-index --name-only HEAD --); do
+                  echo "::error file=$x::Please run ./hack/generate-graph.sh.%0A$(git diff $x | urlencode)"
+              done
+              echo "${{ github.repository }} is out of date. Please run hack/generate-graph.sh"
+              exit 1
+          fi
