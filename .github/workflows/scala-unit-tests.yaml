@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [ "master", "release/*" ]
 jobs:
-  scala-unit-tests:
+  unit-tests:
     env:
       MAVEN_OPTS: "-Xmx6g -Xms6g"
 

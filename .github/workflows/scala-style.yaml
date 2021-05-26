@@ -36,8 +36,8 @@ jobs:
           else
               echo "Found diffs in: $(git diff-index --name-only HEAD --)"
               for x in $(git diff-index --name-only HEAD --); do
-                  echo "::error file=$x::Please run ./hack/generate-graph.sh.%0A$(git diff $x | urlencode)"
+                  echo "::error file=$x::Please format Scala code.%0A$(git diff $x | urlencode)"
               done
-              echo "${{ github.repository }} is out of date. Please run hack/generate-graph.sh"
+              echo "${{ github.repository }} is out of date. Please format Scala code"
               exit 1
           fi

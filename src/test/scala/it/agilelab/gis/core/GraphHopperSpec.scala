@@ -106,7 +106,7 @@ class GraphHopperSpec
           matchedLongitude = Some(9.251493186573803),
           matchedAltitude = Some(0.0),
           roadType = Some("motorway"),
-          roadName = Some("Tangenziale Est, A51e"),
+          roadName = Some("Tangenziale Est, A51"),
           speedLimit = Some(80),
           linearDistance = Some(1.0562698124311882)
         ),
@@ -119,7 +119,7 @@ class GraphHopperSpec
           matchedLongitude = Some(9.25138280885055),
           matchedAltitude = Some(0.0),
           roadType = Some("motorway"),
-          roadName = Some("Tangenziale Est, A51e"),
+          roadName = Some("Tangenziale Est, A51"),
           speedLimit = Some(80),
           linearDistance = Some(0.5697515483264242)
         )
