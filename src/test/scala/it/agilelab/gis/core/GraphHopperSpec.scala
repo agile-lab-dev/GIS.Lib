@@ -54,6 +54,86 @@ class GraphHopperSpec
     manager = GraphHopperManager(graphConf)
   }
 
+  "Given 1 point in Milan in a residential road" should "return a matched route" in {
+    val time = 1619780763562L
+    val point1 = GPSPoint(45.46615, 9.18700, None, time)
+
+    val points = Seq(point1)
+
+    val response = manager.matchingRoute(points).right.value
+
+    val expected = MatchedRoute(
+      points = Seq(
+        TracePoint(
+          latitude = 45.46615,
+          longitude = 9.18700,
+          altitude = None,
+          time = time,
+          matchedLatitude = Some(45.46615464688791),
+          matchedLongitude = Some(9.18699887809106),
+          matchedAltitude = Some(0.0),
+          roadType = Some("residential"),
+          roadName = Some("Via Bassano Porrone"),
+          speedLimit = Some(30),
+          linearDistance = Some(0.5240652051613223)
+        )),
+      length = 0.0,
+      time = 0,
+      routes = Map("residential" -> 99.406),
+      distanceBetweenPoints = Seq()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+  "Given 2 point in Milan in a motorway road" should "return a matched route" in {
+
+    val point1 = GPSPoint(45.48237, 9.25148, None, 1619275184000L)
+    val point2 = GPSPoint(45.48271,9.25139, None, 1619275191000L)
+
+    val points = Seq(point1, point2)
+
+    val response = manager.matchingRoute(points).right.value
+
+    val expected = MatchedRoute(
+      points = Seq(
+        TracePoint(
+          latitude = 45.48237,
+          longitude = 9.25148,
+          altitude = None,
+          time = 1619275184000L,
+          matchedLatitude = Some(45.48237218105361),
+          matchedLongitude = Some(9.251493186573803),
+          matchedAltitude = Some(0.0),
+          roadType = Some("motorway"),
+          roadName = Some("Tangenziale Est, A51e"),
+          speedLimit = Some(80),
+          linearDistance = Some(1.0562698124311882)
+        ),
+        TracePoint(
+          latitude = 45.48271,
+          longitude = 9.25139,
+          altitude = None,
+          time = 1619275191000L,
+          matchedLatitude = Some(45.48270908694192),
+          matchedLongitude = Some(9.25138280885055),
+          matchedAltitude = Some(0.0),
+          roadType = Some("motorway"),
+          roadName = Some("Tangenziale Est, A51e"),
+          speedLimit = Some(80),
+          linearDistance = Some(0.5697515483264242)
+        )
+      ),
+      length = 38.44312467891209,
+      time = 1729,
+      routes = Map("motorway" -> 901.385),
+      distanceBetweenPoints = Seq()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+
   "Given 1 point" should "return a matched route" taggedAs Slow in {
 
     val time = 1619780763562L
