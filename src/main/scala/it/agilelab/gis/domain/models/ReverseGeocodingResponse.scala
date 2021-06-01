@@ -1,46 +1,39 @@
 package it.agilelab.gis.domain.models
 
 import it.agilelab.gis.core.model.output.OutputModel
+import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
 
 object ReverseGeocodingResponse {
 
   def apply(
-      id: String,
-      osmStreet: OSMStreetAndHouseNumber,
-      osmBoundary: OSMBoundary,
-      distanceAndNumber: (Double, Option[String])
-  ): ReverseGeocodingResponse =
-    ReverseGeocodingResponse(
-      id,
-      osmStreet.street,
-      osmBoundary.city,
-      osmBoundary.county,
-      osmBoundary.countyCode,
-      osmBoundary.region,
-      osmBoundary.country,
-      osmBoundary.countryCode,
-      osmBoundary.postalCode,
-      distanceAndNumber._2,
-      osmStreet.speedLimit,
-      None,
-      osmStreet.streetType.map(_.value),
-      Some(distanceAndNumber._1)
-    )
+      point: IdentifiableGPSPoint,
+      place: Option[(OSMBoundary, KnnResult)],
+      street: Option[OSMStreetAndHouseNumber],
+      distanceAndNumber: Option[(Double, Option[String])]
+  ): ReverseGeocodingResponse = {
 
-  def apply(id: String, osmStreet: Option[OSMStreet], osmBoundary: Option[OSMBoundary]): ReverseGeocodingResponse =
+    val (boundary, _) = place match {
+      case Some((b, r)) => (Some(b), Some(r))
+      case None         => (None, None)
+    }
+
     ReverseGeocodingResponse(
-      id,
-      osmStreet.flatMap(_.street),
-      osmBoundary.flatMap(_.city),
-      osmBoundary.flatMap(_.county),
-      osmBoundary.flatMap(_.countyCode),
-      osmBoundary.flatMap(_.region),
-      osmBoundary.flatMap(_.country),
-      osmBoundary.flatMap(_.countryCode),
-      osmBoundary.flatMap(_.postalCode),
-      osmStreet.flatMap(_.streetType.map(_.value)),
-      osmStreet.flatMap(_.speedLimit)
+      id = point.id,
+      street = street.flatMap(_.street),
+      city = boundary.flatMap(_.city),
+      county = boundary.flatMap(_.county),
+      countyCode = boundary.flatMap(_.countyCode),
+      region = boundary.flatMap(_.region),
+      country = boundary.flatMap(_.country),
+      countryCode = boundary.flatMap(_.countryCode),
+      postalIndex = boundary.flatMap(_.postalCode),
+      addressRange = distanceAndNumber.flatMap(_._2),
+      speedLimit = street.flatMap(_.speedLimit),
+      speedCategory = None,
+      roadType = street.flatMap(_.streetType.map(_.value)),
+      distance = distanceAndNumber.map(_._1)
     )
+  }
 
 }
 

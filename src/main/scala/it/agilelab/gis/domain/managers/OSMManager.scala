@@ -6,8 +6,8 @@ import it.agilelab.gis.core.utils.{ Logger, ManagerUtils }
 import it.agilelab.gis.domain.configuration.OSMManagerConfiguration
 import it.agilelab.gis.domain.exceptions.ReverseGeocodingError
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
-import it.agilelab.gis.domain.loader.ReverseGeocoder
-import it.agilelab.gis.domain.models
+import it.agilelab.gis.domain.loader.Index.Index
+import it.agilelab.gis.domain.loader.{ Index, ReverseGeocoder }
 import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
@@ -20,13 +20,16 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
   val osmConfig: OSMManagerConfiguration = OSMManagerConfiguration(conf)
   val indexManager: IndexManager = IndexManager(osmConfig.indexConf)
 
-  override def reverseGeocode(point: IdentifiableGPSPoint): Either[ReverseGeocodingError, ReverseGeocodingResponse] = {
+  override def reverseGeocode(
+      point: IdentifiableGPSPoint,
+      indices: Set[Index] = Index.values
+  ): Either[ReverseGeocodingError, ReverseGeocodingResponse] = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
     Try(
       makeAddress(
         point,
-        reverseGeocodeQueryingBoundaries(queryPoint),
-        reverseGeocodeQueryingStreets(queryPoint),
+        reverseGeocodeQueryingBoundaries(queryPoint, indices),
+        reverseGeocodeQueryingStreets(queryPoint, indices),
         queryPoint)) match {
       case Success(addr) => Right(addr)
       case Failure(ex) =>
@@ -35,7 +38,10 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     }
   }
 
-  private def reverseGeocodeQueryingBoundaries(queryPoint: Point): Option[(OSMBoundary, KnnResult)] = {
+  private def reverseGeocodeQueryingBoundaries(
+      queryPoint: Point,
+      indices: Set[Index]
+  ): Option[(OSMBoundary, KnnResult)] = {
 
     @tailrec
     def queryBoundaryIndices(
@@ -64,23 +70,34 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     if (osmConfig.addressTolMeters > ManagerUtils.NUMBERS_MAX_DISTANCE)
       logger.info("address_tol_meter is greater than the distance used to build the spatial index!")
 
-    queryBoundaryIndices(List(indexManager.indexSet.boundaries, indexManager.indexSet.regions), queryPoint)
+    if (indices.contains(Index.Boundaries))
+      queryBoundaryIndices(List(indexManager.indexSet.boundaries, indexManager.indexSet.regions), queryPoint)
+    else
+      None
   }
 
-  private def reverseGeocodeQueryingStreets(queryPoint: Point): Option[OSMStreetAndHouseNumber] = {
+  private def reverseGeocodeQueryingStreets(queryPoint: Point, indices: Set[Index]): Option[OSMStreetAndHouseNumber] = {
 
-    val roadsResult: Seq[OSMStreetAndHouseNumber] = KNNQueryMem.spatialKnnQueryWithMaxDistance(
-      indexManager.indexSet.streets,
-      queryPoint,
-      k = 10,
-      osmConfig.roadTolMeters
-    )
+    val roadsResult =
+      if (indices.contains(Index.Street))
+        KNNQueryMem.spatialKnnQueryWithMaxDistance(
+          indexManager.indexSet.streets,
+          queryPoint,
+          k = 10,
+          osmConfig.roadTolMeters
+        )
+      else
+        Seq()
 
-    val houseNumbers = KNNQueryMem.spatialQueryWithMaxDistance(
-      indexManager.indexSet.houseNumbers,
-      queryPoint,
-      ManagerUtils.NUMBERS_MAX_DISTANCE
-    )
+    val houseNumbers =
+      if (indices.contains(Index.HouseNumber))
+        KNNQueryMem.spatialQueryWithMaxDistance(
+          indexManager.indexSet.houseNumbers,
+          queryPoint,
+          ManagerUtils.NUMBERS_MAX_DISTANCE
+        )
+      else
+        Seq()
 
     //If filterEmptyStreets is enabled then we filter out all the not defined and empty streets
     roadsResult
@@ -100,14 +117,10 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
       street: Option[OSMStreetAndHouseNumber],
       queryPoint: Point
   ): ReverseGeocodingResponse =
-    (place, street) match {
-      case (None, _)                   => ReverseGeocodingResponse(point.id, None, None)
-      case (Some((boundary, _)), None) => ReverseGeocodingResponse(point.id, None, Some(boundary))
-      case (Some((boundary, _)), Some(streetResult)) =>
-        models.ReverseGeocodingResponse(
-          point.id,
-          streetResult,
-          boundary,
-          streetResult.getDistanceAndNumber(queryPoint, osmConfig.addressTolMeters))
-    }
+    ReverseGeocodingResponse(
+      point,
+      place,
+      street,
+      street.map(_.getDistanceAndNumber(queryPoint, osmConfig.addressTolMeters))
+    )
 }

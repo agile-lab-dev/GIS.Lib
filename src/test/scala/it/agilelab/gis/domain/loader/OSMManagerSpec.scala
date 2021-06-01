@@ -98,6 +98,64 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
     corsoSaccoEVanzettiActual should be(corsoSaccoEVanzettiExpected)
   }
 
+  "Reverse geocoding on Italy" should "not query street index" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.08333, 7.61496, None, System.currentTimeMillis())
+
+    val corsoSaccoEVanzettiActual: ReverseGeocodingResponse =
+      osmManager.reverseGeocode(point, Index.values.filter(v => !v.equals(Index.Street))).right.value
+
+    val corsoSaccoEVanzettiExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = None,
+        city = Some("Turin"),
+        county = Some("Torino"),
+        countyCode = Some("TO"),
+        region = Some("Piemont"),
+        country = Some("Italy"),
+        countryCode = Some("IT"),
+        postalIndex = Some("10024"),
+        addressRange = None,
+        speedLimit = None,
+        speedCategory = None,
+        roadType = None,
+        distance = None
+      )
+
+    corsoSaccoEVanzettiActual should be(corsoSaccoEVanzettiExpected)
+  }
+
+  "Reverse geocoding on Italy" should "not query the house numbers index" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.08333, 7.61496, None, System.currentTimeMillis())
+
+    val corsoSaccoEVanzettiActual: ReverseGeocodingResponse =
+      osmManager.reverseGeocode(point, Index.values.filter(v => !v.equals(Index.HouseNumber))).right.value
+
+    val corsoSaccoEVanzettiExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = Some("Corso Sacco e Vanzetti"),
+        city = Some("Turin"),
+        county = Some("Torino"),
+        countyCode = Some("TO"),
+        region = Some("Piemont"),
+        country = Some("Italy"),
+        countryCode = Some("IT"),
+        postalIndex = Some("10024"),
+        addressRange = None,
+        speedLimit = None,
+        speedCategory = None,
+        roadType = Some("residential"),
+        distance = Some(61.004018272444824)
+      )
+
+    corsoSaccoEVanzettiActual should be(corsoSaccoEVanzettiExpected)
+  }
+
   "OSMManager" should "retrieve OSM index from file and reverse geocode a Turin coordinate" in {
     val osmManagerIndexRetriever = OSMManager(ConfigFactory.load("reference-osm-file-index.conf").getConfig("osm"))
     reverseGeocodeTurin(osmManagerIndexRetriever)
