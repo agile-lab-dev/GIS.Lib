@@ -2,9 +2,13 @@ package it.agilelab.gis.domain.loader
 
 import com.typesafe.config.{ Config, ConfigFactory }
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
+import it.agilelab.gis.domain.loader.ReverseGeocoder.{ HouseNumbers, Index, Streets }
 import it.agilelab.gis.domain.managers.OSMManager
 import it.agilelab.gis.domain.models.ReverseGeocodingResponse
 import org.scalatest.{ BeforeAndAfterAll, EitherValues, FlatSpec, Matchers }
+import pureconfig.PathSegment.Index
+
+import scala.reflect.runtime.universe
 
 class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with BeforeAndAfterAll {
 
@@ -104,7 +108,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
     val point = IdentifiableGPSPoint(id, 45.08333, 7.61496, None, System.currentTimeMillis())
 
     val corsoSaccoEVanzettiActual: ReverseGeocodingResponse =
-      osmManager.reverseGeocode(point, Index.values.filter(v => !v.equals(Index.Street))).right.value
+      osmManager.reverseGeocode(point, ReverseGeocoder.indices.filter(v => !v.equals(Streets))).right.value
 
     val corsoSaccoEVanzettiExpected: ReverseGeocodingResponse =
       ReverseGeocodingResponse(
@@ -133,7 +137,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
     val point = IdentifiableGPSPoint(id, 45.08333, 7.61496, None, System.currentTimeMillis())
 
     val corsoSaccoEVanzettiActual: ReverseGeocodingResponse =
-      osmManager.reverseGeocode(point, Index.values.filter(v => !v.equals(Index.HouseNumber))).right.value
+      osmManager.reverseGeocode(point, ReverseGeocoder.indices.filter(v => !v.equals(HouseNumbers))).right.value
 
     val corsoSaccoEVanzettiExpected: ReverseGeocodingResponse =
       ReverseGeocodingResponse(

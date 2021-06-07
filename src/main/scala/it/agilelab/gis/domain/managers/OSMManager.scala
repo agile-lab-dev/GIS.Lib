@@ -6,8 +6,8 @@ import it.agilelab.gis.core.utils.{ Logger, ManagerUtils }
 import it.agilelab.gis.domain.configuration.OSMManagerConfiguration
 import it.agilelab.gis.domain.exceptions.ReverseGeocodingError
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
-import it.agilelab.gis.domain.loader.Index.Index
-import it.agilelab.gis.domain.loader.{ Index, ReverseGeocoder }
+import it.agilelab.gis.domain.loader.ReverseGeocoder
+import it.agilelab.gis.domain.loader.ReverseGeocoder.{ Boundaries, HouseNumbers, Index, Streets }
 import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
@@ -22,7 +22,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
 
   override def reverseGeocode(
       point: IdentifiableGPSPoint,
-      indices: Set[Index] = Index.values
+      indices: Set[Index] = ReverseGeocoder.indices
   ): Either[ReverseGeocodingError, ReverseGeocodingResponse] = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
     Try(
@@ -70,7 +70,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
     if (osmConfig.addressTolMeters > ManagerUtils.NUMBERS_MAX_DISTANCE)
       logger.info("address_tol_meter is greater than the distance used to build the spatial index!")
 
-    if (indices.contains(Index.Boundaries))
+    if (indices.contains(Boundaries))
       queryBoundaryIndices(List(indexManager.indexSet.boundaries, indexManager.indexSet.regions), queryPoint)
     else
       None
@@ -79,7 +79,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
   private def reverseGeocodeQueryingStreets(queryPoint: Point, indices: Set[Index]): Option[OSMStreetAndHouseNumber] = {
 
     val roadsResult =
-      if (indices.contains(Index.Street))
+      if (indices.contains(Streets))
         KNNQueryMem.spatialKnnQueryWithMaxDistance(
           indexManager.indexSet.streets,
           queryPoint,
@@ -90,7 +90,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
         Seq()
 
     val houseNumbers =
-      if (indices.contains(Index.HouseNumber))
+      if (indices.contains(HouseNumbers))
         KNNQueryMem.spatialQueryWithMaxDistance(
           indexManager.indexSet.houseNumbers,
           queryPoint,
