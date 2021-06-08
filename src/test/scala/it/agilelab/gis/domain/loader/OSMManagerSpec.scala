@@ -2,9 +2,13 @@ package it.agilelab.gis.domain.loader
 
 import com.typesafe.config.{ Config, ConfigFactory }
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
+import it.agilelab.gis.domain.loader.ReverseGeocoder.{ HouseNumbers, Index, Streets }
 import it.agilelab.gis.domain.managers.OSMManager
 import it.agilelab.gis.domain.models.ReverseGeocodingResponse
 import org.scalatest.{ BeforeAndAfterAll, EitherValues, FlatSpec, Matchers }
+import pureconfig.PathSegment.Index
+
+import scala.reflect.runtime.universe
 
 class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with BeforeAndAfterAll {
 
@@ -149,6 +153,64 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         speedCategory = None,
         roadType = Some("residential"),
         distance = Some(1.4465500367107154)
+      )
+
+    corsoSaccoEVanzettiActual should be(corsoSaccoEVanzettiExpected)
+  }
+
+  "Reverse geocoding on Italy" should "not query street index" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.08333, 7.61496, None, System.currentTimeMillis())
+
+    val corsoSaccoEVanzettiActual: ReverseGeocodingResponse =
+      osmManager.reverseGeocode(point, ReverseGeocoder.indices.filter(v => !v.equals(Streets))).right.value
+
+    val corsoSaccoEVanzettiExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = None,
+        city = Some("Turin"),
+        county = Some("Torino"),
+        countyCode = Some("TO"),
+        region = Some("Piemont"),
+        country = Some("Italy"),
+        countryCode = Some("IT"),
+        postalIndex = Some("10024"),
+        addressRange = None,
+        speedLimit = None,
+        speedCategory = None,
+        roadType = None,
+        distance = None
+      )
+
+    corsoSaccoEVanzettiActual should be(corsoSaccoEVanzettiExpected)
+  }
+
+  "Reverse geocoding on Italy" should "not query the house numbers index" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 45.08333, 7.61496, None, System.currentTimeMillis())
+
+    val corsoSaccoEVanzettiActual: ReverseGeocodingResponse =
+      osmManager.reverseGeocode(point, ReverseGeocoder.indices.filter(v => !v.equals(HouseNumbers))).right.value
+
+    val corsoSaccoEVanzettiExpected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = Some("Corso Sacco e Vanzetti"),
+        city = Some("Turin"),
+        county = Some("Torino"),
+        countyCode = Some("TO"),
+        region = Some("Piemont"),
+        country = Some("Italy"),
+        countryCode = Some("IT"),
+        postalIndex = Some("10024"),
+        addressRange = None,
+        speedLimit = None,
+        speedCategory = None,
+        roadType = Some("residential"),
+        distance = Some(61.004018272444824)
       )
 
     corsoSaccoEVanzettiActual should be(corsoSaccoEVanzettiExpected)
