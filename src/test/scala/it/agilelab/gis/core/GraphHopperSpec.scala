@@ -78,8 +78,8 @@ class GraphHopperSpec
           speedLimit = Some(30),
           linearDistance = Some(0.5240652051613223)
         )),
-      length = 0.0,
-      time = 0,
+      length = Some(0.0),
+      time = Some(0),
       routes = Map("residential" -> 99.406),
       distanceBetweenPoints = Seq()
     )
@@ -96,39 +96,48 @@ class GraphHopperSpec
 
     val response = manager.matchingRoute(points).right.value
 
+    val tp1 = TracePoint(
+      latitude = 45.48237,
+      longitude = 9.25148,
+      altitude = None,
+      time = 1619275184000L,
+      matchedLatitude = Some(45.48237218105361),
+      matchedLongitude = Some(9.251493186573803),
+      matchedAltitude = Some(0.0),
+      roadType = Some("motorway"),
+      roadName = Some("Tangenziale Est, A51"),
+      speedLimit = Some(80),
+      linearDistance = Some(1.0562698124311882)
+    )
+
+    val tp2 = TracePoint(
+      latitude = 45.48271,
+      longitude = 9.25139,
+      altitude = None,
+      time = 1619275191000L,
+      matchedLatitude = Some(45.48270908694192),
+      matchedLongitude = Some(9.25138280885055),
+      matchedAltitude = Some(0.0),
+      roadType = Some("motorway"),
+      roadName = Some("Tangenziale Est, A51"),
+      speedLimit = Some(80),
+      linearDistance = Some(0.5697515483264242)
+    )
+
     val expected = MatchedRoute(
-      points = Seq(
-        TracePoint(
-          latitude = 45.48237,
-          longitude = 9.25148,
-          altitude = None,
-          time = 1619275184000L,
-          matchedLatitude = Some(45.48237218105361),
-          matchedLongitude = Some(9.251493186573803),
-          matchedAltitude = Some(0.0),
-          roadType = Some("motorway"),
-          roadName = Some("Tangenziale Est, A51"),
-          speedLimit = Some(80),
-          linearDistance = Some(1.0562698124311882)
-        ),
-        TracePoint(
-          latitude = 45.48271,
-          longitude = 9.25139,
-          altitude = None,
-          time = 1619275191000L,
-          matchedLatitude = Some(45.48270908694192),
-          matchedLongitude = Some(9.25138280885055),
-          matchedAltitude = Some(0.0),
-          roadType = Some("motorway"),
-          roadName = Some("Tangenziale Est, A51"),
-          speedLimit = Some(80),
-          linearDistance = Some(0.5697515483264242)
-        )
-      ),
-      length = 38.44312467891209,
-      time = 1729,
+      points = Seq(tp1, tp2),
+      length = Some(38.44312467891209),
+      time = Some(1729),
       routes = Map("motorway" -> 901.385),
-      distanceBetweenPoints = Seq()
+      distanceBetweenPoints = Seq(
+        DistancePoint(
+          tp1,
+          tp2,
+          distance = 38.44312467891209,
+          diffTime = 7000L,
+          Some("motorway")
+        )
+      )
     )
 
     noneAltitude(response) shouldBe expected
@@ -630,7 +639,7 @@ class GraphHopperSpec
     noneAltitude(response) shouldBe expected
   }
 
-  it should "perform length" in {
+  it should "perform length" taggedAs Slow in {
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(42.46046266264412, 12.379277358099305, None, 1552910827000L),
       GPSPoint(42.46050866930525, 12.380000883981737, None, 1552910928000L),
@@ -653,7 +662,7 @@ class GraphHopperSpec
     distancesSum should be < 4500d
   }
 
-  it should "return empty distance between points on a trip with a stopped vehicle and unmatchable route" in {
+  it should "return empty distance between points on a trip with a stopped vehicle and unmatchable route" taggedAs Slow in {
 
     val points = """
       |40.74461 14.4759
@@ -739,7 +748,7 @@ class GraphHopperSpec
     result.distanceBetweenPoints should have length 0
   }
 
-  it should "return distance between points on a trip with a stopped vehicle and matchable route" in {
+  it should "return distance between points on a trip with a stopped vehicle and matchable route" taggedAs Slow in {
     val points = """
                    |40.7445 14.47465
                    |40.7445 14.47465
@@ -758,7 +767,7 @@ class GraphHopperSpec
     result.distanceBetweenPoints should have length result.points.length - 1
   }
 
-  it should "return distance between points on a matchable route" in { // DONE
+  it should "return distance between points on a matchable route" taggedAs Slow in { // DONE
     val points = """
         |43.67814 12.38891
         |43.6772 12.38942
@@ -781,7 +790,7 @@ class GraphHopperSpec
     distanceBetween(result, 990d, 1000d)
   }
 
-  "test carFlagEncoderEnrich 2" should "retrieve result of map matching and distance for each type of street" in {
+  "test carFlagEncoderEnrich 2" should "retrieve result of map matching and distance for each type of street" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(43.67814, 12.38891, None, 1),
@@ -798,7 +807,7 @@ class GraphHopperSpec
     distanceBetween(response, 990d, 995d)
   }
 
-  "test carFlagEncoderEnrich 3" should "retrieve result of map matching and distance for each type of street" in {
+  "test carFlagEncoderEnrich 3" should "retrieve result of map matching and distance for each type of street" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(45.07248552073306, 7.56254494706547, None, 1),
@@ -812,7 +821,7 @@ class GraphHopperSpec
     distanceBetween(response, 8900d, 9000d)
   }
 
-  "test carFlagEncoderEnrich 4" should "retrieve result of map matching and distance for each type of street" in {
+  "test carFlagEncoderEnrich 4" should "retrieve result of map matching and distance for each type of street" taggedAs Slow in {
 
     val points = """
       |45.75124, 45.7513, 45.75139, 45.75133, 45.75101, 45.75068, 45.75014, 45.74992, 45.75026, 45.75116, 45.7523, 45.75354, 45.75482, 45.75606, 45.75635, 45.75644, 45.75654, 45.75663, 45.75772, 45.75865, 45.75876, 45.7588, 45.75886, 45.75892, 45.75897, 45.75936, 45.76017, 45.7611, 45.76208, 45.763, 45.76391, 45.76518, 45.76633, 45.76753, 45.76785, 45.76797, 45.76908, 45.76927, 45.7692, 45.7692, 45.7692, 45.7692, 45.76919, 45.76918, 45.76918, 45.76918, 45.76916, 45.76916, 45.76916, 45.76917, 45.76918
