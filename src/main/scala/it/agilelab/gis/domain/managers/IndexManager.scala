@@ -1,9 +1,5 @@
 package it.agilelab.gis.domain.managers
 
-import java.io.File
-import java.util.concurrent.{ Callable, Executors, Future }
-import java.util.regex.Pattern
-
 import com.typesafe.config.Config
 import it.agilelab.gis.core.utils.ManagerUtils.{ BoundaryPathGroup, CountryPathSet, Path }
 import it.agilelab.gis.core.utils.{ Configuration, Logger, ObjectPickler }
@@ -14,9 +10,12 @@ import it.agilelab.gis.domain.loader.{
   OSMHouseNumbersLoader,
   OSMPostalCodeLoader
 }
+import it.agilelab.gis.domain.managers.IndexManager._
 import it.agilelab.gis.domain.models.{ OSMBoundary, OSMHouseNumber, OSMPostalCode, OSMStreetAndHouseNumber }
 import it.agilelab.gis.domain.spatialList.GeometryList
-import IndexManager._
+
+import java.io.File
+import java.util.concurrent.{ Callable, Executors, Future }
 
 /** [[IndexManager]] creates OSM indices, see [[IndexSet]] for a full list of indices created.
   *
@@ -267,25 +266,19 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     * a sequence of [[OSMStreetAndHouseNumber]] to retrieve the candidate street number
     */
   def createAddressesIndex(roads: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
-
-    val countryName = roads.head.split(Pattern.quote(File.separator)).reverse.tail.head
-    logger.info(s"Loading OSM roads of $countryName...")
-    val roadsGeometryList = recordDuration(
+    logger.info(s"Loading OSM roads ...")
+    recordDuration(
       OSMGenericStreetLoader(roads, Seq()).loadIndex(roads: _*),
-      d => logger.info(s"Done loading OSM roads of $countryName in $d ms!"))
-
-    roadsGeometryList
+      d => logger.info(s"Done loading OSM roads in $d ms!")
+    )
   }
 
   def createHouseNumbersIndex(houseNumbers: List[Path]): GeometryList[OSMHouseNumber] = {
-
-    val countryName = houseNumbers.head.split(Pattern.quote(File.separator)).reverse.tail.head
-    logger.info(s"Loading OSM house numbers of $countryName...")
-    val houseNumbersGeometryList = recordDuration(
+    logger.info(s"Loading OSM house numbers ...")
+    recordDuration(
       new OSMHouseNumbersLoader().loadIndex(houseNumbers: _*),
-      d => logger.info(s"Done loading OSM house numbers of $countryName in $d ms!"))
-
-    houseNumbersGeometryList
+      d => logger.info(s"Done loading OSM house numbers in $d ms!")
+    )
   }
 
   /** Creates indices and serializes them in the configured output directory if specified.
