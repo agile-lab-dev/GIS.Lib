@@ -74,12 +74,18 @@ case class TracePoint(
     linearDistance: Option[Double]
 )
 
-case class DistancePoint(node1: TracePoint, node2: TracePoint, distance: Double, diffTime: Long, typeOfRoute: String)
+case class DistancePoint(
+    node1: TracePoint,
+    node2: TracePoint,
+    distance: Double,
+    diffTime: Long,
+    typeOfRoute: Option[String]
+)
 
 case class MatchedRoute(
     points: Seq[TracePoint],
-    length: Double,
-    time: Long,
+    length: Option[Double],
+    time: Option[Long],
     routes: Map[String, Double],
     distanceBetweenPoints: Seq[DistancePoint]
 ) {

@@ -22,15 +22,20 @@ case class GraphHopperSettings(
     measurementErrorSigma: Int
 )
 
-case class GraphHopperConfiguration(encoder: CarFlagEncoderEnrich, hopperOSM: GraphHopperOSM, mapMatching: MapMatching)
+case class GraphHopperConfiguration(
+    encoder: CarFlagEncoderEnrich,
+    hopperOSM: GraphHopperOSM,
+    mapMatching: MapMatching,
+    settings: GraphHopperSettings
+)
 
 object GraphHopperConfiguration extends Configuration with ValidationUtils with Logger {
 
   def apply(config: Config): GraphHopperConfiguration = {
 
     val parsedConfig: Try[GraphHopperConfiguration] = for {
-      (encoder, hopperOSM, mapMatching) <- tryOrLog(createObjects(config))
-    } yield GraphHopperConfiguration(encoder, hopperOSM, mapMatching)
+      (encoder, hopperOSM, mapMatching, settings) <- tryOrLog(createObjects(config))
+    } yield GraphHopperConfiguration(encoder, hopperOSM, mapMatching, settings)
 
     parsedConfig match {
       case Failure(exception)     => throw exception
@@ -38,7 +43,7 @@ object GraphHopperConfiguration extends Configuration with ValidationUtils with 
     }
   }
 
-  private def createObjects(conf: Config): (CarFlagEncoderEnrich, GraphHopperOSM, MapMatching) = {
+  private def createObjects(conf: Config): (CarFlagEncoderEnrich, GraphHopperOSM, MapMatching, GraphHopperSettings) = {
     val parsed = for {
       graphLocationRaw              <- read[String](conf, GRAPH_LOCATION.value)
       graphLocation                 <- checkIsDirectory(graphLocationRaw)
@@ -79,7 +84,7 @@ object GraphHopperConfiguration extends Configuration with ValidationUtils with 
         val mapMatching = new MapMatching(hopperOSM, algoOptions)
         mapMatching.setMeasurementErrorSigma(settings.measurementErrorSigma)
 
-        (encoder, hopperOSM, mapMatching)
+        (encoder, hopperOSM, mapMatching, settings)
     }
   }
 }
