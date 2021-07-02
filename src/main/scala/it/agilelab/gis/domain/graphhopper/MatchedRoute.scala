@@ -77,7 +77,7 @@ case class TracePoint(
 case class DistancePoint(
     node1: TracePoint,
     node2: TracePoint,
-    distance: Double,
+    distance: Option[Double],
     diffTime: Long,
     typeOfRoute: Option[String]
 )
