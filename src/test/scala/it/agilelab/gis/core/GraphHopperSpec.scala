@@ -2099,7 +2099,6 @@ class GraphHopperSpec
     manager.matchingRoute(points).left.value
   }
 
-
   private def csvToPoints(points: String): Seq[GPSPoint] =
     points.stripMargin.lines
       .map(_.trim)

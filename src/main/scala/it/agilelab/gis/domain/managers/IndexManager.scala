@@ -298,23 +298,19 @@ case class IndexManager(conf: Config) extends Configuration with Logger {
     * a sequence of [[OSMStreetAndHouseNumber]] to retrieve the candidate street number
     */
   def createAddressesIndex(roads: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
-
-    logger.info(s"Loading OSM roads...")
-    val roadsGeometryList = recordDuration(
+    logger.info(s"Loading OSM roads ...")
+    recordDuration(
       OSMGenericStreetLoader(roads, Seq()).loadIndex(roads: _*),
-      d => logger.info(s"Done loading OSM roads in $d ms!"))
-
-    roadsGeometryList
+      d => logger.info(s"Done loading OSM roads in $d ms!")
+    )
   }
 
   def createHouseNumbersIndex(houseNumbers: List[Path]): GeometryList[OSMHouseNumber] = {
-
-    logger.info(s"Loading OSM house numbers...")
-    val houseNumbersGeometryList = recordDuration(
+    logger.info(s"Loading OSM house numbers ...")
+    recordDuration(
       new OSMHouseNumbersLoader().loadIndex(houseNumbers: _*),
-      d => logger.info(s"Done loading OSM house numbers in $d ms!"))
-
-    houseNumbersGeometryList
+      d => logger.info(s"Done loading OSM house numbers in $d ms!")
+    )
   }
 
   /** Creates indices and serializes them in the configured output directory if specified.
