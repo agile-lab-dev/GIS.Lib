@@ -1,7 +1,5 @@
 package it.agilelab.gis.domain.loader
 
-import java.io.File
-
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.loader.Loader
@@ -9,8 +7,13 @@ import it.agilelab.gis.domain.managers.{ CountrySettings, PathManager }
 import it.agilelab.gis.domain.models.OSMBoundary
 import org.opengis.feature.simple.SimpleFeature
 
+import java.io.File
 import scala.util.Try
 
+/** [[OSMAdministrativeBoundariesLoader]] loads boundaries files and extract features we care about ([[OSMBoundary]])
+  * @param config      configurations
+  * @param pathManager path manager
+  */
 case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathManager) extends Loader[OSMBoundary] {
 
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {

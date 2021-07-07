@@ -1,7 +1,5 @@
 package it.agilelab.gis.domain.spatialList
 
-import java.io.Serializable
-
 import com.vividsolutions.jts.geom.{ Coordinate, Envelope, Geometry, GeometryFactory }
 import com.vividsolutions.jts.index.SpatialIndex
 import com.vividsolutions.jts.index.quadtree.Quadtree
@@ -10,12 +8,11 @@ import it.agilelab.gis.core.model.IndexType
 import it.agilelab.gis.core.model.geometry.Circle
 import it.agilelab.gis.core.utils.{ XMaxComparator, XMinComparator, YMaxComparator, YMinComparator }
 
+import java.io.Serializable
+
 /** The Class SpatialList.
   */
 abstract class SpatialList extends Serializable {
-
-  /** The Constant logger. */
-  //val logger = Logger.getLogger(this.getClass)
 
   /** The total number of records. */
   var totalNumberOfRecords: Int = -1
