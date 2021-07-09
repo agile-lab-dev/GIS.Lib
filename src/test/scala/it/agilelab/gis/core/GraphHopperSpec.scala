@@ -838,7 +838,7 @@ class GraphHopperSpec
     distanceBetween(response, 2680d, 2700d)
   }
 
-  it should "perform distance between each matched point accurately" in {
+  it should "perform distance between each matched point accurately" taggedAs Slow in {
     val points =
       """
         |  41.78176 12.33408
@@ -1070,7 +1070,7 @@ class GraphHopperSpec
     distanceBetween(result.distanceBetweenPoints(3), 515d, 525d)
   }
 
-  it should "perform distance between points accurately - acerra" in {
+  it should "perform distance between points accurately - acerra" taggedAs Slow in {
 
     val points = csvToPoints(
       """
@@ -1126,7 +1126,7 @@ class GraphHopperSpec
     distanceBetween(result.distanceBetweenPoints(7), 200d, 210d)
   }
 
-  it should "perform distance between points accurately - bagnolo" in {
+  it should "perform distance between points accurately - bagnolo" taggedAs Slow in {
 
     val points = csvToPoints(
       """
@@ -1207,7 +1207,7 @@ class GraphHopperSpec
     // ...
   }
 
-  it should "perform distance between points accurately - cittadella" in {
+  it should "perform distance between points accurately - cittadella" taggedAs Slow in {
     val points = csvToPoints(
       """
         |"0",45.60334,11.80602,1622738364000
@@ -1416,7 +1416,7 @@ class GraphHopperSpec
     // ...
   }
 
-  it should "perform distance between points accurately - nola" in {
+  it should "perform distance between points accurately - nola" taggedAs Slow in {
     val points = csvToPoints(
       """
         |"0",40.87608,14.4976,1622737321000
@@ -2008,7 +2008,7 @@ class GraphHopperSpec
     manager.matchingRoute(points).left.value
   }
 
-  it should "perform distance between points accurately - manerbio" in {
+  it should "perform distance between points accurately - manerbio" taggedAs Slow in {
     val points = csvToPoints(
       """|
          |"0",45.3721,10.0186,1624197792000
@@ -2188,7 +2188,7 @@ class GraphHopperSpec
     manager.matchingRoute(points).left.value
   }
 
-  it should "match route (5)" in {
+  it should "match route (5)" taggedAs Slow in {
     val points =
       csvToPoints(new String(Files.readAllBytes(Paths.get("src/test/resources/test-cases/match-route-5.csv"))))
 
