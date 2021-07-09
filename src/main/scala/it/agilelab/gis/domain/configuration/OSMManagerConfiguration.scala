@@ -6,6 +6,13 @@ import it.agilelab.gis.core.utils.{ Configuration, Logger }
 
 import scala.util.{ Failure, Success, Try }
 
+/** [[OSMManagerConfiguration]] holds [[it.agilelab.gis.domain.managers.OSMManager]] configurations.
+  * @param vehicle vehicle type
+  * @param filterEmptyStreets signal whether empty streets should be skipped.
+  * @param roadTolMeters maximum distance to find a road
+  * @param addressTolMeters maximum distance to find an address.
+  * @param indexConf index configuration
+  */
 case class OSMManagerConfiguration(
     vehicle: String,
     filterEmptyStreets: Boolean,
@@ -16,6 +23,10 @@ case class OSMManagerConfiguration(
 
 object OSMManagerConfiguration extends Configuration with Logger {
 
+  /** Creates a [[OSMManagerConfiguration]] instance by reading the given conf.
+    * @param config configuration to read.
+    * @return a [[OSMManagerConfiguration]] instance.
+    */
   def apply(config: Config): OSMManagerConfiguration = {
 
     val parsedConfig: Try[OSMManagerConfiguration] = for {

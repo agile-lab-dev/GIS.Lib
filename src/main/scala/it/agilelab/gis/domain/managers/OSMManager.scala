@@ -1,19 +1,19 @@
 package it.agilelab.gis.domain.managers
 
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, Point }
-import it.agilelab.gis.core.utils.{ Logger, ManagerUtils }
+import com.vividsolutions.jts.geom.{Coordinate, GeometryFactory, Point}
+import it.agilelab.gis.core.utils.{Logger, ManagerUtils}
 import it.agilelab.gis.domain.configuration.OSMManagerConfiguration
 import it.agilelab.gis.domain.exceptions.ReverseGeocodingError
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
 import it.agilelab.gis.domain.loader.ReverseGeocoder
-import it.agilelab.gis.domain.loader.ReverseGeocoder.{ Boundaries, HouseNumbers, Index, Streets }
+import it.agilelab.gis.domain.loader.ReverseGeocoder.{Boundaries, HouseNumbers, Index, Streets}
 import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
 
 import scala.annotation.tailrec
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
 

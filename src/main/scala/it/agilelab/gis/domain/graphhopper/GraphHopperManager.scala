@@ -1,8 +1,8 @@
 package it.agilelab.gis.domain.graphhopper
 
-import com.graphhopper.matching.{ EdgeMatch, GPXExtension, MatchResult }
+import com.graphhopper.matching.{EdgeMatch, GPXExtension, MatchResult}
 import com.graphhopper.util.details._
-import com.graphhopper.util.{ DistancePlaneProjection, EdgeIteratorState }
+import com.graphhopper.util.{DistancePlaneProjection, EdgeIteratorState}
 import com.typesafe.config.Config
 import it.agilelab.gis.core.encoder.CarFlagEncoderEnrich
 import it.agilelab.gis.core.utils.Logger
@@ -14,8 +14,11 @@ import it.agilelab.gis.domain.loader.RouteMatcher
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
+/** GraphHopperManager is an implementation of a [[RouteMatcher]].
+  * @param conf configuration for this [[GraphHopperManager]], see [[GraphHopperConfiguration]] for more information.
+  */
 case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
   private val graphConf: GraphHopperConfiguration = GraphHopperConfiguration(conf)
