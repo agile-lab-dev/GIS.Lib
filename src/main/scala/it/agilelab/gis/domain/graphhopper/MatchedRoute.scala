@@ -51,13 +51,17 @@ case class IdentifiableGPSPoint(
     override val time: Long
 ) extends GPSPoint(lat, lon, alt, time)
 
-/** @param latitude         input latitude
+/** TracePoint is matched point on a road.
+  * @param latitude         input latitude
   * @param longitude        input longitude
   * @param altitude         input altitude
-  * @param time             input time, optional
+  * @param time             input time
   * @param matchedLatitude  matched latitude
   * @param matchedLongitude matched longitude
   * @param matchedAltitude  matched altitude
+  * @param roadType         road type
+  * @param roadName         road name
+  * @param speedLimit       speed limit on the road with name [[roadName]]
   * @param linearDistance   distance between input point and map matched point
   */
 case class TracePoint(
@@ -74,14 +78,29 @@ case class TracePoint(
     linearDistance: Option[Double]
 )
 
+/** DistancePoint holds data of a path between two [[TracePoint]]s.
+  * @param node1 trace point 1
+  * @param node2 trace point 2
+  * @param distance distance between [[node1]] and [[node2]]
+  * @param diffTime difference of time between [[node1]] and [[node2]]
+  * @param typeOfRoute type of route
+  */
 case class DistancePoint(
     node1: TracePoint,
     node2: TracePoint,
-    distance: Double,
+    distance: Option[Double],
     diffTime: Long,
     typeOfRoute: Option[String]
 )
 
+/** MatchedRoutes holds data of a matched route.
+  * @param points trace points
+  * @param length length of the entire route, it's roughly equal to the sum of every distance in [[distanceBetweenPoints]].
+  * @param time the time it takes to run across the route.
+  * @param routes routes
+  * @param distanceBetweenPoints distance between consecutive point in [[points]]
+  *                              Usually |[[points]]| == |[[distanceBetweenPoints]]+1|
+  */
 case class MatchedRoute(
     points: Seq[TracePoint],
     length: Option[Double],

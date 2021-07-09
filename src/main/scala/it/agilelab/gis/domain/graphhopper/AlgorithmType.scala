@@ -2,8 +2,12 @@ package it.agilelab.gis.domain.graphhopper
 
 import com.graphhopper.util.Parameters
 
+/** Supported algorithm
+  */
 sealed trait AlgorithmType { def value: String }
 
+/** [[AlgorithmType]] companion object holds all supported algorithms.
+  */
 object AlgorithmType {
   case object DIJKSTRA_BI extends AlgorithmType { lazy val value: String = Parameters.Algorithms.DIJKSTRA_BI }
   case object DIJKSTRA extends AlgorithmType { lazy val value: String = Parameters.Algorithms.DIJKSTRA }

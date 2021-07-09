@@ -1,8 +1,8 @@
 package it.agilelab.gis.domain.graphhopper
 
-import com.graphhopper.matching.{ EdgeMatch, GPXExtension, MatchResult }
+import com.graphhopper.matching.{EdgeMatch, GPXExtension, MatchResult}
 import com.graphhopper.util.details._
-import com.graphhopper.util.{ DistancePlaneProjection, EdgeIteratorState }
+import com.graphhopper.util.{DistancePlaneProjection, EdgeIteratorState}
 import com.typesafe.config.Config
 import it.agilelab.gis.core.encoder.CarFlagEncoderEnrich
 import it.agilelab.gis.core.utils.Logger
@@ -14,8 +14,11 @@ import it.agilelab.gis.domain.loader.RouteMatcher
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
+/** GraphHopperManager is an implementation of a [[RouteMatcher]].
+  * @param conf configuration for this [[GraphHopperManager]], see [[GraphHopperConfiguration]] for more information.
+  */
 case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
   private val graphConf: GraphHopperConfiguration = GraphHopperConfiguration(conf)
@@ -53,7 +56,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
               DistancePoint(
                 node1 = p,
                 node2 = n,
-                distance = 0,
+                distance = Some(0),
                 diffTime = Math.abs(p.time - n.time),
                 typeOfRoute = None
               )
@@ -82,7 +85,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
       edges: Seq[Edge]
   ): Seq[DistancePoint] = {
     // retrieve details for each pair of points
-    val details: mutable.Buffer[PathDetail] = calcRoute.getMergedPath
+    val details = calcRoute.getMergedPath
       .calcDetails(
         List("details"),
         new CustomPathDetailsBuilderFactory(typeOfRouteFunc = edge => typeOfRoute(edge, graphConf.encoder)),
@@ -97,8 +100,8 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
     // details  [d1, d2               dk] [dk+1, dk+1           dn]
     //
     // Note: It's possible for a subset of edges at the tail of the list to be long 0 meters.
-    val distances: Seq[mutable.Buffer[PathDetail]] = edges
-      .map { edge =>
+    val distances: Seq[mutable.Buffer[PathDetail]] = edges.tail.zipWithIndex
+      .map { case (edge, edgeIdx) =>
         val item = edge.item
         val (edgeId, baseNode, adjNode) = if (item.isOnDirectedEdge) {
           (
@@ -114,33 +117,30 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
           )
         }
 
-        val edgeIdx = details.indexWhere { p =>
-          val pDetails = p.getValue.asInstanceOf[CustomPathDetails]
-          pDetails.edgeId == edgeId && pDetails.baseNode == baseNode && pDetails.adjNode == adjNode
+        val edgeIdxInDetails = if (edgeIdx == edges.length - 2) {
+          // The last edge gets all the remaining details regardless of the actual edge.
+          details.length
+        } else {
+          details.indexWhere { p =>
+            val pDetails = p.getValue.asInstanceOf[CustomPathDetails]
+            pDetails.edgeId == edgeId && pDetails.baseNode == baseNode && pDetails.adjNode == adjNode
+          }
         }
+
         // When there is no corresponding edge, we aggregate the remaining details in the current edge.
-        val idx: Int = if (edgeIdx < 0) details.length - 1 else edgeIdx
-        val path = details.take(idx + 1)
-        details.remove(0, idx + 1)
+        val idx: Int = if (edgeIdxInDetails < 0) 0 else edgeIdxInDetails
+        val path = details.take(idx)
+        details.remove(0, idx)
         path
       }
 
-    val finalDistances = if (distances.count(_.nonEmpty) == points.length) {
-      // We expected that |distances|-1 == |points| but sometimes that relationship doesn't hold and we have to
+    val finalDistances = if (distances.length >= points.length) {
+      // We expected that |distances|+1 == |points| but sometimes that relationship doesn't hold and we have to
       // aggregate single details into the previous group of details.
       // This algorithm is based on example outputs we've seen, so it might not catch all possible cases, see associated
       // tests for examples.
-      distances
-        .foldLeft(Seq[mutable.Buffer[PathDetail]]()) { case (acc, elem) =>
-          if (acc.isEmpty) {
-            Seq(elem)
-          } else if (acc.last.length == 1) {
-            val last = acc.last ++ elem
-            acc.dropRight(1) :+ last
-          } else {
-            acc :+ elem
-          }
-        }
+      val tailN = distances.length - points.length + 2
+      distances.take(distances.length - tailN) :+ distances.takeRight(tailN).reduce(_ ++ _)
     } else {
       distances
     }
@@ -149,7 +149,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
       DistancePoint(
         node1 = p1,
         node2 = p2,
-        distance = d.map(_.getValue.asInstanceOf[CustomPathDetails].distance).sum,
+        distance = if (d.nonEmpty) Some(d.map(_.getValue.asInstanceOf[CustomPathDetails].distance).sum) else None,
         diffTime = p2.time - p1.time,
         typeOfRoute = d.flatMap(_.getValue.asInstanceOf[CustomPathDetails].typeOfRoute) match {
           case routes if routes.isEmpty => None

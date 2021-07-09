@@ -5,10 +5,10 @@
   */
 package it.agilelab.gis.domain.spatialList
 
-import java.io.FileWriter
-
 import com.vividsolutions.jts.geom.Geometry
 import org.wololo.jts2geojson.GeoJSONWriter
+
+import java.io.FileWriter
 
 // TODO: Auto-generated Javadoc
 

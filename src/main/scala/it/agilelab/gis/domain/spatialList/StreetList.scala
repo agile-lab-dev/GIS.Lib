@@ -5,10 +5,10 @@
   */
 package it.agilelab.gis.domain.spatialList
 
-import java.io._
-
 import com.vividsolutions.jts.geom._
 import org.wololo.jts2geojson.GeoJSONWriter
+
+import java.io._
 
 /** The Class LineStringRDD.
   */
