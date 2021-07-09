@@ -80,6 +80,18 @@
         </repository>
     </distributionManagement>
 
+    <profiles>
+        <profile>
+            <id>slow</id>
+        </profile>
+        <profile>
+            <id>fast</id>
+            <properties>
+                 <tagsToExclude>org.scalatest.tags.Slow</tagsToExclude>
+            </properties>
+        </profile>
+    </profiles>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <scala.version>2.11.12</scala.version>
@@ -291,6 +303,9 @@
                         <goals>
                             <goal>test</goal>
                         </goals>
+                        <configuration>
+                            <tagsToExclude>${tagsToExclude}</tagsToExclude>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
