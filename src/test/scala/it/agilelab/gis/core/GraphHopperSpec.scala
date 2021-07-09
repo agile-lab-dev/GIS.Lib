@@ -2099,6 +2099,15 @@ class GraphHopperSpec
     manager.matchingRoute(points).left.value
   }
 
+  it should "match route (5)" in {
+    val points =
+      csvToPoints(new String(Files.readAllBytes(Paths.get("src/test/resources/test-cases/match-route-5.csv"))))
+
+    val res = manager.matchingRoute(points).right.value
+
+    distanceBetween(res, 30000, 30500)
+  }
+
   private def csvToPoints(points: String): Seq[GPSPoint] =
     points.stripMargin.lines
       .map(_.trim)

@@ -1,11 +1,10 @@
 package it.agilelab.gis.domain.managers
 
-import java.io.File
-
 import com.typesafe.config.Config
 import it.agilelab.gis.core.utils.Configuration
 import it.agilelab.gis.core.utils.ManagerUtils.{ BoundaryPathGroup, CountryPathSet, Path }
-import it.agilelab.gis.domain.configuration.PathManagerConfiguration
+
+import java.io.File
 
 private object Bound {
   val COUNTRY = "country"
@@ -14,9 +13,13 @@ private object Bound {
   val CITY = "city"
 }
 
+/** [[PathManager]] provides path to shapefiles given a path to directory of a single country.
+  * - postal codes shapefiles must end with 'gis-postalcode.shp'
+  * - roads shapefiles must end with 'gis-roads.shp'
+  * - house number shapefiles must end with 'gis-housenumbers.shp'
+  * @param conf configurations
+  */
 case class PathManager(conf: Config) extends Configuration {
-
-  val pathConfig: PathManagerConfiguration = PathManagerConfiguration(conf)
 
   def getCountrySetting(countryName: String): CountrySettings =
     (for {

@@ -14,6 +14,12 @@ import it.agilelab.gis.domain.graphhopper.AlgorithmType
 
 import scala.util.{ Failure, Success, Try }
 
+/** GraphHopperSettings holds [[it.agilelab.gis.domain.graphhopper.GraphHopperManager]] settings.
+  * @param graphLocation location of the graph
+  * @param elevationEnabled flag to signal whether elevation for coordination is enabled
+  * @param contractionHierarchiesEnabled flag to signal whether contraction hierarchies post processing is enabled
+  * @param measurementErrorSigma measurement error of GPS devices.
+  */
 case class GraphHopperSettings(
     graphLocation: String,
     elevationEnabled: Boolean,
@@ -22,6 +28,12 @@ case class GraphHopperSettings(
     measurementErrorSigma: Int
 )
 
+/** GraphHopperConfiguration holds [[it.agilelab.gis.domain.graphhopper.GraphHopperManager]] configurations.
+  * @param encoder car flag encoder.
+  * @param hopperOSM graph hopper instance.
+  * @param mapMatching map matching instance
+  * @param settings graph hopper settings.
+  */
 case class GraphHopperConfiguration(
     encoder: CarFlagEncoderEnrich,
     hopperOSM: GraphHopperOSM,
@@ -31,6 +43,10 @@ case class GraphHopperConfiguration(
 
 object GraphHopperConfiguration extends Configuration with ValidationUtils with Logger {
 
+  /** Creates a [[GraphHopperConfiguration]] instance by reading the given conf.
+    * @param config configuration to read.
+    * @return a [[GraphHopperConfiguration]] instance.
+    */
   def apply(config: Config): GraphHopperConfiguration = {
 
     val parsedConfig: Try[GraphHopperConfiguration] = for {

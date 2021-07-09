@@ -9,7 +9,6 @@ import com.vividsolutions.jts.geom.Envelope
 
 /** The Class RectangleRDD.
   */
-
 class RectangleList(rawData: List[Envelope]) extends SpatialList {
 
   rawSpatialCollection = rawData
