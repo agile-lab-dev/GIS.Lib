@@ -133,7 +133,7 @@ class GraphHopperSpec
         DistancePoint(
           tp1,
           tp2,
-          distance = 38.44312467891209,
+          distance = Some(38.44312467891209),
           diffTime = 7000L,
           Some("motorway")
         )
@@ -2194,7 +2194,7 @@ class GraphHopperSpec
 
     val res = manager.matchingRoute(points).right.value
 
-    distanceBetween(res, 30000, 30500)
+    distanceBetween(res, 30000, 31000)
   }
 
   private def csvToPoints(points: String): Seq[GPSPoint] =
