@@ -33,10 +33,10 @@ case class PathManager(conf: Config) extends Configuration {
   def getCountryPathSet(countryFolder: File): CountryPathSet = {
     val boundaryPathGroup: BoundaryPathGroup = getBoundaryPathGroup(countryFolder)
     val postalCodesPath: Array[Path] =
-      countryFolder.listFiles().map(_.getAbsolutePath).filter(_.endsWith("gis-postalcodes.shp"))
-    val roadsPath: Array[Path] = countryFolder.listFiles().map(_.getAbsolutePath).filter(_.endsWith("gis-roads.shp"))
-    val houseNumbersPath: Option[Path] =
-      countryFolder.listFiles().map(_.getAbsolutePath).find(_.endsWith("gis-housenumbers.shp"))
+      countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*postalcodes.*.shp"))
+    val roadsPath: Array[Path] = countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*roads.*.shp"))
+    val houseNumbersPath: Array[Path] =
+      countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*housenumbers.*.shp"))
     CountryPathSet(boundaryPathGroup, postalCodesPath, roadsPath, houseNumbersPath)
   }
 

@@ -1,7 +1,7 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.{ geom => jts }
 import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, MultiPolygon, Point }
+import com.vividsolutions.jts.{ geom => jts }
 import org.geotools.data.shapefile._
 import org.geotools.data.simple._
 import org.opengis.feature.simple._
@@ -9,29 +9,36 @@ import org.opengis.feature.simple._
 import java.io.File
 import java.net.URL
 import java.util
-import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
 object ShapeFileReader {
 
-  implicit class SimpleFeatureWrapper(ft: SimpleFeature) {
+  private implicit class SimpleFeatureWrapper(ft: SimpleFeature) {
 
-    def geom[G <: jts.Geometry: Manifest]: Option[G] =
-      ft.getAttribute(0) match {
+    /** Get the geometry of the given [[ft]] using the given index.
+      * Note: Prefer [[geom(attr: String)]] if possible since it's more readable and maintainable.
+      *
+      * @param idx index at which we would look up the geometry.
+      * @tparam G geometry's type.
+      * @return geometry of the feature [[ft]], if any.
+      */
+    def geom[G <: jts.Geometry: Manifest](idx: Int = 0 /* the geometry is usually at the first index */ ): Option[G] =
+      ft.getAttribute(idx) match {
         case g: G => Some(g)
         case _    => None
       }
 
-    def attributeMap: Map[String, Object] =
-      ft.getProperties
-        .drop(1)
-        .map { p =>
-          (p.getName.toString, ft.getAttribute(p.getName))
-        }
-        .toMap
-
-    def attribute[D](name: String): D =
-      ft.getAttribute(name).asInstanceOf[D]
+    /** Get the geometry of the given [[ft]] using the given attribute name.
+      *
+      * @param attribute attribute name at which we would look up the geometry.
+      * @tparam G geometry's type.
+      * @return geometry of the feature [[ft]], if any.
+      */
+    def geom[G <: jts.Geometry: Manifest](attribute: String): Option[G] =
+      ft.getAttribute(attribute) match {
+        case g: G => Some(g)
+        case _    => None
+      }
   }
 
   def readSimpleFeatures(path: String): Seq[SimpleFeature] = {
@@ -52,12 +59,12 @@ object ShapeFileReader {
   }
 
   def readPointFeatures(path: String): Seq[(jts.Point, util.List[AnyRef])] =
-    readSimpleFeatures(path).flatMap(ft => ft.geom[jts.Point].map(e => (e, ft.getAttributes)))
+    readSimpleFeatures(path).flatMap(ft => ft.geom[jts.Point]().map(e => (e, ft.getAttributes)))
 
   def readPointFeaturesToPolygon(path: String): Seq[(jts.Polygon, util.List[AnyRef])] = {
 
     val points: Seq[(Point, util.List[AnyRef])] = readSimpleFeatures(path)
-      .flatMap(ft => ft.geom[jts.Point].map(e => (e, ft.getAttributes)))
+      .flatMap(ft => ft.geom[jts.Point]().map(e => (e, ft.getAttributes)))
 
     val fact = new GeometryFactory()
 
@@ -77,26 +84,26 @@ object ShapeFileReader {
   }
 
   def readLineFeatures(path: String): Seq[jts.LineString] =
-    readSimpleFeatures(path).flatMap(ft => ft.geom[jts.LineString])
+    readSimpleFeatures(path).flatMap(ft => ft.geom[jts.LineString]())
 
-  def readPolygonFeatures(path: String): Seq[(jts.Polygon, util.List[AnyRef])] =
+  def readPolygonFeatures(path: String, attr: String): Seq[(jts.Polygon, SimpleFeature)] =
     readSimpleFeatures(path)
-      .flatMap(ft => ft.geom[jts.Polygon].map(e => (e, ft.getAttributes)))
+      .flatMap(ft => ft.geom[jts.Polygon](attr).map(e => (e, ft)))
 
   def readMultiPointFeatures(path: String): Seq[(jts.MultiPoint, util.List[AnyRef])] =
     readSimpleFeatures(path)
       .flatMap { ft =>
-        ft.geom[jts.MultiPoint]
+        ft.geom[jts.MultiPoint]()
           .map(e => (e, ft.getAttributes))
       }
 
   def readMultiLineFeatures(path: String): Seq[(jts.MultiLineString, util.List[AnyRef])] =
     readSimpleFeatures(path).flatMap { ft =>
-      ft.geom[jts.MultiLineString].map(e => (e, ft.getAttributes))
+      ft.geom[jts.MultiLineString]().map(e => (e, ft.getAttributes))
     }
 
-  def readMultiPolygonFeatures(path: String): Seq[(MultiPolygon, SimpleFeature)] =
+  def readMultiPolygonFeatures(path: String, attr: String = "the_geom"): Seq[(MultiPolygon, SimpleFeature)] =
     readSimpleFeatures(path)
-      .flatMap(ft => ft.geom[jts.MultiPolygon].map(mp => (mp, ft)))
+      .map(ft => (ft.getAttribute(attr).asInstanceOf[MultiPolygon], ft))
 
 }

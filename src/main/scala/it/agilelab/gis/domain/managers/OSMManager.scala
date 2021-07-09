@@ -71,7 +71,7 @@ case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
       logger.info("address_tol_meter is greater than the distance used to build the spatial index!")
 
     if (indices.contains(Boundaries))
-      queryBoundaryIndices(List(indexManager.indexSet.boundaries, indexManager.indexSet.regions), queryPoint)
+      queryBoundaryIndices(List(indexManager.indexSet.boundaries), queryPoint)
     else
       None
   }
