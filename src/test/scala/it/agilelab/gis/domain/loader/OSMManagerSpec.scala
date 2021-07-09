@@ -2,13 +2,10 @@ package it.agilelab.gis.domain.loader
 
 import com.typesafe.config.{ Config, ConfigFactory }
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
-import it.agilelab.gis.domain.loader.ReverseGeocoder.{ HouseNumbers, Index, Streets }
+import it.agilelab.gis.domain.loader.ReverseGeocoder.{ HouseNumbers, Streets }
 import it.agilelab.gis.domain.managers.OSMManager
 import it.agilelab.gis.domain.models.ReverseGeocodingResponse
 import org.scalatest.{ BeforeAndAfterAll, EitherValues, FlatSpec, Matchers }
-import pureconfig.PathSegment.Index
-
-import scala.reflect.runtime.universe
 
 class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with BeforeAndAfterAll {
 
@@ -176,7 +173,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Piemont"),
         country = Some("Italy"),
         countryCode = Some("IT"),
-        postalIndex = Some("10024"),
+        postalIndex = None,
         addressRange = None,
         speedLimit = None,
         speedCategory = None,
@@ -205,7 +202,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Piemont"),
         country = Some("Italy"),
         countryCode = Some("IT"),
-        postalIndex = Some("10024"),
+        postalIndex = None,
         addressRange = None,
         speedLimit = None,
         speedCategory = None,

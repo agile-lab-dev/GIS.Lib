@@ -5,6 +5,7 @@ import it.agilelab.gis.core.apps.ConverterFromOSMToGraphHopperMap
 import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.graphhopper._
 import org.scalatest._
+import org.scalatest.tagobjects.Slow
 
 import java.io.File
 import java.nio.file.{ Files, Paths }
@@ -29,7 +30,7 @@ class GraphHopperSpec
     val basePath = Paths.get("src/test/resources/").toFile.getAbsoluteFile
 
     val pbfFilePath: String =
-      Paths.get("src/test/resources/graphHopperSource/italy-latest.osm.pbf").toFile.getAbsolutePath
+      Paths.get("src/test/resources/graphHopperSource/milan.osm.pbf").toFile.getAbsolutePath
     val graphPath: String = s"$basePath/graphHopper"
     val graphPathOutput: File = Paths.get(graphPath).toFile
 
@@ -54,7 +55,95 @@ class GraphHopperSpec
     manager = GraphHopperManager(graphConf)
   }
 
-  "Given 1 point" should "return a matched route" in {
+  "Given 1 point in Milan in a residential road" should "return a matched route" in {
+    val time = 1619780763562L
+    val point1 = GPSPoint(45.46615, 9.18700, None, time)
+
+    val points = Seq(point1)
+
+    val response = manager.matchingRoute(points).right.value
+
+    val expected = MatchedRoute(
+      points = Seq(
+        TracePoint(
+          latitude = 45.46615,
+          longitude = 9.18700,
+          altitude = None,
+          time = time,
+          matchedLatitude = Some(45.46615464688791),
+          matchedLongitude = Some(9.18699887809106),
+          matchedAltitude = Some(0.0),
+          roadType = Some("residential"),
+          roadName = Some("Via Bassano Porrone"),
+          speedLimit = Some(30),
+          linearDistance = Some(0.5240652051613223)
+        )),
+      length = Some(0.0),
+      time = Some(0),
+      routes = Map("residential" -> 99.406),
+      distanceBetweenPoints = Seq()
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+  "Given 2 point in Milan in a motorway road" should "return a matched route" in {
+
+    val point1 = GPSPoint(45.48237, 9.25148, None, 1619275184000L)
+    val point2 = GPSPoint(45.48271, 9.25139, None, 1619275191000L)
+
+    val points = Seq(point1, point2)
+
+    val response = manager.matchingRoute(points).right.value
+
+    val tp1 = TracePoint(
+      latitude = 45.48237,
+      longitude = 9.25148,
+      altitude = None,
+      time = 1619275184000L,
+      matchedLatitude = Some(45.48237218105361),
+      matchedLongitude = Some(9.251493186573803),
+      matchedAltitude = Some(0.0),
+      roadType = Some("motorway"),
+      roadName = Some("Tangenziale Est, A51"),
+      speedLimit = Some(80),
+      linearDistance = Some(1.0562698124311882)
+    )
+
+    val tp2 = TracePoint(
+      latitude = 45.48271,
+      longitude = 9.25139,
+      altitude = None,
+      time = 1619275191000L,
+      matchedLatitude = Some(45.48270908694192),
+      matchedLongitude = Some(9.25138280885055),
+      matchedAltitude = Some(0.0),
+      roadType = Some("motorway"),
+      roadName = Some("Tangenziale Est, A51"),
+      speedLimit = Some(80),
+      linearDistance = Some(0.5697515483264242)
+    )
+
+    val expected = MatchedRoute(
+      points = Seq(tp1, tp2),
+      length = Some(38.44312467891209),
+      time = Some(1729),
+      routes = Map("motorway" -> 901.385),
+      distanceBetweenPoints = Seq(
+        DistancePoint(
+          tp1,
+          tp2,
+          distance = Some(38.44312467891209),
+          diffTime = 7000L,
+          Some("motorway")
+        )
+      )
+    )
+
+    noneAltitude(response) shouldBe expected
+  }
+
+  "Given 1 point" should "return a matched route" taggedAs Slow in {
 
     val time = 1619780763562L
     val point1 = GPSPoint(45.0663115866474, 7.637293092568119, None, time)
@@ -87,7 +176,7 @@ class GraphHopperSpec
     noneAltitude(response) shouldBe expected
   }
 
-  "Given 2 points" should "return matched route" in {
+  "Given 2 points" should "return matched route" taggedAs Slow in {
 
     val point1 = GPSPoint(45.16696, 8.89223, None, 1619275184000L)
     val point2 = GPSPoint(45.16696, 8.89223, None, 1619275191000L)
@@ -136,7 +225,7 @@ class GraphHopperSpec
     noneAltitude(response) shouldBe expected
   }
 
-  "Given route of a stopped vehicle" should "return a matched route" in {
+  "Given route of a stopped vehicle" should "return a matched route" taggedAs Slow in {
 
     val trip =
       """
@@ -204,7 +293,7 @@ class GraphHopperSpec
     noneAltitude(response) shouldBe expected
   }
 
-  "test carFlagEncoderEnrich" should "retrieve result of map matching and distance for each type of street" in {
+  "test carFlagEncoderEnrich" should "retrieve result of map matching and distance for each type of street" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(45.074246, 7.642711, None, 1552910827000L),
@@ -222,7 +311,7 @@ class GraphHopperSpec
     assert(response.getKmType("residential").isSuccess)
   }
 
-  "test with point near sea" should "exclude ferries" in {
+  "test with point near sea" should "exclude ferries" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(38.12, 13.37, None, 1552910827000L),
@@ -240,7 +329,7 @@ class GraphHopperSpec
     assert(response.getKmType("secondary").isSuccess)
   }
 
-  "test with point near sea or in sea" should "exclude ferries" in {
+  "test with point near sea or in sea" should "exclude ferries" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(45.341, 12.309, None, 0L),
@@ -266,7 +355,7 @@ class GraphHopperSpec
     assert(response.length.value > 10500 && response.length.value < 11500)
   }
 
-  "test with point near pedestrian area" should "exclude pedestrian area" in {
+  "test with point near pedestrian area" should "exclude pedestrian area" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(45.075757, 7.671996, None, 0L),
@@ -282,7 +371,7 @@ class GraphHopperSpec
     assert(matchingRoute.length.value > 1500 && matchingRoute.length.value < 2500)
   }
 
-  "test with type road is null" should "change in unclassified" in {
+  "test with type road is null" should "change in unclassified" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(38.9159, 16.4589, None, 0L),
@@ -334,7 +423,7 @@ class GraphHopperSpec
     assert(!matchingRoute.routes.contains("null"))
   }
 
-  "trip" should "retrieve points sorted by timestamp" in {
+  "trip" should "retrieve points sorted by timestamp" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(37.9637, 12.6404, None, 1563855394000L),
@@ -351,7 +440,7 @@ class GraphHopperSpec
     distanceBetween(response, 1500d, 1800d)
   }
 
-  "test with point to calculate distance " should "calculate distance between points" in {
+  "test with point to calculate distance " should "calculate distance between points" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(42.4599, 12.3813, None, 1568268784000L),
@@ -376,7 +465,7 @@ class GraphHopperSpec
         d.copy(node1 = d.node1.copy(altitude = None), node2 = d.node2.copy(altitude = None)))
     ) // Altitude might be Some(NaN)
 
-  it should "match route motorway road type in Rome" in {
+  it should "match route motorway road type in Rome" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(41.511383, 13.650297, None, 1568268784000L),
@@ -424,7 +513,7 @@ class GraphHopperSpec
     noneAltitude(response) shouldBe expected
   }
 
-  it should "match route road type residential in Rome" in {
+  it should "match route road type residential in Rome" taggedAs Slow in {
     val gpsPoint: List[GPSPoint] = List(GPSPoint(41.79416, 12.43534, None, 1568268784000L))
 
     val response = manager.matchingRoute(gpsPoint).right.value
@@ -455,7 +544,7 @@ class GraphHopperSpec
     noneAltitude(response) shouldBe expected
   }
 
-  it should "match route road type motorway in Rome" in {
+  it should "match route road type motorway in Rome" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(GPSPoint(41.82721, 12.71078, None, 1568268784000L))
 
@@ -487,7 +576,7 @@ class GraphHopperSpec
     noneAltitude(response) shouldBe expected
   }
 
-  it should "match route road type motorway in Rome with max speed enrichment" in {
+  it should "match route road type motorway in Rome with max speed enrichment" taggedAs Slow in {
     val gpsPoint: List[GPSPoint] = List(GPSPoint(41.82244, 12.75443, None, 1568268784000L))
 
     val response = manager.matchingRoute(gpsPoint).right.value
@@ -518,7 +607,7 @@ class GraphHopperSpec
     noneAltitude(response) shouldBe expected
   }
 
-  it should "match route road type secondary in Rome" in {
+  it should "match route road type secondary in Rome" taggedAs Slow in {
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(41.82716, 12.70839, None, 1568268784000L)
     )
@@ -550,7 +639,7 @@ class GraphHopperSpec
     noneAltitude(response) shouldBe expected
   }
 
-  it should "perform length" in {
+  it should "perform length" taggedAs Slow in {
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(42.46046266264412, 12.379277358099305, None, 1552910827000L),
       GPSPoint(42.46050866930525, 12.380000883981737, None, 1552910928000L),
@@ -565,7 +654,7 @@ class GraphHopperSpec
     distanceBetween(response, 4000d, 4500d)
   }
 
-  it should "return empty distance between points on a trip with a stopped vehicle and unmatchable route" in {
+  it should "return empty distance between points on a trip with a stopped vehicle and unmatchable route" taggedAs Slow in {
 
     val points = """
       |40.74461 14.4759
@@ -651,7 +740,7 @@ class GraphHopperSpec
     result.distanceBetweenPoints should have length 0
   }
 
-  it should "return distance between points on a trip with a stopped vehicle and matchable route" in {
+  it should "return distance between points on a trip with a stopped vehicle and matchable route" taggedAs Slow in {
     val points = """
                    |40.7445 14.47465
                    |40.7445 14.47465
@@ -670,7 +759,7 @@ class GraphHopperSpec
     result.distanceBetweenPoints should have length result.points.length - 1
   }
 
-  it should "return distance between points on a matchable route" in { // DONE
+  it should "return distance between points on a matchable route" taggedAs Slow in { // DONE
     val points = """
         |43.67814 12.38891
         |43.6772 12.38942
@@ -693,7 +782,7 @@ class GraphHopperSpec
     distanceBetween(result, 990d, 1000d)
   }
 
-  "test carFlagEncoderEnrich 2" should "retrieve result of map matching and distance for each type of street" in {
+  "test carFlagEncoderEnrich 2" should "retrieve result of map matching and distance for each type of street" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(43.67814, 12.38891, None, 1),
@@ -710,7 +799,7 @@ class GraphHopperSpec
     distanceBetween(response, 990d, 995d)
   }
 
-  "test carFlagEncoderEnrich 3" should "retrieve result of map matching and distance for each type of street" in {
+  "test carFlagEncoderEnrich 3" should "retrieve result of map matching and distance for each type of street" taggedAs Slow in {
 
     val gpsPoint: List[GPSPoint] = List(
       GPSPoint(45.07248552073306, 7.56254494706547, None, 1),
@@ -724,7 +813,7 @@ class GraphHopperSpec
     distanceBetween(response, 8900d, 9000d)
   }
 
-  "test carFlagEncoderEnrich 4" should "retrieve result of map matching and distance for each type of street" in {
+  "test carFlagEncoderEnrich 4" should "retrieve result of map matching and distance for each type of street" taggedAs Slow in {
 
     val points = """
       |45.75124, 45.7513, 45.75139, 45.75133, 45.75101, 45.75068, 45.75014, 45.74992, 45.75026, 45.75116, 45.7523, 45.75354, 45.75482, 45.75606, 45.75635, 45.75644, 45.75654, 45.75663, 45.75772, 45.75865, 45.75876, 45.7588, 45.75886, 45.75892, 45.75897, 45.75936, 45.76017, 45.7611, 45.76208, 45.763, 45.76391, 45.76518, 45.76633, 45.76753, 45.76785, 45.76797, 45.76908, 45.76927, 45.7692, 45.7692, 45.7692, 45.7692, 45.76919, 45.76918, 45.76918, 45.76918, 45.76916, 45.76916, 45.76916, 45.76917, 45.76918
@@ -749,7 +838,7 @@ class GraphHopperSpec
     distanceBetween(response, 2680d, 2700d)
   }
 
-  it should "perform distance between each matched point accurately" in {
+  it should "perform distance between each matched point accurately" taggedAs Slow in {
     val points =
       """
         |  41.78176 12.33408
@@ -981,7 +1070,7 @@ class GraphHopperSpec
     distanceBetween(result.distanceBetweenPoints(3), 515d, 525d)
   }
 
-  it should "perform distance between points accurately - acerra" in {
+  it should "perform distance between points accurately - acerra" taggedAs Slow in {
 
     val points = csvToPoints(
       """
@@ -1037,7 +1126,7 @@ class GraphHopperSpec
     distanceBetween(result.distanceBetweenPoints(7), 200d, 210d)
   }
 
-  it should "perform distance between points accurately - bagnolo" in {
+  it should "perform distance between points accurately - bagnolo" taggedAs Slow in {
 
     val points = csvToPoints(
       """
@@ -1118,7 +1207,7 @@ class GraphHopperSpec
     // ...
   }
 
-  it should "perform distance between points accurately - cittadella" in {
+  it should "perform distance between points accurately - cittadella" taggedAs Slow in {
     val points = csvToPoints(
       """
         |"0",45.60334,11.80602,1622738364000
@@ -1327,7 +1416,7 @@ class GraphHopperSpec
     // ...
   }
 
-  it should "perform distance between points accurately - nola" in {
+  it should "perform distance between points accurately - nola" taggedAs Slow in {
     val points = csvToPoints(
       """
         |"0",40.87608,14.4976,1622737321000
@@ -1919,7 +2008,7 @@ class GraphHopperSpec
     manager.matchingRoute(points).left.value
   }
 
-  it should "perform distance between points accurately - manerbio" in {
+  it should "perform distance between points accurately - manerbio" taggedAs Slow in {
     val points = csvToPoints(
       """|
          |"0",45.3721,10.0186,1624197792000
@@ -2099,13 +2188,13 @@ class GraphHopperSpec
     manager.matchingRoute(points).left.value
   }
 
-  it should "match route (5)" in {
+  it should "match route (5)" taggedAs Slow in {
     val points =
       csvToPoints(new String(Files.readAllBytes(Paths.get("src/test/resources/test-cases/match-route-5.csv"))))
 
     val res = manager.matchingRoute(points).right.value
 
-    distanceBetween(res, 30000, 30500)
+    distanceBetween(res, 30000, 31000)
   }
 
   private def csvToPoints(points: String): Seq[GPSPoint] =
