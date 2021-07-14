@@ -4,7 +4,7 @@ import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, LinearRing, Po
 import it.agilelab.gis.domain.models.GeometriesWrapper
 import org.scalatest.{ FlatSpec, Matchers }
 
-class GeometriesWrapperTest extends FlatSpec with Matchers {
+class GeometriesWrapperSuite extends FlatSpec with Matchers {
 
   "GeometryWrapper" should "compute the distance between two polygons" in {
 
@@ -18,7 +18,7 @@ class GeometriesWrapperTest extends FlatSpec with Matchers {
       new Coordinate(4, 0))
 
     val ring1: LinearRing = geometryFactory.createLinearRing(coords1)
-    val holes1: Array[LinearRing] = null // use LinearRing[] to represent holes
+    val holes1: Array[LinearRing] = null
     val polygon1: Polygon = geometryFactory.createPolygon(ring1, holes1)
 
     val coords2: Array[Coordinate] = Array[Coordinate](
@@ -29,7 +29,7 @@ class GeometriesWrapperTest extends FlatSpec with Matchers {
       new Coordinate(8, 1))
 
     val ring2: LinearRing = geometryFactory.createLinearRing(coords2)
-    val holes2: Array[LinearRing] = null // use LinearRing[] to represent holes
+    val holes2: Array[LinearRing] = null
     val polygon2: Polygon = geometryFactory.createPolygon(ring2, holes2)
 
     val wrapper = new GeometriesWrapper(polygon1, polygon2)
@@ -50,7 +50,7 @@ class GeometriesWrapperTest extends FlatSpec with Matchers {
       new Coordinate(4, 0))
 
     val ring1: LinearRing = geometryFactory.createLinearRing(coords1)
-    val holes1: Array[LinearRing] = null // use LinearRing[] to represent holes
+    val holes1: Array[LinearRing] = null
     val polygon: Polygon = geometryFactory.createPolygon(ring1, holes1)
 
     val coords2 = new Coordinate(1, 2)
