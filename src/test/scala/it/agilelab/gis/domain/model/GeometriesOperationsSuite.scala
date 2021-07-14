@@ -1,14 +1,14 @@
 package it.agilelab.gis.domain.model
 
 import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, LinearRing, Polygon }
-import it.agilelab.gis.domain.models.GeometriesWrapper
+import it.agilelab.gis.domain.models.GeometriesOperations
 import org.scalatest.{ FlatSpec, Matchers }
 
-class GeometriesWrapperSuite extends FlatSpec with Matchers {
+class GeometriesOperationsSuite extends FlatSpec with Matchers {
 
   private val geometryFactory: GeometryFactory = new GeometryFactory()
 
-  "GeometryWrapper" should "compute the distance between two polygons" in {
+  "GeometriesOperations" should "compute the distance between two polygons" in {
 
     val coords1: Array[Coordinate] = Array[Coordinate](
       new Coordinate(4, 0),
@@ -32,12 +32,12 @@ class GeometriesWrapperSuite extends FlatSpec with Matchers {
     val holes2: Array[LinearRing] = null
     val polygon2: Polygon = geometryFactory.createPolygon(ring2, holes2)
 
-    val wrapper = new GeometriesWrapper(polygon1, polygon2)
-    val result = wrapper.computeDistance
+    val wrapper = new GeometriesOperations
+    val result = wrapper.computeDistance(polygon1, polygon2)
     result shouldBe 1
   }
 
-  "GeometryWrapper" should "compute the distance between a polygon and a point" in {
+  "GeometriesOperations" should "compute the distance between a polygon and a point" in {
 
     val coords1: Array[Coordinate] = Array[Coordinate](
       new Coordinate(4, 0),
@@ -53,8 +53,8 @@ class GeometriesWrapperSuite extends FlatSpec with Matchers {
     val coords2 = new Coordinate(1, 2)
     val point = geometryFactory.createPoint(coords2)
 
-    val wrapper = new GeometriesWrapper(polygon, point)
-    val result = wrapper.computeDistance
+    val wrapper = new GeometriesOperations
+    val result = wrapper.computeDistance(polygon, point)
     result shouldBe 1
   }
 }
