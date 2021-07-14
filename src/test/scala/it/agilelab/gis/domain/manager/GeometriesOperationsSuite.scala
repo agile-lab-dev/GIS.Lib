@@ -1,7 +1,8 @@
-package it.agilelab.gis.domain.model
+package it.agilelab.gis.domain.manager
 
-import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, LineString, LinearRing, Point, Polygon }
-import it.agilelab.gis.domain.models.GeometriesOperations
+import com.vividsolutions.jts.geom.{ Coordinate, Geometry, GeometryFactory, LineString, LinearRing, Point, Polygon }
+import com.vividsolutions.jts.util.GeometricShapeFactory
+import it.agilelab.gis.domain.managers.GeometriesOperations
 import org.scalatest.{ FlatSpec, Matchers }
 
 class GeometriesOperationsSuite extends FlatSpec with Matchers {
@@ -107,16 +108,17 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
     result shouldBe 1
   }
 
-  /** Line vs Line */
+  /** LineString vs LineString */
   "The distance between lines" should "be greater than 0" in {
 
-    val linestring1: LineString = geometryFactory.createLineString(
-      new Coordinate(0, 2),
-      new Coordinate(2, 0),
-      new Coordinate(2, 1),
-      new Coordinate(2, 3))
+    val coords1: Array[Coordinate] =
+      Array[Coordinate](new Coordinate(0, 2), new Coordinate(2, 0), new Coordinate(2, 1), new Coordinate(2, 3))
+
+    val linestring1: LineString = geometryFactory.createLineString(coords1)
+
+    val coords2: Array[Coordinate] = Array[Coordinate](new Coordinate(3, 2), new Coordinate(4, 1), new Coordinate(6, 1))
     val linestring2: LineString =
-      geometryFactory.createLineString(new Coordinate(3, 4), new Coordinate(4, 5), new Coordinate(6, 1))
+      geometryFactory.createLineString(coords2)
 
     val result = GeometriesOperations.computeDistance(linestring1, linestring2)
     result shouldBe 1
@@ -124,16 +126,14 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
 
   "The distance between lines" should "be 0 - the lines are intersected" in {
 
-    val linestring1: LineString = geometryFactory.createLineString(
-      new Coordinate(0, 2),
-      new Coordinate(2, 0),
-      new Coordinate(2, 1),
-      new Coordinate(2, 3))
-    val linestring2: LineString =
-      geometryFactory.createLineString(new Coordinate(1, 3), new Coordinate(2, 3), new Coordinate(3, 4))
+    val coords1: Array[Coordinate] =
+      Array[Coordinate](new Coordinate(0, 2), new Coordinate(2, 0), new Coordinate(2, 1), new Coordinate(2, 3))
+    val linestring1: LineString = geometryFactory.createLineString(coords1)
+
+    val coords2: Array[Coordinate] = Array[Coordinate](new Coordinate(1, 3), new Coordinate(2, 3), new Coordinate(3, 4))
+    val linestring2: LineString = geometryFactory.createLineString(coords2)
 
     val result = GeometriesOperations.computeDistance(linestring1, linestring2)
     result shouldBe 0
   }
-
 }

@@ -1,4 +1,4 @@
-package it.agilelab.gis.domain.models
+package it.agilelab.gis.domain.managers
 
 import com.vividsolutions.jts.geom.Geometry
 
