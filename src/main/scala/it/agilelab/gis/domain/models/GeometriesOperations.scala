@@ -2,9 +2,16 @@ package it.agilelab.gis.domain.models
 
 import com.vividsolutions.jts.geom.Geometry
 
-class GeometriesOperations {
+/** Collector of all the operations that are performed on the geometries.
+  */
+object GeometriesOperations {
 
-  // Returns the minimum distance between this Geometry and another Geometry.
+  /** Compute the minimum distance between a geometry and another one
+    *
+    * @param geometry1 first geometry
+    * @param geometry2 second geometry
+    * @return the distance between the two geometries
+    */
   def computeDistance(geometry1: Geometry, geometry2: Geometry): Double = geometry1.distance(geometry2)
 
 }
