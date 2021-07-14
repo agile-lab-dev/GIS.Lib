@@ -6,9 +6,9 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 class GeometriesWrapperSuite extends FlatSpec with Matchers {
 
-  "GeometryWrapper" should "compute the distance between two polygons" in {
+  private val geometryFactory: GeometryFactory = new GeometryFactory()
 
-    val geometryFactory: GeometryFactory = new GeometryFactory()
+  "GeometryWrapper" should "compute the distance between two polygons" in {
 
     val coords1: Array[Coordinate] = Array[Coordinate](
       new Coordinate(4, 0),
@@ -34,13 +34,10 @@ class GeometriesWrapperSuite extends FlatSpec with Matchers {
 
     val wrapper = new GeometriesWrapper(polygon1, polygon2)
     val result = wrapper.computeDistance
-
     result shouldBe 1
   }
 
   "GeometryWrapper" should "compute the distance between a polygon and a point" in {
-
-    val geometryFactory: GeometryFactory = new GeometryFactory()
 
     val coords1: Array[Coordinate] = Array[Coordinate](
       new Coordinate(4, 0),
