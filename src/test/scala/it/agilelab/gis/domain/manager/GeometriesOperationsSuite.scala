@@ -1,7 +1,6 @@
 package it.agilelab.gis.domain.manager
 
 import com.vividsolutions.jts.geom.{ Coordinate, Geometry, GeometryFactory, LineString, LinearRing, Point, Polygon }
-import com.vividsolutions.jts.io.WKTWriter
 import com.vividsolutions.jts.util.GeometricShapeFactory
 import it.agilelab.gis.domain.managers.GeometriesOperations
 import org.scalatest.{ FlatSpec, Matchers }
@@ -9,6 +8,28 @@ import org.scalatest.{ FlatSpec, Matchers }
 class GeometriesOperationsSuite extends FlatSpec with Matchers {
 
   private val geometryFactory: GeometryFactory = new GeometryFactory()
+
+  /* *******************************
+   *   Distance functionality  *
+   ********************************* */
+  /** Point vs Point */
+  "The distance between points" should "be greater than 0" in {
+
+    val point1: Point = geometryFactory.createPoint(new Coordinate(3, 2))
+    val point2: Point = geometryFactory.createPoint(new Coordinate(3, 3))
+
+    val result = GeometriesOperations.computePointsDistance(point1, point2)
+    (result / 1000).toInt shouldBe 111
+  }
+
+  "The distance between points" should "be 0 - the points are overlapped" in {
+
+    val point1: Point = geometryFactory.createPoint(new Coordinate(3, 2))
+    val point2: Point = geometryFactory.createPoint(new Coordinate(3, 2))
+
+    val result = GeometriesOperations.computePointsDistance(point1, point2)
+    result shouldBe 0
+  }
 
   /* *******************************
    *   Intersection functionality  *
@@ -218,10 +239,6 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
     result.size shouldBe 1
     result.sameElements(pointsIntersected) shouldBe true
   }
-
-  /* **************************
-   * Contains functionality *
-     ************************** */
 
   /** Polygon vs Polygon */
   "Polygon 1" should "contains Polygon 2" in {
