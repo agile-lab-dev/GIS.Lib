@@ -6,9 +6,9 @@ import org.scalatest.{ FlatSpec, Matchers }
 
 class GeometriesOperationsSuite extends FlatSpec with Matchers {
 
-  val geometryFactory = new GeometryFactory()
+  private val geometryFactory = new GeometryFactory()
 
-  "The intersection" should "be return a list of points inside the interseption of two geometries" in {
+  "The intersection" should "be return a list of points inside the interception of two geometries" in {
 
     val coords1: Array[Coordinate] = Array[Coordinate](
       new Coordinate(4, 0),
@@ -17,10 +17,10 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       new Coordinate(6, 2),
       new Coordinate(4, 0))
 
-    val ring1: LinearRing = new GeometryFactory().createLinearRing(coords1)
+    val ring1: LinearRing = geometryFactory.createLinearRing(coords1)
     val holes1: Array[LinearRing] = null
 
-    val polygon1: Polygon = new GeometryFactory().createPolygon(ring1, holes1)
+    val polygon1: Polygon = geometryFactory.createPolygon(ring1, holes1)
 
     val coords2: Array[Coordinate] = Array[Coordinate](
       new Coordinate(2, 0),
@@ -29,9 +29,9 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       new Coordinate(5, 2),
       new Coordinate(2, 0))
 
-    val ring2: LinearRing = new GeometryFactory().createLinearRing(coords2)
+    val ring2: LinearRing = geometryFactory.createLinearRing(coords2)
     val holes2: Array[LinearRing] = null
-    val polygon2: Polygon = new GeometryFactory().createPolygon(ring2, holes2)
+    val polygon2: Polygon = geometryFactory.createPolygon(ring2, holes2)
 
     val points: List[Point] = List(
       geometryFactory.createPoint(new Coordinate(4, 2)),
@@ -55,10 +55,10 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       new Coordinate(6, 2),
       new Coordinate(4, 0))
 
-    val ring1: LinearRing = new GeometryFactory().createLinearRing(coords1)
+    val ring1: LinearRing = geometryFactory.createLinearRing(coords1)
     val holes1: Array[LinearRing] = null
 
-    val polygon1: Polygon = new GeometryFactory().createPolygon(ring1, holes1)
+    val polygon1: Polygon = geometryFactory.createPolygon(ring1, holes1)
 
     val coords2: Array[Coordinate] = Array[Coordinate](
       new Coordinate(2, 0),
@@ -67,9 +67,9 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       new Coordinate(5, 2),
       new Coordinate(2, 0))
 
-    val ring2: LinearRing = new GeometryFactory().createLinearRing(coords2)
+    val ring2: LinearRing = geometryFactory.createLinearRing(coords2)
     val holes2: Array[LinearRing] = null
-    val polygon2: Polygon = new GeometryFactory().createPolygon(ring2, holes2)
+    val polygon2: Polygon = geometryFactory.createPolygon(ring2, holes2)
 
     val points: List[Point] = List(
       geometryFactory.createPoint(new Coordinate(8, 1)),
