@@ -1,10 +1,21 @@
 package it.agilelab.gis.domain.managers
 
 import com.vividsolutions.jts.geom.{ Geometry, Point }
+import it.agilelab.gis.core.utils.DistanceUtils
 
 /** Collector of all the operations that are performed on the geometries.
   */
 object GeometriesOperations {
+
+  /** Compute the distance in meters between two points taking into account the shape of the earth,
+    * using the Haversine formula
+    *
+    * @param point1 first point
+    * @param point2 second point
+    * @return the distance between the two points
+    */
+  def computePointsDistance(point1: Point, point2: Point): Double =
+    DistanceUtils.haversineFormula(point1.getY, point1.getX, point2.getY, point2.getX)
 
   /** Get the list of points which are inside the intersection of two geometries
     *
