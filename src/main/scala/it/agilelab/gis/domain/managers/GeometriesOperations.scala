@@ -25,4 +25,5 @@ object GeometriesOperations {
     * @return true: if geometry1 contains geometry2 | false: otherwise
     */
   def contains(geometry1: Geometry, geometry2: Geometry): Boolean = geometry1.contains(geometry2)
+
 }
