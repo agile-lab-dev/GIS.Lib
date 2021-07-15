@@ -1,13 +1,18 @@
 package it.agilelab.gis.domain.manager
 
 import com.vividsolutions.jts.geom.{ Coordinate, Geometry, GeometryFactory, LineString, LinearRing, Point, Polygon }
+import com.vividsolutions.jts.io.WKTWriter
 import com.vividsolutions.jts.util.GeometricShapeFactory
 import it.agilelab.gis.domain.managers.GeometriesOperations
 import org.scalatest.{ FlatSpec, Matchers }
 
 class GeometriesOperationsSuite extends FlatSpec with Matchers {
 
-  private val geometryFactory = new GeometryFactory()
+  private val geometryFactory: GeometryFactory = new GeometryFactory()
+
+  /* *******************************
+   *   Intersection functionality  *
+   ********************************* */
 
   /** Polygon vs Polygon */
   "The intersection" should "be return the list of points inside the intersection of two polygons" in {
@@ -213,6 +218,10 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
     result.size shouldBe 1
     result.sameElements(pointsIntersected) shouldBe true
   }
+
+  /* **************************
+   * Contains functionality *
+     ************************** */
 
   /** Polygon vs Polygon */
   "Polygon 1" should "contains Polygon 2" in {
