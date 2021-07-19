@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.3.1](https://github.com/agile-lab-dev/GIS.Lib/compare/v1.3.0...v1.3.1)
+
+- [#95] - NPE when load boundary with null geometry [`c51c281`](https://github.com/agile-lab-dev/GIS.Lib/commit/c51c281d3f1ab0dc4d8a089f950b90cf46715cec)
+- Bump version to v1.3.1 [`4271836`](https://github.com/agile-lab-dev/GIS.Lib/commit/42718362d3dc66ab358748b2882de7e5edff2bdf)
+
 #### [v1.3.0](https://github.com/agile-lab-dev/GIS.Lib/compare/v1.2.2...v1.3.0)
+
+> 9 July 2021
 
 - [#72] Handle postalcodes as polygons [`#73`](https://github.com/agile-lab-dev/GIS.Lib/pull/73)
 - Add CI configuration [`#57`](https://github.com/agile-lab-dev/GIS.Lib/pull/57)
