@@ -102,8 +102,13 @@ object ShapeFileReader {
       ft.geom[jts.MultiLineString]().map(e => (e, ft.getAttributes))
     }
 
+  /**
+   * @return a Seq of tuple ([[MultiPolygon]],[[SimpleFeature]]) and remove null geometry
+   */
   def readMultiPolygonFeatures(path: String, attr: String = "the_geom"): Seq[(MultiPolygon, SimpleFeature)] =
     readSimpleFeatures(path)
-      .map(ft => (ft.getAttribute(attr).asInstanceOf[MultiPolygon], ft))
+      .flatMap(ft =>
+        Option(ft.getAttribute(attr).asInstanceOf[MultiPolygon]).map((_,ft))
+      )
 
 }
