@@ -1,14 +1,15 @@
 package it.agilelab.gis.domain.loader
 
+import java.io.File
+import java.net.URL
+import java.util
+
 import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, MultiPolygon, Point }
 import com.vividsolutions.jts.{ geom => jts }
 import org.geotools.data.shapefile._
 import org.geotools.data.simple._
 import org.opengis.feature.simple._
 
-import java.io.File
-import java.net.URL
-import java.util
 import scala.collection.mutable.ListBuffer
 
 object ShapeFileReader {
@@ -102,8 +103,10 @@ object ShapeFileReader {
       ft.geom[jts.MultiLineString]().map(e => (e, ft.getAttributes))
     }
 
+  /** @return a Seq of tuple ([[MultiPolygon]],[[SimpleFeature]]) and remove null geometry
+    */
   def readMultiPolygonFeatures(path: String, attr: String = "the_geom"): Seq[(MultiPolygon, SimpleFeature)] =
     readSimpleFeatures(path)
-      .map(ft => (ft.getAttribute(attr).asInstanceOf[MultiPolygon], ft))
+      .flatMap(ft => Option(ft.getAttribute(attr).asInstanceOf[MultiPolygon]).map((_, ft)))
 
 }
