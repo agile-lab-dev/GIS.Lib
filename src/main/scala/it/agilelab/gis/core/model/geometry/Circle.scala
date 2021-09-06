@@ -1,8 +1,6 @@
 package it.agilelab.gis.core.model.geometry
 
-import java.io.Serializable
-
-import com.vividsolutions.jts.geom.{ Coordinate, Envelope, GeometryFactory, Point }
+import com.vividsolutions.jts.geom._
 
 /** @author andreaL
   */
@@ -18,11 +16,37 @@ object Circle {
     val fact = new GeometryFactory
     val coordinate = new Coordinate(mbr.getMinX + radius, mbr.getMinY + radius)
     val point = fact.createPoint(coordinate)
-    new Circle(point, radius)
+    val factory = new GeometryFactoryEnriched()
+    new Circle(point, radius, factory)
   }
 }
 
-case class Circle(center: Point, radius: Double) extends Serializable {
+/** Class extends Geometry and represent a Circle
+  *
+  * @param center a Point representing the center of the circle
+  * @param radius Double representing the radius of the circle
+  * @param circleFactory a GeometryFactory needed to create the geometry
+  */
+case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryEnriched)
+    extends Geometry(circleFactory: GeometryFactoryEnriched) {
+
+  private lazy val coordinates = getCoordinates()
+  protected lazy val shell: LinearRing = factory.createLinearRing(coordinates)
+
+  /** Define a shell: a square (built as LinearRing) that contains the circle
+    */
+  override def getCoordinates(): Array[Coordinate] = {
+    val coordinates_0 = new Coordinate(getMBR.getMinX, getMBR.getMinY)
+    val coordinates_1 = new Coordinate(getMBR.getMaxX, getMBR.getMinY)
+    val coordinates_2 = new Coordinate(getMBR.getMaxX, getMBR.getMaxY)
+    val coordinates_3 = new Coordinate(getMBR.getMinX, getMBR.getMaxY)
+    Array[Coordinate](coordinates_0, coordinates_1, coordinates_2, coordinates_3, coordinates_0)
+  }
+
+  def apply(geomComponentFilter: GeometryComponentFilter): Unit = throw new NotImplementedError()
+  def apply(geomFilter: GeometryFilter): Unit = throw new NotImplementedError()
+  def apply(coordSeqFilter: CoordinateSequenceFilter): Unit = throw new NotImplementedError()
+  def apply(coordFilter: CoordinateFilter): Unit = throw new NotImplementedError()
 
   /** Gets the mbr.
     *
@@ -91,4 +115,106 @@ case class Circle(center: Point, radius: Double) extends Serializable {
     }
   }
 
+  /** Geometry type
+    *
+    * @return always string "Circle"
+    */
+  override def getGeometryType: String = "Circle"
+
+  /** Coordinates
+    *
+    * @return coordinates of the circle center point
+    */
+  override def getCoordinate: Coordinate =
+    if (isEmpty()) null
+    else new Coordinate(center.getX, center.getY, 0)
+
+  /** NumPoints
+    *
+    * @return the number of coordinates the circle is made of (always 1, the center)
+    */
+  override def getNumPoints: Int = 1
+
+  /** is Empty
+    *
+    * @return boolean
+    */
+  override def isEmpty: Boolean = shell.isEmpty
+
+  /** Dimension of the circle geometry
+    *
+    * @return always 2 (it's a 2D circle)
+    */
+  override def getDimension: Int = 2
+
+  /** Boundaries
+    *
+    * @return the shell containing the circle
+    */
+  override def getBoundary: Geometry = shell
+
+  /** Boundary dimension
+    *
+    * @return dimension of the boundary containing the circle (always 2D)
+    */
+  override def getBoundaryDimension: Int = 2
+
+  /** Reverse of a circle is the circle itself
+    *
+    * @return the circle
+    */
+  override def reverse(): Geometry = this
+
+  /** Check if a second geometry is an exact match with this circle
+    *
+    * @param other the geometry to be compared
+    * @param tolerance
+    * @return boolean, true if the 2 geometries are the same
+    */
+  override def equalsExact(other: Geometry, tolerance: Double): Boolean =
+    if (!isEquivalentClass(other)) false
+    else {
+      if (shell == other.getBoundary) true
+      else false
+    }
+
+  /** Normalization of the circle
+    */
+  override def normalize(): Unit = {}
+
+  /** Internal Envelop
+    *
+    * @return the internal envelop of the shell containing the circle
+    */
+  override def computeEnvelopeInternal(): Envelope = shell.getEnvelopeInternal
+
+  /** Returns whether this Geometry is
+    * greater than, equal to, or less than
+    * another Geometry of the same class
+    * @param o
+    * @return 1 if this is grater then
+    *         0 if this is the same size
+    *         -1 if this is smaller then
+    */
+  override def compareToSameClass(o: Any): Int = {
+    val other = o.asInstanceOf[Circle]
+    if (this.radius > other.radius) 1
+    else if (this.radius < other.radius) -1
+    else 0
+  }
+
+  /** Returns whether this Geometry is
+    * greater than, equal to, or less than
+    * another Geometry of the same class
+    * @param o
+    * @return 1 if this is grater then
+    *         0 if this is the same size
+    *         -1 if this is smaller then
+    */
+  override def compareToSameClass(o: Any, comp: CoordinateSequenceComparator): Int = {
+    val other = o.asInstanceOf[Circle]
+    if (this.radius > other.radius) 1
+    else if (this.radius < other.radius) -1
+    else 0
+  }
 }
