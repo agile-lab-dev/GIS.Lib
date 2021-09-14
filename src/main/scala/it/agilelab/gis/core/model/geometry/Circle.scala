@@ -30,7 +30,7 @@ object Circle {
 case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryEnriched)
     extends Geometry(circleFactory: GeometryFactoryEnriched) {
 
-  private lazy val coordinates = getCoordinates()
+  private lazy val coordinates = circleFactory.getCoordinateSequenceFactory.create(getCoordinates());
   protected lazy val shell: LinearRing = factory.createLinearRing(coordinates)
 
   /** Define a shell: a square (built as LinearRing) that contains the circle
@@ -43,10 +43,17 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
     Array[Coordinate](coordinates_0, coordinates_1, coordinates_2, coordinates_3, coordinates_0)
   }
 
-  def apply(geomComponentFilter: GeometryComponentFilter): Unit = throw new NotImplementedError()
-  def apply(geomFilter: GeometryFilter): Unit = throw new NotImplementedError()
-  def apply(coordSeqFilter: CoordinateSequenceFilter): Unit = throw new NotImplementedError()
-  def apply(coordFilter: CoordinateFilter): Unit = throw new NotImplementedError()
+  def apply(geomComponentFilter: GeometryComponentFilter): Unit = geomComponentFilter.filter(this)
+  def apply(geomFilter: GeometryFilter): Unit = geomFilter.filter(this)
+  def apply(coordSeqFilter: CoordinateSequenceFilter): Unit =
+    if (!this.isEmpty) {
+      coordSeqFilter.filter(this.coordinates, 0)
+      if (coordSeqFilter.isGeometryChanged) this.geometryChanged()
+    }
+  def apply(coordFilter: CoordinateFilter): Unit =
+    if (!this.isEmpty) {
+      coordFilter.filter(this.getCoordinate)
+    }
 
   /** Gets the mbr.
     *
@@ -62,11 +69,11 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
 
   /** Contains.
     *
-    * @param point the point
-    * @return true, if successful
+    * @param other the geometry to check against
+    * @return true, if other geometry is completely or partially contained
     */
-  def contains(point: Point): Boolean =
-    if (center.distance(point) < radius)
+  override def contains(other: Geometry): Boolean =
+    if (center.distance(other) < radius) // TODO: currently it behaves like intersect
       true
     else
       false
@@ -114,6 +121,14 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
       cornerDistance_sq <= (radius * radius)
     }
   }
+
+  /** Compute the distance from the circle side
+    *
+    * @param geom other geometry to compare with
+    * @return the distance from the circle side (negative if the geometry is within the circle)
+    */
+  override def distance(geom: Geometry) =
+    this.center.distance(geom) - radius
 
   /** Geometry type
     *

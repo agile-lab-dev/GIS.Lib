@@ -15,7 +15,9 @@ class WKTReaderRich extends WKTReader {
   private val Comma = ","
   private val L_Paren = "("
   private val R_Paren = ")"
-  private val Circle = "CIRCLE"
+  private val CIRCLE = "CIRCLE"
+  private val Circle = "Circle"
+  private val LC_circle = "circle"
 
   private val geometryFactory = new GeometryFactoryEnriched()
 
@@ -29,7 +31,7 @@ class WKTReaderRich extends WKTReader {
     val reader = new StringReader(wellKnownText)
     val tokenizer = new StreamTokenizer(reader)
     try getNextWord(tokenizer) match {
-      case Circle =>
+      case Circle | CIRCLE | LC_circle =>
         readCircle(tokenizer) match {
           case Success(geom)      => geom
           case Failure(exception) => throw new ParseException("Circle wrongly formatted")
