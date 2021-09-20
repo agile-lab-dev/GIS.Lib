@@ -24,12 +24,12 @@ class GeometryDistanceSpec extends FlatSpec with Matchers {
 
   }
 
-  it should "return negative distance from a point because internal" in {
+  it should "return zero distance from a point because internal" in {
     val wktStringCircle: String = "CIRCLE((100 100),50)"
     val wktStringPoint: String = "POINT(70 100)"
     val circle = WktConverter.converter(wktStringCircle)
     val point = WktConverter.converter(wktStringPoint)
-    val expected = -20d
+    val expected = 0d
     circle.right.get.distance(point.right.get) shouldEqual expected
 
   }
