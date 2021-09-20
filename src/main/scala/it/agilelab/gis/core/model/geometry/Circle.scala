@@ -125,10 +125,11 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
   /** Compute the distance from the circle side
     *
     * @param geom other geometry to compare with
-    * @return the distance from the circle side (negative if the geometry is within the circle)
+    * @return the distance from the circle side (zero if the geometry is within the circle)
     */
   override def distance(geom: Geometry) =
-    this.center.distance(geom) - radius
+    if (!this.contains(geom)) this.center.distance(geom) - radius
+    else 0.0
 
   /** Geometry type
     *
