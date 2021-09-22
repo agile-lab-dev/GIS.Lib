@@ -87,7 +87,9 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathMa
         multiPolygon = line,
         city = Some(parseStringName(administrativeValue)),
         boundaryType = administrativeLevel,
-        env = line.getEnvelopeInternal
+        env = line.getEnvelopeInternal,
+        postalCode = Try(
+          extractISO(features.getAttribute(config.getString("administrative.postalCode")).toString.capitalize)).toOption
       )
     } else {
       throw new IllegalArgumentException(
