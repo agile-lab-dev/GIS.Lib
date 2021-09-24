@@ -1,6 +1,6 @@
 package it.agilelab.gis.domain.managers
 
-import com.vividsolutions.jts.geom.{ Geometry, Point }
+import com.vividsolutions.jts.geom.{ Geometry, GeometryFactory, MultiPoint, Point }
 import it.agilelab.gis.core.utils.DistanceUtils
 
 /** Collector of all the operations that are performed on the geometries.
@@ -21,12 +21,13 @@ object GeometriesOperations {
     *
     * @param geometry1 first geometry
     * @param geometry2 second geometry
-    * @param points list of points
-    * @return the sublist of points within the intersection
+    * @param points array of points
+    * @return the sublist of points within the intersection as a MultiPoint
     */
-  def getIntersectionPoints(geometry1: Geometry, geometry2: Geometry, points: List[Point]): List[Point] = {
+  def getIntersectionPoints(geometry1: Geometry, geometry2: Geometry, points: Array[Point]): MultiPoint = {
     val intersection: Geometry = geometry1.intersection(geometry2)
-    points.filter(point => intersection.contains(point))
+    val pointsIntersected: Array[Point] = points.filter(point => intersection.contains(point))
+    new GeometryFactory().createMultiPoint(pointsIntersected)
   }
 
   /** Verify that a geometry is contained into another geometry

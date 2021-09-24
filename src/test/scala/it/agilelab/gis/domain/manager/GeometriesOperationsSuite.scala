@@ -1,6 +1,6 @@
 package it.agilelab.gis.domain.manager
 
-import com.vividsolutions.jts.geom.{ Coordinate, Geometry, GeometryFactory, LineString, LinearRing, Point, Polygon }
+import com.vividsolutions.jts.geom.{ Coordinate, Geometry, GeometryFactory, LineString, MultiPoint, Point, Polygon }
 import com.vividsolutions.jts.util.GeometricShapeFactory
 import it.agilelab.gis.domain.managers.GeometriesOperations
 import org.scalatest.{ FlatSpec, Matchers }
@@ -55,16 +55,17 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       new Coordinate(2, 0))
     val polygon2: Polygon = geometryFactory.createPolygon(coords2)
 
-    val points: List[Point] = List(
+    val points: Array[Point] = Array(
       geometryFactory.createPoint(new Coordinate(4, 2)),
       geometryFactory.createPoint(new Coordinate(3, 2)),
       geometryFactory.createPoint(new Coordinate(1, 2)))
-    val pointsIntersected: List[Point] =
-      List(geometryFactory.createPoint(new Coordinate(4, 2)), geometryFactory.createPoint(new Coordinate(3, 2)))
+    val pointsIntersected: Array[Point] =
+      Array(geometryFactory.createPoint(new Coordinate(4, 2)), geometryFactory.createPoint(new Coordinate(3, 2)))
+    val multipoint = geometryFactory.createMultiPoint(pointsIntersected)
 
-    val result = GeometriesOperations.getIntersectionPoints(polygon1, polygon2, points)
-    result.size shouldBe 2
-    result.sameElements(pointsIntersected) shouldBe true
+    val result: MultiPoint = GeometriesOperations.getIntersectionPoints(polygon1, polygon2, points)
+    result.getNumGeometries shouldBe 2
+    result.equals(multipoint) shouldBe true
   }
 
   "The intersection" should "be return an empty list - no points within the insersection between two polygons" in {
@@ -85,13 +86,13 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       new Coordinate(2, 0))
     val polygon2: Polygon = geometryFactory.createPolygon(coords2)
 
-    val points: List[Point] = List(
+    val points: Array[Point] = Array(
       geometryFactory.createPoint(new Coordinate(8, 1)),
       geometryFactory.createPoint(new Coordinate(8, 2)),
       geometryFactory.createPoint(new Coordinate(1, 2)))
 
     val result = GeometriesOperations.getIntersectionPoints(polygon1, polygon2, points)
-    result.size shouldBe 0
+    result.getNumGeometries shouldBe 0
   }
 
   /** Polygon vs LineString */
@@ -110,7 +111,7 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
     val linestring: LineString =
       geometryFactory.createLineString(coords2)
 
-    val points: List[Point] = List(
+    val points: Array[Point] = Array(
       geometryFactory.createPoint(new Coordinate(4, 1)),
       geometryFactory.createPoint(new Coordinate(4, 3)),
       geometryFactory.createPoint(new Coordinate(4, 1.5)),
@@ -118,12 +119,14 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       geometryFactory.createPoint(new Coordinate(5, 2))
     )
 
-    val pointsIntersected: List[Point] =
-      List(geometryFactory.createPoint(new Coordinate(4, 1)), geometryFactory.createPoint(new Coordinate(4, 1.5)))
+    val pointsIntersected: Array[Point] =
+      Array(geometryFactory.createPoint(new Coordinate(4, 1)), geometryFactory.createPoint(new Coordinate(4, 1.5)))
+
+    val multipoint: MultiPoint = geometryFactory.createMultiPoint(pointsIntersected)
 
     val result = GeometriesOperations.getIntersectionPoints(polygon, linestring, points)
-    result.size shouldBe 2
-    result.sameElements(pointsIntersected) shouldBe true
+    result.getNumGeometries shouldBe 2
+    result.equals(multipoint) shouldBe true
   }
 
   "The intersection" should "return an empty list - polygon and a linestring do not intersect" in {
@@ -141,7 +144,7 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
     val linestring: LineString =
       geometryFactory.createLineString(coords2)
 
-    val points: List[Point] = List(
+    val points: Array[Point] = Array(
       geometryFactory.createPoint(new Coordinate(4, 1)),
       geometryFactory.createPoint(new Coordinate(4, 3)),
       geometryFactory.createPoint(new Coordinate(4, 1.5)),
@@ -150,7 +153,7 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
     )
 
     val result = GeometriesOperations.getIntersectionPoints(polygon, linestring, points)
-    result.size shouldBe 0
+    result.getNumGeometries shouldBe 0
   }
 
   /** Circle vs Polygon */
@@ -170,7 +173,7 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       new Coordinate(4, 1))
     val polygon: Polygon = geometryFactory.createPolygon(coords)
 
-    val points: List[Point] = List(
+    val points: Array[Point] = Array(
       geometryFactory.createPoint(new Coordinate(4, 2)),
       geometryFactory.createPoint(new Coordinate(3, 1)),
       geometryFactory.createPoint(new Coordinate(5, 3.5)),
@@ -178,12 +181,14 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       geometryFactory.createPoint(new Coordinate(8, 2))
     )
 
-    val pointsIntersected: List[Point] =
-      List(geometryFactory.createPoint(new Coordinate(4, 2)), geometryFactory.createPoint(new Coordinate(5, 3.5)))
+    val pointsIntersected: Array[Point] =
+      Array(geometryFactory.createPoint(new Coordinate(4, 2)), geometryFactory.createPoint(new Coordinate(5, 3.5)))
+
+    val multipoint: MultiPoint = geometryFactory.createMultiPoint(pointsIntersected)
 
     val result = GeometriesOperations.getIntersectionPoints(circle, polygon, points)
-    result.size shouldBe 2
-    result.sameElements(pointsIntersected) shouldBe true
+    result.getNumGeometries shouldBe 2
+    result.equals(multipoint) shouldBe true
   }
 
   "The intersection" should "return an empty list - no points within the insersection between a circle and a polygon" in {
@@ -202,17 +207,14 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
       new Coordinate(4, 1))
     val polygon: Polygon = geometryFactory.createPolygon(coords)
 
-    val points: List[Point] = List(
+    val points: Array[Point] = Array(
       geometryFactory.createPoint(new Coordinate(3, 1)),
       geometryFactory.createPoint(new Coordinate(6, 1)),
       geometryFactory.createPoint(new Coordinate(8, 2))
     )
 
-    val pointsIntersected: List[Point] =
-      List(geometryFactory.createPoint(new Coordinate(4, 2)), geometryFactory.createPoint(new Coordinate(5, 3.5)))
-
     val result = GeometriesOperations.getIntersectionPoints(circle, polygon, points)
-    result.size shouldBe 0
+    result.getNumGeometries shouldBe 0
   }
 
   /** LineString vs Point */
@@ -225,19 +227,21 @@ class GeometriesOperationsSuite extends FlatSpec with Matchers {
 
     val point: Point = geometryFactory.createPoint(new Coordinate(4, 1.5))
 
-    val points: List[Point] = List(
+    val points: Array[Point] = Array(
       geometryFactory.createPoint(new Coordinate(3, 1)),
       geometryFactory.createPoint(new Coordinate(6, 1)),
       geometryFactory.createPoint(new Coordinate(4, 1.5)),
       geometryFactory.createPoint(new Coordinate(8, 2))
     )
 
-    val pointsIntersected: List[Point] =
-      List(geometryFactory.createPoint(new Coordinate(4, 1.5)))
+    val pointsIntersected: Array[Point] =
+      Array(geometryFactory.createPoint(new Coordinate(4, 1.5)))
+
+    val multipoint: MultiPoint = geometryFactory.createMultiPoint(pointsIntersected)
 
     val result = GeometriesOperations.getIntersectionPoints(linestring, point, points)
-    result.size shouldBe 1
-    result.sameElements(pointsIntersected) shouldBe true
+    result.getNumGeometries shouldBe 1
+    result.equals(multipoint) shouldBe true
   }
 
   /** Polygon vs Polygon */
