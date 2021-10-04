@@ -1,6 +1,7 @@
 package it.agilelab.gis.core.model.geometry
 
 import com.vividsolutions.jts.geom._
+import it.agilelab.gis.core.utils.DistanceUtils
 
 /** @author andreaL
   */
@@ -73,7 +74,13 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
     * @return true, if other geometry is completely or partially contained
     */
   override def contains(other: Geometry): Boolean =
-    if (center.distance(other) < radius) // TODO: currently it behaves like intersect
+    if (
+      DistanceUtils.haversineFormula(
+        this.center.getY,
+        this.center.getX,
+        other.getInteriorPoint.getY,
+        other.getInteriorPoint.getX) < radius
+    ) // TODO: currently it behaves like intersect
       true
     else
       false
@@ -128,7 +135,12 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
     * @return the distance from the circle side (zero if the geometry is within the circle)
     */
   override def distance(geom: Geometry) =
-    if (!this.contains(geom)) this.center.distance(geom) - radius
+    if (!this.contains(geom))
+      DistanceUtils.haversineFormula(
+        this.center.getY,
+        this.center.getX,
+        geom.getInteriorPoint.getY,
+        geom.getInteriorPoint.getX) - radius
     else 0.0
 
   /** Geometry type
