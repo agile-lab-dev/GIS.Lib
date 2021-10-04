@@ -152,7 +152,6 @@
             <version>${org.scalaz.core.version}</version>
         </dependency>
 
-
         <!-- https://mvnrepository.com/artifact/com.github.pureconfig/pureconfig -->
         <dependency>
             <groupId>com.github.pureconfig</groupId>

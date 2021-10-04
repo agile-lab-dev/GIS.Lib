@@ -9,8 +9,6 @@ import scala.reflect.macros.ParseException
 
 class WktConverterSuite extends FlatSpec with Matchers {
 
-  private val writer: WKTWriter = new WKTWriter()
-
   "WKT Converter" should "return the Geometry object Point from a wkt String" in {
     val wktString: String = "POINT(1.3456 2.3647)"
     val result = WktConverter.converter(wktString)
