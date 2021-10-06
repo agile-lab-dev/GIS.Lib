@@ -9,18 +9,8 @@ class GeometryDistanceSpec extends FlatSpec with Matchers {
     val wktStringPoint: String = "POINT(11.002371648547008 45.3416411637726)"
     val circle = WktConverter.converter(wktStringCircle)
     val point = WktConverter.converter(wktStringPoint)
-    val expected = 1814
+    val expected = 2658
     circle.right.get.distance(point.right.get).toInt shouldEqual expected
-
-  }
-
-  it should "return zero distance from a point on the border" in {
-    val wktStringCircle: String = "CIRCLE ((11.028014 45.33984), 200)"
-    val wktStringPoint = "POINT(11.030031109783607 45.34094093409899)"
-    val circle = WktConverter.converter(wktStringCircle)
-    val point = WktConverter.converter(wktStringPoint)
-    val expected = 0d
-    circle.right.get.distance(point.right.get) shouldEqual expected
 
   }
 

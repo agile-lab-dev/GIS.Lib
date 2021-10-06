@@ -76,10 +76,10 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
   override def contains(other: Geometry): Boolean =
     if (
       DistanceUtils.haversineFormula(
-        this.center.getY,
         this.center.getX,
-        other.getInteriorPoint.getY,
-        other.getInteriorPoint.getX) < radius
+        this.center.getY,
+        other.getInteriorPoint.getX,
+        other.getInteriorPoint.getY) < radius
     ) // TODO: currently it behaves like intersect
       true
     else
@@ -137,10 +137,10 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
   override def distance(geom: Geometry) =
     if (!this.contains(geom))
       DistanceUtils.haversineFormula(
-        this.center.getY,
         this.center.getX,
-        geom.getInteriorPoint.getY,
-        geom.getInteriorPoint.getX) - radius
+        this.center.getY,
+        geom.getInteriorPoint.getX,
+        geom.getInteriorPoint.getY) - radius
     else 0.0
 
   /** Geometry type
