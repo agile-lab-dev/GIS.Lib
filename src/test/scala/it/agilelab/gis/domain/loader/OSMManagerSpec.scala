@@ -60,7 +60,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Veneto"),
         country = Some("Italy"),
         countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
-        postalIndex = None,
+        postalIndex = Some("35020"),
         addressRange = None,
         speedLimit = None,
         speedCategory = None,
@@ -144,7 +144,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Piemont"),
         country = Some("Italy"),
         countryCode = Some("IT"),
-        postalIndex = None,
+        postalIndex = Some("10151"),
         addressRange = Some("9 scala A"),
         speedLimit = None,
         speedCategory = None,
@@ -173,7 +173,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Piemont"),
         country = Some("Italy"),
         countryCode = Some("IT"),
-        postalIndex = None,
+        postalIndex = Some("10151"),
         addressRange = None,
         speedLimit = None,
         speedCategory = None,
@@ -202,7 +202,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Piemont"),
         country = Some("Italy"),
         countryCode = Some("IT"),
-        postalIndex = None,
+        postalIndex = Some("10151"),
         addressRange = None,
         speedLimit = None,
         speedCategory = None,
@@ -234,7 +234,7 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
         region = Some("Piemont"),
         country = Some("Italy"),
         countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
-        postalIndex = None,
+        postalIndex = Some("10151"),
         addressRange = Some("10"),
         speedLimit = Some(50),
         speedCategory = None,
@@ -1084,5 +1084,33 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
     )
 
     leipzig shouldBe expected
+  }
+
+  "Reverse geocoding on Italy" should "has correct postalcode valued after merging of postal codes" in {
+
+    val id = "abc"
+    val point = IdentifiableGPSPoint(id, 37.0502, 14.87136, None, System.currentTimeMillis())
+
+    val palazzolo: ReverseGeocodingResponse = osmManager.reverseGeocode(point).right.value
+
+    val palazzoloExptected: ReverseGeocodingResponse =
+      ReverseGeocodingResponse(
+        id,
+        street = None,
+        city = Some("Palazzolo Acreide"),
+        county = Some("Siracusa"),
+        countyCode = Some("SR"),
+        region = Some("Sicily"),
+        country = Some("Italy"),
+        countryCode = Some("IT"), // as per https://www.iso.org/obp/ui/#iso:code:3166:IT
+        postalIndex = Some("96010"),
+        addressRange = None,
+        speedLimit = None,
+        speedCategory = None,
+        roadType = None,
+        distance = None
+      )
+
+    palazzolo should be(palazzoloExptected)
   }
 }

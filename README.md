@@ -54,3 +54,29 @@ mvn exec:java -Dexec.mainClass=it.agilelab.bigdata.gis.core.apps.ConverterFromOS
 The serialized graph will be saved in the `graphHopperMap` directory.
 
 _Note: you need to adjust `Xmx` and `Xms` to your specific situation._
+
+## Map Merger
+
+MapMerger from `src/main/scala/it/agilelab/gis/core/apps/MapMerger.scala` used to join map tables with respect some geometry condition
+(e.g. join tables where geometries from a map are covered by geometries from a second map).
+
+Update `src/main/resources/reference.conf` with the correct paths to the shapefiles, desired output path and a map with cities and related postal code.
+Map with postal codes should contain all the postalcodes that are not automatically copied from the postalcodes map layer.
+
+Output files can be used to substitute all AL8-italy files
+
+Note: Some cities are without postalcode info. These can be updated manually:
+- Biella                | 13900
+- Villa San Secondo     | 14020
+- Castel Madama         | 00024
+- Palazzolo Acreide     | 96010
+- Custonaci             | 91015
+- Pieve Tesino          | 38050
+- Santa Lucia di Serino | 83020
+- San Cassiano          | 73020
+- Ripabottoni           | 86040
+- Carinaro              | 81032
+- Tortorella            | 84030
+- Candidoni             | 89020
+- Capoliveri            | 57031
+- Goro                  | 44020
