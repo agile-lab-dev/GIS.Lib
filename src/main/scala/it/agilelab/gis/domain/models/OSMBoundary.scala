@@ -1,7 +1,7 @@
 package it.agilelab.gis.domain.models
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom._
 
 case class OSMBoundary(
     multiPolygon: Geometry,
@@ -94,8 +94,6 @@ case class OSMBoundary(
 
   override def normalize(): Unit = multiPolygon.normalize()
 
-  override def reverse(): Geometry = multiPolygon.reverse()
-
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = multiPolygon.equalsExact(other, tolerance)
 
   override def getNumPoints: Int = multiPolygon.getNumPoints
@@ -110,14 +108,17 @@ case class OSMBoundary(
     * Only if an attribute is missing in the current boundary but defined in the other one its value will be updated.
     */
   def merge(other: OSMBoundary): OSMBoundary =
-    this.copy(
+    OSMBoundary(
+      multiPolygon = this.multiPolygon,
       city = emptyToNone(this.city).orElse(emptyToNone(other.city)),
       county = emptyToNone(this.county).orElse(emptyToNone(other.county)),
       region = emptyToNone(this.region).orElse(emptyToNone(other.region)),
       country = emptyToNone(this.country).orElse(emptyToNone(other.country)),
       countryCode = emptyToNone(this.countryCode).orElse(emptyToNone(other.countryCode)),
       countyCode = emptyToNone(this.countyCode).orElse(emptyToNone(other.countyCode)),
-      postalCode = emptyToNone(this.postalCode).orElse(emptyToNone(other.postalCode))
+      postalCode = emptyToNone(this.postalCode).orElse(emptyToNone(other.postalCode)),
+      this.boundaryType,
+      this.env
     )
 
   private def emptyToNone(s: Option[String]): Option[String] =

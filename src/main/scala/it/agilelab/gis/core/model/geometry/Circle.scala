@@ -1,7 +1,7 @@
 package it.agilelab.gis.core.model.geometry
 
-import com.vividsolutions.jts.geom._
 import it.agilelab.gis.core.utils.DistanceUtils
+import org.locationtech.jts.geom._
 
 /** @author andreaL
   */
@@ -245,4 +245,10 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
     else if (this.radius < other.radius) -1
     else 0
   }
+
+  override def reverseInternal(): Geometry = this
+
+  override def copyInternal(): Geometry = this
+
+  override def getTypeCode: Int = CustomGeometry.TYPECODE_CIRCLE
 }

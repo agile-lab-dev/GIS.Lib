@@ -1,7 +1,7 @@
 package it.agilelab.gis.domain.models
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
+import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory
+import org.locationtech.jts.geom._
 
 object GeometryFactoryOSM {
 

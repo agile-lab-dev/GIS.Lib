@@ -1,7 +1,6 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 case class OSMHouseNumber(point: Geometry, number: String) extends Geometry(point.getFactory) {
 
@@ -61,4 +60,9 @@ case class OSMHouseNumber(point: Geometry, number: String) extends Geometry(poin
        |Number:$number
        """.stripMargin
 
+  override def reverseInternal(): Geometry = point.reverseInternal()
+
+  override def copyInternal(): Geometry = point.copyInternal()
+
+  override def getTypeCode: Int = point.getTypeCode
 }

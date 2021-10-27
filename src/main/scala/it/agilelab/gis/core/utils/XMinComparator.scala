@@ -1,10 +1,9 @@
 package it.agilelab.gis.core.utils
 
 import java.io.Serializable
-import java.util.Comparator
 
-import com.vividsolutions.jts.geom.{ Envelope, Geometry }
 import it.agilelab.gis.core.model.geometry.Circle
+import org.locationtech.jts.geom.{ Envelope, Geometry }
 
 /** @author andreaL
   */

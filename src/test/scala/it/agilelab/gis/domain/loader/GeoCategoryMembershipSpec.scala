@@ -4,10 +4,10 @@ import java.io.File
 import java.nio.file.Paths
 import java.util.Date
 
-import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory }
 import it.agilelab.gis.domain.managers.GeometryMembershipInfoManager
 import it.agilelab.gis.domain.models.CategoriesCfg.{ GeoMetadataCfg, Country => CountryCfg, Custom => CustomCfg }
 import it.agilelab.gis.domain.models.{ CategoriesCfg, InputCategory }
+import org.locationtech.jts.geom.{ Coordinate, GeometryFactory }
 import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.language.postfixOps
@@ -51,8 +51,7 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
       Paths.get("src/test/resources/osm/categories"),
       Seq(CountryCfg(Map.empty, 0))
     )
-    val sut = GeometryMembershipInfoManager
-    sut.apply(categoriesCfg) shouldBe a[Success[_]]
+    GeometryMembershipInfoManager.apply(categoriesCfg) shouldBe a[Success[_]]
   }
 
   "GeometryMembershipManager.getGeoMembershipInfoOf[Point]" should
@@ -77,7 +76,7 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
 
       res shouldBe a[Success[_]]
       res.get.size should be(1)
-      res.get.head.geometryLabel should be("Andorra_AL2")
+      res.get.head.geometryLabel should be("Andorra")
     }
 
   "GeometryMembershipManager.getGeoMembershipInfoOf[Point]" should
@@ -170,7 +169,7 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
 
       res shouldBe a[Success[_]]
       res.get.size shouldBe 2
-      res.get.map(_.geometryLabel) should (contain("Andorra_AL2") and contain(
+      res.get.map(_.geometryLabel) should (contain("Andorra") and contain(
         "Bosnia and Herzegovina"
       ))
     }
@@ -246,7 +245,7 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
 
       res shouldBe a[Success[_]]
       res.get.size shouldBe 2
-      res.get.map(_.geometryLabel) should (contain("Andorra_AL2") and contain(
+      res.get.map(_.geometryLabel) should (contain("Andorra") and contain(
         "Bosnia and Herzegovina"
       ))
     }

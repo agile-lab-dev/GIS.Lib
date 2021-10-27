@@ -1,7 +1,7 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import it.agilelab.gis.domain.models.OSMStreet
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 case class OSMPlace(
     polygon: Geometry,
@@ -85,4 +85,9 @@ case class OSMPlace(
 
   override def getNumPoints: Int = polygon.getNumPoints
 
+  override def reverseInternal(): Geometry = polygon.reverseInternal()
+
+  override def copyInternal(): Geometry = polygon.copyInternal()
+
+  override def getTypeCode: Int = polygon.getTypeCode
 }

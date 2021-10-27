@@ -1,14 +1,14 @@
 package it.agilelab.gis.domain.spatialList
 
-import com.vividsolutions.jts.geom.{ Coordinate, Envelope, Geometry, GeometryFactory }
-import com.vividsolutions.jts.index.SpatialIndex
-import com.vividsolutions.jts.index.quadtree.Quadtree
-import com.vividsolutions.jts.index.strtree.STRtree
+import java.io.Serializable
+
 import it.agilelab.gis.core.model.IndexType
 import it.agilelab.gis.core.model.geometry.Circle
 import it.agilelab.gis.core.utils.{ XMaxComparator, XMinComparator, YMaxComparator, YMinComparator }
-
-import java.io.Serializable
+import org.locationtech.jts.geom.{ Coordinate, Envelope, Geometry, GeometryFactory }
+import org.locationtech.jts.index.SpatialIndex
+import org.locationtech.jts.index.quadtree.Quadtree
+import org.locationtech.jts.index.strtree.STRtree
 
 /** The Class SpatialList.
   */
@@ -62,9 +62,6 @@ abstract class SpatialList extends Serializable {
 
       case castedSpatialObject: Envelope =>
         val item = geometryFactory.toGeometry(castedSpatialObject)
-        if (castedSpatialObject.getUserData != null) {
-          item.setUserData(castedSpatialObject.getUserData)
-        }
         rt.insert(castedSpatialObject, item);
 
       case castedSpatialObject: Geometry =>
@@ -93,15 +90,15 @@ abstract class SpatialList extends Serializable {
 
     val pos = (minXEnvelope, minYEnvelope, maxXEnvelope, maxYEnvelope) match {
 
+      case (minX: Circle, minY: Circle, maxX: Circle, maxY: Circle) =>
+        (minX.getMBR.getMinX, minY.getMBR.getMinY, maxX.getMBR.getMaxX, maxY.getMBR.getMaxY)
+
       case (minX: Geometry, minY: Geometry, maxX: Geometry, maxY: Geometry) =>
         (
           minX.getEnvelopeInternal.getMinX,
           minY.getEnvelopeInternal.getMinY,
           maxX.getEnvelopeInternal.getMaxX,
           maxY.getEnvelopeInternal.getMaxY)
-
-      case (minX: Circle, minY: Circle, maxX: Circle, maxY: Circle) =>
-        (minX.getMBR.getMinX, minY.getMBR.getMinY, maxX.getMBR.getMaxX, maxY.getMBR.getMaxY)
 
       case (minX: Envelope, minY: Envelope, maxX: Envelope, maxY: Envelope) =>
         (minX.getMinX, minY.getMinY, maxX.getMaxX, maxY.getMaxY)

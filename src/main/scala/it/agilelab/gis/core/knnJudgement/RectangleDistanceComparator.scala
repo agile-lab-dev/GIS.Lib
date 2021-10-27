@@ -3,7 +3,7 @@ package it.agilelab.gis.core.knnJudgement
 import java.io.Serializable
 import java.util.Comparator
 
-import com.vividsolutions.jts.geom.{ Envelope, Point }
+import org.locationtech.jts.geom.{ Envelope, Point }
 
 /** @author andreaL
   */

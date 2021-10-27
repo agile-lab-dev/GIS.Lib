@@ -5,7 +5,7 @@
   */
 package it.agilelab.gis.domain.spatialList
 
-import com.vividsolutions.jts.geom.Envelope
+import org.locationtech.jts.geom.Envelope
 
 /** The Class RectangleRDD.
   */

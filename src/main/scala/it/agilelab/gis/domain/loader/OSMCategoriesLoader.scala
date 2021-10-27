@@ -3,10 +3,10 @@ package it.agilelab.gis.domain.loader
 import java.io.File
 import java.util.regex.Pattern
 
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.loader.Loader
 import it.agilelab.gis.domain.models.CategoriesCfg.CategoryInfoCfg
 import it.agilelab.gis.domain.models.{ OSMGeoCategory, OSMGeoMetadata }
+import org.locationtech.jts.geom.Geometry
 
 class OSMCategoriesLoader(categoryInfoCfg: CategoryInfoCfg) extends Loader[OSMGeoCategory] {
 

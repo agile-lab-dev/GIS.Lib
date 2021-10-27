@@ -1,8 +1,8 @@
 package it.agilelab.gis.domain.knnJudgement
 
-import com.vividsolutions.jts.geom.Point
 import it.agilelab.gis.core.knnJudgement.GeometryDistanceComparator
 import it.agilelab.gis.domain.models.KnnResult
+import org.locationtech.jts.geom.Point
 
 /** Created by paolo on 25/01/2017.
   */

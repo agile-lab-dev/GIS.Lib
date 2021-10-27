@@ -1,7 +1,7 @@
 package it.agilelab.gis.domain.loader
 
-import it.agilelab.gis.domain.models.OSMStreetAndHouseNumber
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom.OSMStreetAndHouseNumber
 
 class OSMStreetLoaderWithoutNumber() extends OSMGenericStreetLoader {
 

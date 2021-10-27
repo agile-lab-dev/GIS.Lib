@@ -1,6 +1,6 @@
 package it.agilelab.gis.core.utils
 
-import com.vividsolutions.jts.geom.Coordinate
+import org.locationtech.jts.geom.Coordinate
 
 object Lines {
 

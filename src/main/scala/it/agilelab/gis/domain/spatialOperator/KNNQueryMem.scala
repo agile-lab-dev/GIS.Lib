@@ -9,11 +9,11 @@ import java.io.Serializable
 
 import com.graphhopper.util.Helper
 import com.graphhopper.util.shapes.Circle
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.operation.distance.DistanceOp
 import it.agilelab.gis.domain.knnJudgement._
 import it.agilelab.gis.domain.models.KnnResult
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom.{ Envelope, Geometry, Point }
+import org.locationtech.jts.operation.distance.DistanceOp
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
