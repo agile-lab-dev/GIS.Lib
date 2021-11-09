@@ -37,7 +37,7 @@ class WKTReaderRich extends WKTReader {
           case Failure(exception) => throw new ParseException("Circle wrongly formatted")
         }
       case _ =>
-        reader.reset()
+        val reader = new StringReader(wellKnownText)
         super.read(reader)
     }
   }
