@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.4.1](https://github.com/agile-lab-dev/GIS.Lib/compare/v1.4.0...v1.4.1)
+
+- [#114] Reset WKT Reader [`#114`](https://github.com/agile-lab-dev/GIS.Lib/issues/114)
+
 #### [v1.4.0](https://github.com/agile-lab-dev/GIS.Lib/compare/v1.3.1...v1.4.0)
+
+> 13 October 2021
 
 - [#103] Added PostalCode as a parameter to be loaded by the OSM Administraive Boundaries Loader [`#103`](https://github.com/agile-lab-dev/GIS.Lib/issues/103)
 - [#101] Added distance method to circle class [`#101`](https://github.com/agile-lab-dev/GIS.Lib/issues/101)
