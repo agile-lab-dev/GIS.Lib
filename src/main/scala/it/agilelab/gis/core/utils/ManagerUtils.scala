@@ -12,7 +12,8 @@ object ManagerUtils {
       boundary: BoundaryPathGroup,
       postalCodes: Array[Path],
       roads: Array[Path],
-      houseNumbers: Array[Path]
+      houseNumbers: Array[Path],
+      railways: Array[Path]
   )
 
   val FOLD_CITY_ON_COUNTY = 0

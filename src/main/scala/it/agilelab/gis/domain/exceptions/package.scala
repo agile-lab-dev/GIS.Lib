@@ -13,4 +13,10 @@ package object exceptions {
     * @param ex error reason.
     */
   case class MatchedRouteError(ex: Throwable)
+
+  /** Railways distance error.
+    *
+    * @param ex error reason.
+    */
+  case class NearestRailwayError(ex: Throwable)
 }

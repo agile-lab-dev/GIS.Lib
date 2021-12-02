@@ -54,3 +54,17 @@ mvn exec:java -Dexec.mainClass=it.agilelab.bigdata.gis.core.apps.ConverterFromOS
 The serialized graph will be saved in the `graphHopperMap` directory.
 
 _Note: you need to adjust `Xmx` and `Xms` to your specific situation._
+
+### Creating railways maps
+
+Once downloaded the country map from [https://download.geofabrik.de/](https://download.geofabrik.de/) as `*.osm.pbf` files, it is possible to
+filter only the desired railway types (see https://wiki.openstreetmap.org/wiki/Key:railway) and compute the corresponding shapefiles, by using the `ogr2ogr`
+command.
+
+For example, the `nord-ovest-gis-railways.*` files, under the `src/test/resources/osm/maps/italy`, have been produced by running:
+```shell
+osmium tags-filter --overwrite -o nord-ovest-railways.pbf nord-ovest-latest.osm.pbf nw/railway=light_rail,narrow_gauge,rail,disused
+ogr2ogr -f "ESRI Shapefile" -skip nord-ovest-railways.shp nord-ovest-railways.pbf
+```
+
+In this case only the `lines.*` files inside `nord-ovest-railways.shp` have been considered, renamed and added to the test folder.

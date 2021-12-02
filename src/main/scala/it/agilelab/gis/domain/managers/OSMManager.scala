@@ -4,21 +4,51 @@ import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, Point }
 import it.agilelab.gis.core.utils.{ Logger, ManagerUtils }
 import it.agilelab.gis.domain.configuration.OSMManagerConfiguration
-import it.agilelab.gis.domain.exceptions.ReverseGeocodingError
+import it.agilelab.gis.domain.exceptions.{ NearestRailwayError, ReverseGeocodingError }
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
 import it.agilelab.gis.domain.loader.ReverseGeocoder
 import it.agilelab.gis.domain.loader.ReverseGeocoder.{ Boundaries, HouseNumbers, Index, Streets }
 import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
+import it.agilelab.gis.utils.ScalaUtils.recordDuration
 
 import scala.annotation.tailrec
+import scala.language.postfixOps
 import scala.util.{ Failure, Success, Try }
 
 case class OSMManager(conf: Config) extends ReverseGeocoder with Logger {
 
   val osmConfig: OSMManagerConfiguration = OSMManagerConfiguration(conf)
   val indexManager: IndexManager = IndexManager(osmConfig.indexConf)
+
+  def computeNearestRailway(point: IdentifiableGPSPoint): Either[NearestRailwayError, NearestRailwayResponse] = {
+    val queryPoint = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
+
+    Try {
+      val railwaysIndex = indexManager.indexSet.railways.get
+      recordDuration(
+        KNNQueryMem.spatialKnnQuery(railwaysIndex, queryPoint, 1).head,
+        d => logger.info(s"Computed nearest railway from the point $point in $d ms")
+      )
+    } match {
+      case Success(nearest) =>
+        Right(
+          NearestRailwayResponse(
+            point.id,
+            nearest._2.distance,
+            nearest._1.railway,
+            nearest._1.railwayType.map(_.value),
+            nearest._1.operator,
+            nearest._1.usage.map(_.value)
+          ))
+
+      case Failure(ex) =>
+        logger.error("Failed to compute the nearest railway", ex)
+        Left(NearestRailwayError(ex))
+
+    }
+  }
 
   override def reverseGeocode(
       point: IdentifiableGPSPoint,

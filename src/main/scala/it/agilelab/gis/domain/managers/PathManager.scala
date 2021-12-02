@@ -17,6 +17,7 @@ private object Bound {
   * - postal codes shapefiles must end with 'gis-postalcode.shp'
   * - roads shapefiles must end with 'gis-roads.shp'
   * - house number shapefiles must end with 'gis-housenumbers.shp'
+  * - railways shapefiles must end with 'gis-railways.shp'
   * @param conf configurations
   */
 case class PathManager(conf: Config) extends Configuration {
@@ -37,7 +38,9 @@ case class PathManager(conf: Config) extends Configuration {
     val roadsPath: Array[Path] = countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*roads.*.shp"))
     val houseNumbersPath: Array[Path] =
       countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*housenumbers.*.shp"))
-    CountryPathSet(boundaryPathGroup, postalCodesPath, roadsPath, houseNumbersPath)
+    val railwaysPath: Array[Path] =
+      countryFolder.listFiles().map(_.getAbsolutePath).filter(_.matches(".*railways.*.shp"))
+    CountryPathSet(boundaryPathGroup, postalCodesPath, roadsPath, houseNumbersPath, railwaysPath)
   }
 
   private def getBoundaryPathGroup(countryFolder: File): BoundaryPathGroup = {
