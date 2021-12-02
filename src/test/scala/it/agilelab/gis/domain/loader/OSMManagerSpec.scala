@@ -1085,4 +1085,24 @@ class OSMManagerSpec extends FlatSpec with Matchers with EitherValues with Befor
 
     leipzig shouldBe expected
   }
+
+  "Railways" should "be loaded, parsed and used to compute distance from a point" in {
+    val point1 = IdentifiableGPSPoint("point1", 44.0150, 8.6197, None, System.currentTimeMillis())
+    val point2 = IdentifiableGPSPoint("point2", 44.1338, 9.0669, None, System.currentTimeMillis())
+
+    an[Exception] shouldBe thrownBy(osmManager.computeNearestRailway(point1).right.value)
+
+    val osmManagerWithRailways = OSMManager(
+      ConfigFactory.load("reference-with-railways.conf").getConfig("osm")
+    )
+
+    val response1 = osmManagerWithRailways.computeNearestRailway(point1).right.value
+    val response2 = osmManagerWithRailways.computeNearestRailway(point2).right.value
+
+    val distance1 = response1.distance
+    val distance2 = response2.distance
+
+    distance1.round shouldBe 32422
+    distance2.round shouldBe 25820
+  }
 }
