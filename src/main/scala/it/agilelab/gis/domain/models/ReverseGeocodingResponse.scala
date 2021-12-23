@@ -53,3 +53,4 @@ case class ReverseGeocodingResponse(
     roadType: Option[String] = None,
     distance: Option[Double] = None
 ) extends OutputModel
+    with Identifiable

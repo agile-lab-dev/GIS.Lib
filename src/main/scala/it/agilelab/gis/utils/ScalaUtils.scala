@@ -1,5 +1,7 @@
 package it.agilelab.gis.utils
 
+import java.util.concurrent.Callable
+
 /** Generic scala utilities
   *
   * @author Agile Lab s.r.l.
@@ -10,5 +12,9 @@ object ScalaUtils {
     val r = f
     duration(System.currentTimeMillis() - start)
     r
+  }
+
+  def load[T](f: => T): Callable[T] = new Callable[T] {
+    override def call(): T = f
   }
 }

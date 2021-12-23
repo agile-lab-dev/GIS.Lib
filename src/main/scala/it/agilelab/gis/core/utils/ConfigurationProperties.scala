@@ -6,7 +6,8 @@ trait ConfigurationProperties {
 
 object ConfigurationProperties {
 
-  case object OSM extends ConfigurationProperties { override lazy val value: String = "osm" }
+  case object GEOCODE extends ConfigurationProperties { override lazy val value: String = "geocode" }
+  case object GEORELATION extends ConfigurationProperties { override lazy val value: String = "georelation" }
   case object GRAPH extends ConfigurationProperties { override lazy val value: String = "graph" }
   case object INDEX extends ConfigurationProperties { override lazy val value: String = "index" }
   case object PATH extends ConfigurationProperties { override lazy val value: String = "path" }
@@ -39,5 +40,5 @@ object ConfigurationProperties {
   case object CONTRACTION_HIERARCHIES_ENABLED extends ConfigurationProperties {
     override lazy val value: String = "contraction_hierarchies_enabled"
   }
-
+  case object SEA_INPUT_PATH extends ConfigurationProperties { override lazy val value: String = "sea_input_path" }
 }
