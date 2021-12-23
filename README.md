@@ -61,10 +61,18 @@ Once downloaded the country map from [https://download.geofabrik.de/](https://do
 filter only the desired railway types (see https://wiki.openstreetmap.org/wiki/Key:railway) and compute the corresponding shapefiles, by using the `ogr2ogr`
 command.
 
-For example, the `nord-ovest-gis-railways.*` files, under the `src/test/resources/osm/maps/italy`, have been produced by running:
+For example, the `italy-gis-railways.*` files, under the `src/test/resources/osm/maps/italy`, have been produced by running:
 ```shell
-osmium tags-filter --overwrite -o nord-ovest-railways.pbf nord-ovest-latest.osm.pbf nw/railway=light_rail,narrow_gauge,rail,disused
-ogr2ogr -f "ESRI Shapefile" -skip nord-ovest-railways.shp nord-ovest-railways.pbf
+osmium tags-filter --overwrite -o italy-railways.pbf italy-latest.osm.pbf nw/railway=light_rail,narrow_gauge,rail,disused
+ogr2ogr -f "ESRI Shapefile" -skip italy-railways.shp italy-railways.pbf
 ```
 
-In this case only the `lines.*` files inside `nord-ovest-railways.shp` have been considered, renamed and added to the test folder.
+In this case only the `lines.*` files inside `italy-railways.shp` have been considered, renamed and added to the test folder.
+
+### Creating sea maps
+
+The polygons representing the sea have been downloaded from [https://osmdata.openstreetmap.de/data/water-polygons.html](https://osmdata.openstreetmap.de/data/water-polygons.html) (projection WGS84).
+
+Once downloaded, they have been loaded into *QGIS* in order to select only the region of interest, the *Mediterranean Sea*, uploaded into the repository.
+
+All the Shapefiles inside the `sea_input_path` directory are supposed to contains sea polygons.

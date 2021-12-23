@@ -14,9 +14,17 @@ package object exceptions {
     */
   case class MatchedRouteError(ex: Throwable)
 
+  sealed trait GeoRelationError
+
   /** Railways distance error.
     *
     * @param ex error reason.
     */
-  case class NearestRailwayError(ex: Throwable)
+  case class NearestRailwayError(ex: Throwable) extends GeoRelationError
+
+  /** Inside sea error.
+    *
+    * @param ex error reason.
+    */
+  case class InsideSeaError(ex: Throwable) extends GeoRelationError
 }

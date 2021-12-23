@@ -1,6 +1,7 @@
 package it.agilelab.gis.domain.models
 
 import CategoriesCfg.CategoryInfoCfg
+import it.agilelab.gis.core.utils.ConfigurationProperties.GEOCODE
 import pureconfig._
 import pureconfig.configurable._
 import pureconfig.ConvertHelpers._
@@ -35,7 +36,7 @@ object CategoriesCfg {
 
   def load: Try[CategoriesCfg] =
     ConfigSource.default
-      .at("osm.categories")
+      .at(s"${GEOCODE.value}.categories")
       .load[CategoriesCfg]
       .fold(
         l => Failure(new Throwable(l.toList.map(_.description).fold("")(_ ++ "\n" ++ _))),

@@ -2,7 +2,7 @@ package it.agilelab.gis.domain.loader
 
 import com.vividsolutions.jts.geom.{ Geometry, GeometryFactory }
 import it.agilelab.gis.core.loader.Loader
-import it.agilelab.gis.core.utils.{ Logger, ManagerUtils }
+import it.agilelab.gis.core.utils.{ GeocodeManagerUtils, Logger }
 import it.agilelab.gis.domain.models.{ OSMHouseNumber, OSMSmallAddressNumber, OSMStreetAndHouseNumber, OSMStreetType }
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
@@ -85,7 +85,7 @@ object OSMGenericStreetLoader extends Logger {
         KNNQueryMem.spatialQueryWithMaxDistance(
           houseNumberGeometryList,
           geometryFactory.createPoint(pt),
-          ManagerUtils.NUMBERS_MAX_DISTANCE
+          GeocodeManagerUtils.NUMBERS_MAX_DISTANCE
         )
       }.toSeq
   }

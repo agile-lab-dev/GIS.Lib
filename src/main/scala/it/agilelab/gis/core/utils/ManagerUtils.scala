@@ -1,26 +1,12 @@
 package it.agilelab.gis.core.utils
 
-object ManagerUtils {
+import java.io.File
 
+/** @author Agile Lab s.r.l.
+  */
+trait ManagerUtils {
   type Path = String
 
-  case class Paths(boundary: Array[Path], postalCodes: Array[Path], roads: Array[Path], houseNumbers: Array[Path])
-
-  case class BoundaryPathGroup(country: List[Path], region: List[Path], county: List[Path], city: List[Path])
-
-  case class CountryPathSet(
-      boundary: BoundaryPathGroup,
-      postalCodes: Array[Path],
-      roads: Array[Path],
-      houseNumbers: Array[Path],
-      railways: Array[Path]
-  )
-
-  val FOLD_CITY_ON_COUNTY = 0
-  val FOLD_COUNTY_ON_REGION = 1
-  val FOLD_REGION_ON_COUNTRY = 2
-  val DONE = 3
-
-  //maximum distance for kNN.
-  val NUMBERS_MAX_DISTANCE = 200d
+  def filterPaths(folder: File, regex: String, extension: String = "shp"): Array[Path] =
+    folder.listFiles().map(_.getAbsolutePath).filter(_.matches(s".*$regex.*.$extension"))
 }

@@ -3,7 +3,7 @@ package it.agilelab.gis.domain.loader
 import com.typesafe.config.Config
 import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.loader.Loader
-import it.agilelab.gis.domain.managers.{ CountrySettings, PathManager }
+import it.agilelab.gis.domain.managers.{ CountrySettings, GeocodePathManager }
 import it.agilelab.gis.domain.models.OSMBoundary
 import org.opengis.feature.simple.SimpleFeature
 
@@ -14,7 +14,8 @@ import scala.util.Try
   * @param config      configurations
   * @param pathManager path manager
   */
-case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: PathManager) extends Loader[OSMBoundary] {
+case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: GeocodePathManager)
+    extends Loader[OSMBoundary] {
 
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
     val countryName: String =
