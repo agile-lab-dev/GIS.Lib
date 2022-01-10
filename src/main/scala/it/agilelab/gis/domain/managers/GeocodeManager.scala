@@ -1,7 +1,6 @@
 package it.agilelab.gis.domain.managers
 
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, Point }
 import it.agilelab.gis.core.utils.{ GeocodeManagerUtils, Logger }
 import it.agilelab.gis.domain.configuration.GeocodeManagerConfiguration
 import it.agilelab.gis.domain.exceptions.ReverseGeocodingError

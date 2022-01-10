@@ -173,9 +173,9 @@ case class OSMStreetAndHouseNumber(
 
   def apply(filter: GeometryComponentFilter): Unit = getLineString.apply(filter)
 
-  override def reverseInternal(): Geometry = ???
+  override def reverseInternal(): Geometry = getLineString.reverseInternal()
 
-  override def copyInternal(): Geometry = ???
+  override def copyInternal(): Geometry = getLineString.copyInternal()
 
-  override def getTypeCode: Int = ???
+  override def getTypeCode: Int = getLineString.getTypeCode
 }

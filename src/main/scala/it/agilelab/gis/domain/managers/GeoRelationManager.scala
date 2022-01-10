@@ -1,16 +1,15 @@
 package it.agilelab.gis.domain.managers
 
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory }
 import it.agilelab.gis.core.utils.ConfigurationProperties.INDEX
 import it.agilelab.gis.core.utils.{ Configuration, Logger }
-import it.agilelab.gis.domain.configuration.GeocodeManagerConfiguration
 import it.agilelab.gis.domain.exceptions.{ InsideSeaError, NearestRailwayError }
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
 import it.agilelab.gis.domain.loader.GeoRelation
 import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
 import it.agilelab.gis.utils.ScalaUtils.recordDuration
+import org.locationtech.jts.geom.{ Coordinate, GeometryFactory, OSMSea }
 
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.util.{ Failure, Success, Try }

@@ -1,7 +1,6 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 case class OSMSea(
     polygon: Geometry,
@@ -79,4 +78,9 @@ case class OSMSea(
 
   override def getNumPoints: Int = polygon.getNumPoints
 
+  override def reverseInternal(): Geometry = this
+
+  override def copyInternal(): Geometry = this
+
+  override def getTypeCode: Int = polygon.getTypeCode
 }

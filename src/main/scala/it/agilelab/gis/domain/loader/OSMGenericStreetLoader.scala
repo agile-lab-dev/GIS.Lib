@@ -2,17 +2,11 @@ package it.agilelab.gis.domain.loader
 
 import it.agilelab.gis.core.loader.Loader
 import it.agilelab.gis.core.utils.{ GeocodeManagerUtils, Logger }
-import it.agilelab.gis.domain.models.{ OSMHouseNumber, OSMSmallAddressNumber, OSMStreetAndHouseNumber, OSMStreetType }
+import it.agilelab.gis.domain.models.OSMStreetType
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
 import org.locationtech.jts.geom
-import org.locationtech.jts.geom.{
-  Geometry,
-  GeometryFactory,
-  OSMHouseNumber,
-  OSMSmallAddressNumber,
-  OSMStreetAndHouseNumber
-}
+import org.locationtech.jts.geom._
 
 import scala.util.Try
 

@@ -1,10 +1,9 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom._
 import it.agilelab.gis.core.loader.Loader
-import it.agilelab.gis.domain.models.OSMSea
-
 import java.util
+
+import org.locationtech.jts.geom.{ Geometry, MultiPolygon, OSMSea }
 
 class OSMSeaLoader() extends Loader[OSMSea] {
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {

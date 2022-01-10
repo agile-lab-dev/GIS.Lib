@@ -76,7 +76,7 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
 
       res shouldBe a[Success[_]]
       res.get.size should be(1)
-      res.get.head.geometryLabel should be("Andorra")
+      res.get.head.geometryLabel should be("Andorra_AL2")
     }
 
   "GeometryMembershipManager.getGeoMembershipInfoOf[Point]" should
@@ -169,7 +169,7 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
 
       res shouldBe a[Success[_]]
       res.get.size shouldBe 2
-      res.get.map(_.geometryLabel) should (contain("Andorra") and contain(
+      res.get.map(_.geometryLabel) should (contain("Andorra_AL2") and contain(
         "Bosnia and Herzegovina"
       ))
     }
@@ -203,7 +203,7 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
 
       res shouldBe a[Success[_]]
       res.get.size shouldBe 2
-      res.get.map(_.geometryLabel) should (contain("Andorra_AL2") or contain(
+      res.get.map(_.geometryLabel) should (contain("Andorra_AL2_AL2") or contain(
         "Bosnia and Herzegovina"
       ))
     }
@@ -245,7 +245,7 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
 
       res shouldBe a[Success[_]]
       res.get.size shouldBe 2
-      res.get.map(_.geometryLabel) should (contain("Andorra") and contain(
+      res.get.map(_.geometryLabel) should (contain("Andorra_AL2") and contain(
         "Bosnia and Herzegovina"
       ))
     }
