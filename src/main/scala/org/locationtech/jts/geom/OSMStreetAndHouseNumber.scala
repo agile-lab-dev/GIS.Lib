@@ -1,11 +1,11 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
 /** @author Gloria Lovera
   */
 
 import com.graphhopper.util.Helper
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import it.agilelab.gis.domain.models.{ GeometryFactoryOSM, OSMStreetType }
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 object OSMStreetAndHouseNumber {
 
@@ -13,7 +13,8 @@ object OSMStreetAndHouseNumber {
       roadEL: OSMStreetAndHouseNumber,
       houseNumberEls: Seq[OSMHouseNumber]
   ): OSMStreetAndHouseNumber = {
-    val numbersEls =
+
+    val numbersEls: Seq[OSMSmallAddressNumber] =
       houseNumberEls.map(houseNumber =>
         OSMSmallAddressNumber(
           houseNumber.point.getCoordinate.x,
@@ -21,7 +22,17 @@ object OSMStreetAndHouseNumber {
           houseNumber.number
         ))
 
-    roadEL.copy(numbers = numbersEls)
+    OSMStreetAndHouseNumber(
+      roadEL.osm_id,
+      roadEL.pointsArray,
+      roadEL.street,
+      roadEL.streetType,
+      numbersEls,
+      roadEL.speedLimit,
+      roadEL.isBridge,
+      roadEL.isTunnel,
+      roadEL.oneway
+    )
   }
 }
 
@@ -162,4 +173,9 @@ case class OSMStreetAndHouseNumber(
 
   def apply(filter: GeometryComponentFilter): Unit = getLineString.apply(filter)
 
+  override def reverseInternal(): Geometry = getLineString.reverseInternal()
+
+  override def copyInternal(): Geometry = getLineString.copyInternal()
+
+  override def getTypeCode: Int = getLineString.getTypeCode
 }

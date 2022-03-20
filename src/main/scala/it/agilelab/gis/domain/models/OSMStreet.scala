@@ -1,7 +1,7 @@
 package it.agilelab.gis.domain.models
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom._
 
 object OSMStreet {}
 
@@ -79,8 +79,6 @@ case class OSMStreet(
   override def isEmpty: Boolean = multiLineString.isEmpty
 
   override def normalize(): Unit = multiLineString.normalize()
-
-  override def reverse(): Geometry = multiLineString.reverse()
 
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = multiLineString.equalsExact(other, tolerance)
 

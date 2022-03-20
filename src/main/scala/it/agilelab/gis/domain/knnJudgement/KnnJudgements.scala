@@ -1,11 +1,11 @@
 package it.agilelab.gis.domain.knnJudgement
 
-import com.vividsolutions.jts.geom.{ Envelope, Geometry, Point }
-import com.vividsolutions.jts.index.SpatialIndex
-import com.vividsolutions.jts.index.strtree.{ GeometryItemDistance, STRtree }
 import java.util.PriorityQueue
 
 import it.agilelab.gis.core.knnJudgement.GeometryDistanceComparator
+import org.locationtech.jts.geom.{ Envelope, Geometry, Point }
+import org.locationtech.jts.index.SpatialIndex
+import org.locationtech.jts.index.strtree.{ GeometryItemDistance, STRtree }
 
 import scala.reflect.ClassTag
 
@@ -17,7 +17,7 @@ object KnnJudgementUsingIndexS {
     treeIndex match {
       case tree: STRtree =>
         // TODO: test multithread
-        tree.kNearestNeighbour(queryCenter.getEnvelopeInternal, queryCenter, geomItemDist, k).asInstanceOf[Array[T]]
+        tree.nearestNeighbour(queryCenter.getEnvelopeInternal, queryCenter, geomItemDist, k).asInstanceOf[Array[T]]
       case _ => throw new Exception("[KnnJudgementUsingIndex][Call]QuadTree index doesn't support KNN search.")
     }
 

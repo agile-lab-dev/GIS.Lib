@@ -1,9 +1,9 @@
 package it.agilelab.gis.core.loader
 
-import com.vividsolutions.jts.geom._
 import it.agilelab.gis.core.model.IndexType
 import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom.Geometry
 
 /** Created by paolo on 25/01/2017.
   */

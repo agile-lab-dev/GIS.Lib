@@ -779,7 +779,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(gpsPoints).right.value
 
-    distanceBetween(result, 990d, 1000d)
+    distanceBetween(result, 950d, 1000d)
   }
 
   "test carFlagEncoderEnrich 2" should "retrieve result of map matching and distance for each type of street" taggedAs Slow in {
@@ -796,7 +796,7 @@ class GraphHopperSpec
 
     val response: MatchedRoute = manager.matchingRoute(gpsPoint).right.value
 
-    distanceBetween(response, 990d, 995d)
+    distanceBetween(response, 950d, 1000d)
   }
 
   "test carFlagEncoderEnrich 3" should "retrieve result of map matching and distance for each type of street" taggedAs Slow in {
@@ -1067,7 +1067,7 @@ class GraphHopperSpec
     result.distanceBetweenPoints.head.distance shouldBe None
     result.distanceBetweenPoints(1).distance shouldBe None
     result.distanceBetweenPoints(2).distance shouldBe None
-    distanceBetween(result.distanceBetweenPoints(3), 515d, 525d)
+    distanceBetween(result.distanceBetweenPoints(4), 1180, 1200)
   }
 
   it should "perform distance between points accurately - acerra" taggedAs Slow in {
@@ -1410,9 +1410,9 @@ class GraphHopperSpec
     distanceBetween(result.distanceBetweenPoints.head, 70d, 80d)
     result.distanceBetweenPoints(1).distance shouldBe None
     distanceBetween(result.distanceBetweenPoints(2), 360d, 370d)
-    distanceBetween(result.distanceBetweenPoints(3), 150d, 160d)
+    result.distanceBetweenPoints(3).distance shouldBe None
     result.distanceBetweenPoints(4).distance shouldBe None
-    distanceBetween(result.distanceBetweenPoints(5), 260d, 270d)
+    distanceBetween(result.distanceBetweenPoints(5), 410d, 430d)
     // ...
   }
 

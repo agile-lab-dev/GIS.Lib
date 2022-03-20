@@ -1,10 +1,17 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
 import it.agilelab.gis.core.loader.Loader
-import it.agilelab.gis.domain.models.{ HereMapsStreet, HereMapsStreetType }
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory
+import org.locationtech.jts.geom.{
+  Coordinate,
+  Geometry,
+  GeometryFactory,
+  HereMapsStreet,
+  HereMapsStreetType,
+  LineString,
+  PrecisionModel
+}
 
 import scala.io.Source
 

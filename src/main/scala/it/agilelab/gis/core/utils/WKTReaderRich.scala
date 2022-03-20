@@ -1,9 +1,10 @@
 package it.agilelab.gis.core.utils
 
-import com.vividsolutions.jts.geom.{ Coordinate, Geometry, Point }
-import com.vividsolutions.jts.io.{ ParseException, WKTReader }
+import java.io.{ StreamTokenizer, StringReader }
+
 import it.agilelab.gis.core.model.geometry.GeometryFactoryEnriched
-import java.io.{ IOException, Reader, StreamTokenizer, StringReader }
+import org.locationtech.jts.geom.{ Coordinate, Geometry, Point }
+import org.locationtech.jts.io.{ ParseException, WKTReader }
 
 import scala.util.{ Failure, Success, Try }
 

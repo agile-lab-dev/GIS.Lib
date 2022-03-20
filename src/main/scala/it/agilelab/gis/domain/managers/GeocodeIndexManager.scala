@@ -1,7 +1,6 @@
 package it.agilelab.gis.domain.managers
 
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.utils.GeocodeManagerUtils.{ BoundaryPathGroup, CountryPathSet, Path }
 import it.agilelab.gis.core.utils.{ Configuration, Logger, ObjectPickler }
 import it.agilelab.gis.domain.configuration.{ GeoRelationIndexManagerConfiguration, GeocodeIndexManagerConfiguration }
@@ -11,12 +10,14 @@ import it.agilelab.gis.domain.loader.{
   OSMHouseNumbersLoader,
   OSMPostalCodeLoader
 }
-import it.agilelab.gis.domain.models.{ OSMBoundary, OSMHouseNumber, OSMStreetAndHouseNumber }
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.utils.ScalaUtils.{ load, recordDuration }
-
 import java.io.File
 import java.util.concurrent.{ Callable, Executors }
+
+import it.agilelab.gis.domain.models.OSMBoundary
+import org.locationtech.jts.geom.{ Geometry, OSMHouseNumber, OSMStreetAndHouseNumber }
+
 import scala.reflect.ClassTag
 
 /** [[GeocodeIndexManager]] creates OSM indices, see [[GeocodeIndexSet]] for a full list of indices created.

@@ -1,11 +1,8 @@
 package it.agilelab.gis.core
 
-import com.vividsolutions.jts.geom.Coordinate
-import com.vividsolutions.jts.io.WKTWriter
-import it.agilelab.gis.core.utils.{ INVALID_WKT, WktConverter }
+import it.agilelab.gis.core.utils.WktConverter
+import org.locationtech.jts.geom.Coordinate
 import org.scalatest.{ FlatSpec, Matchers }
-
-import scala.reflect.macros.ParseException
 
 class WktConverterSuite extends FlatSpec with Matchers {
 

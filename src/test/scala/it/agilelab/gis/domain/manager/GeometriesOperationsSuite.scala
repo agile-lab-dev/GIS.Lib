@@ -1,8 +1,8 @@
 package it.agilelab.gis.domain.manager
 
-import com.vividsolutions.jts.geom.{ Coordinate, Geometry, GeometryFactory, LineString, MultiPoint, Point, Polygon }
-import com.vividsolutions.jts.util.GeometricShapeFactory
 import it.agilelab.gis.domain.managers.GeometriesOperations
+import org.locationtech.jts.geom.{ Coordinate, Geometry, GeometryFactory, LineString, MultiPoint, Point, Polygon }
+import org.locationtech.jts.util.GeometricShapeFactory
 import org.scalatest.{ FlatSpec, Matchers }
 
 class GeometriesOperationsSuite extends FlatSpec with Matchers {

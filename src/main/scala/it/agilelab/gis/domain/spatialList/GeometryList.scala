@@ -5,10 +5,10 @@
   */
 package it.agilelab.gis.domain.spatialList
 
-import com.vividsolutions.jts.geom.Geometry
-import org.wololo.jts2geojson.GeoJSONWriter
-
 import java.io.FileWriter
+
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.io.geojson.GeoJsonWriter
 
 // TODO: Auto-generated Javadoc
 
@@ -25,7 +25,7 @@ class GeometryList[T <: Geometry](polygonList: List[T]) extends SpatialList {
     * @param outputLocation the output location
     */
   def saveAsGeoJSON(outputLocation: String) {
-    val writer = new GeoJSONWriter()
+    val writer = new GeoJsonWriter()
     val fw = new FileWriter(outputLocation, true)
 
     try rawSpatialCollection.foreach { spatialObject =>

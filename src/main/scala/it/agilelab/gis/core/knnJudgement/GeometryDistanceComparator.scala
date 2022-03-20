@@ -3,7 +3,7 @@ package it.agilelab.gis.core.knnJudgement
 import java.io.Serializable
 import java.util.Comparator
 
-import com.vividsolutions.jts.geom.{ Geometry, Point }
+import org.locationtech.jts.geom.{ Geometry, Point }
 
 /** @author andreaL
   */

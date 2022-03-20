@@ -1,11 +1,12 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom.{ Geometry, GeometryFactory }
 import it.agilelab.gis.core.loader.Loader
 import it.agilelab.gis.core.utils.{ GeocodeManagerUtils, Logger }
-import it.agilelab.gis.domain.models.{ OSMHouseNumber, OSMSmallAddressNumber, OSMStreetAndHouseNumber, OSMStreetType }
+import it.agilelab.gis.domain.models.OSMStreetType
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
+import org.locationtech.jts.geom
+import org.locationtech.jts.geom._
 
 import scala.util.Try
 
@@ -38,7 +39,7 @@ trait OSMGenericStreetLoader extends Loader[OSMStreetAndHouseNumber] with Logger
     val isTunnel: Option[Boolean] = Try(fields(10).toString != "F").toOption
     //val toSpeed: Integer = fields(6).toInt
 
-    OSMStreetAndHouseNumber(
+    geom.OSMStreetAndHouseNumber(
       osm_id,
       pointsArray,
       street,

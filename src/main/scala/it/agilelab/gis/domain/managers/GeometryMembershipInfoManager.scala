@@ -1,13 +1,14 @@
 package it.agilelab.gis.domain.managers
 
-import com.vividsolutions.jts.geom.{ GeometryFactory, MultiPoint, Point }
 import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.loader.OSMCategoriesLoader
 import it.agilelab.gis.domain.managers.GeometryMembershipInfoManager.OSMGeoCategories
 import it.agilelab.gis.domain.models.CategoriesCfg.{ CategoryInfoCfg, Country => CountryCfg, Custom => CustomCfg }
 import it.agilelab.gis.domain.models.{ CategoriesCfg, CategoryMembershipOutput, InputCategory, OSMGeoCategory }
 import it.agilelab.gis.domain.models.InputCategory.{ Country, Custom }
+import org.locationtech.jts.geom.{ GeometryFactory, MultiPoint, Point }
 import scalaz.Kleisli
+
 import scala.collection.parallel.ParSeq
 import scala.util.Try
 

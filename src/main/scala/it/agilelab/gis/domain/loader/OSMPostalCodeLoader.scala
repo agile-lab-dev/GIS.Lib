@@ -1,8 +1,8 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.loader.Loader
 import it.agilelab.gis.domain.models.OSMBoundary
+import org.locationtech.jts.geom.Geometry
 import org.opengis.feature.simple.SimpleFeature
 
 case class OSMPostalCodeLoader() extends Loader[OSMBoundary] {

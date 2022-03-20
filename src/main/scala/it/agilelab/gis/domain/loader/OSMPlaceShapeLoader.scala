@@ -2,10 +2,9 @@ package it.agilelab.gis.domain.loader
 
 import java.util
 
-import com.vividsolutions.jts.geom._
 import it.agilelab.gis.core.loader.Loader
-import it.agilelab.gis.domain.models.OSMPlace
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom.{ Geometry, OSMPlace }
 
 object OSMPlaceShapeLoader {
 

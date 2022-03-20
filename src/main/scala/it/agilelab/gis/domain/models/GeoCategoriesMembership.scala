@@ -1,6 +1,6 @@
 package it.agilelab.gis.domain.models
 
-import com.vividsolutions.jts.geom.{ Geometry, MultiPolygon, Polygon }
+import org.locationtech.jts.geom.{ Geometry, MultiPolygon, Polygon }
 
 case class OSMGeoCategory(label: String, geometa: OSMGeoMetadata, multiPolygon: Geometry)
     extends MultiPolygon(

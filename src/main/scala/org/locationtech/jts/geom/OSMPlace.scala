@@ -1,18 +1,24 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import it.agilelab.gis.domain.models.OSMStreet
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
-case class OSMSea(
+case class OSMPlace(
     polygon: Geometry,
-    x: Int,
-    y: Int
+    name: String,
+    placeType: String,
+    firstField: String,
+    secondField: Int,
+    fourthField: Long
 ) extends Geometry(polygon.getFactory) {
 
   override def toString: String =
     s"""Line: ${polygon.toString}
-       |x: $x,
-       |y: $y
+       |Name: $name
+       |PlaceType: $placeType
+       |FirstField: $firstField
+       |SecondField: $secondField
+       |FourthField: $fourthField
        """.stripMargin
 
   /** As seen from class Street, the missing signatures are as follows.
@@ -38,25 +44,25 @@ case class OSMSea(
   override def getBoundary: Geometry = polygon.getBoundary
 
   override def compareToSameClass(o: scala.Any): Int = {
-    val w: OSMSea = o.asInstanceOf[OSMSea]
+    val s: OSMPlace = o.asInstanceOf[OSMPlace]
     // MD - optimized implementation
     var i: Int = 0
     var j: Int = 0
-    while (i < getNumPoints && j < w.getNumPoints) {
-      val comparison: Int = getCoordinateSequence.getCoordinate(i).compareTo(w.getCoordinateSequence.getCoordinate(j))
+    while (i < getNumPoints && j < s.getNumPoints) {
+      val comparison: Int = getCoordinateSequence.getCoordinate(i).compareTo(s.getCoordinateSequence.getCoordinate(j))
       if (comparison != 0) return comparison
       i += 1
       j += 1
     }
 
     if (i < getNumPoints) 1
-    else if (j < w.getNumPoints) -1
+    else if (j < s.getNumPoints) -1
     else 0
   }
 
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
-    val w: OSMSea = o.asInstanceOf[OSMSea]
-    comp.compare(getCoordinateSequence, w.getCoordinateSequence)
+    val s: OSMStreet = o.asInstanceOf[OSMStreet]
+    comp.compare(getCoordinateSequence, s.getCoordinateSequence)
   }
 
   override def getCoordinates: Array[Coordinate] = polygon.getCoordinates
@@ -79,4 +85,9 @@ case class OSMSea(
 
   override def getNumPoints: Int = polygon.getNumPoints
 
+  override def reverseInternal(): Geometry = polygon.reverseInternal()
+
+  override def copyInternal(): Geometry = polygon.copyInternal()
+
+  override def getTypeCode: Int = polygon.getTypeCode
 }

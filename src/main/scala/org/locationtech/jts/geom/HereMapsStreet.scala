@@ -1,7 +1,6 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 trait HereMapsStreetType {
   def value: String
@@ -142,4 +141,9 @@ case class HereMapsStreet(
 
   override def getNumPoints: Int = lineString.getNumPoints
 
+  override def reverseInternal(): Geometry = lineString.reverseInternal()
+
+  override def copyInternal(): Geometry = lineString.copyInternal()
+
+  override def getTypeCode: Int = lineString.getTypeCode
 }

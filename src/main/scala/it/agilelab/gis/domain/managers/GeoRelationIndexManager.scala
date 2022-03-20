@@ -1,7 +1,9 @@
 package it.agilelab.gis.domain.managers
 
+import java.io.File
+import java.util.concurrent.{ Callable, Executors }
+
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.utils.GeoRelationManagerUtils.{ CountryPathSet, Path }
 import it.agilelab.gis.core.utils.{ Configuration, Logger, ObjectPickler }
 import it.agilelab.gis.domain.configuration.GeoRelationIndexManagerConfiguration
@@ -9,9 +11,8 @@ import it.agilelab.gis.domain.loader._
 import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.utils.ScalaUtils.recordDuration
+import org.locationtech.jts.geom.{ Geometry, OSMSea }
 
-import java.io.File
-import java.util.concurrent.{ Callable, Executors }
 import scala.reflect.ClassTag
 
 /** [[GeoRelationIndexManager]] creates OSM indices, see [[GeoRelationIndexSet]] for a full list of indices created.
