@@ -41,4 +41,21 @@ object ConfigurationProperties {
     override lazy val value: String = "contraction_hierarchies_enabled"
   }
   case object SEA_INPUT_PATH extends ConfigurationProperties { override lazy val value: String = "sea_input_path" }
+
+  case object POI extends ConfigurationProperties { override lazy val value: String = "poi" }
+  case object FILTER_EMPTY_POI_AMENITY extends ConfigurationProperties {
+    override lazy val value: String = "filter_empty_amenity"
+  }
+  case object FILTER_EMPTY_POI_LANDUSE extends ConfigurationProperties {
+    override lazy val value: String = "filter_empty_landuse"
+  }
+  case object FILTER_EMPTY_POI_LEISURE extends ConfigurationProperties {
+    override lazy val value: String = "filter_empty_leisure"
+  }
+  case object FILTER_EMPTY_POI_NATURAL extends ConfigurationProperties {
+    override lazy val value: String = "filter_empty_natural"
+  }
+  case object FILTER_EMPTY_POI_SHOP extends ConfigurationProperties {
+    override lazy val value: String = "filter_empty_shop"
+  }
 }

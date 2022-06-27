@@ -27,4 +27,10 @@ package object exceptions {
     * @param ex error reason.
     */
   case class InsideSeaError(ex: Throwable) extends GeoRelationError
+
+  /** Point of interest search error
+    *
+    * @param ex error reason.
+    */
+  case class PoiSearchError(ex: Throwable)
 }
