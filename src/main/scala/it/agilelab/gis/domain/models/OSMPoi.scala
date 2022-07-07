@@ -1,16 +1,7 @@
 package it.agilelab.gis.domain.models
 
-import com.vividsolutions.jts.geom.{
-  Coordinate,
-  CoordinateFilter,
-  CoordinateSequenceComparator,
-  CoordinateSequenceFilter,
-  Envelope,
-  Geometry,
-  GeometryComponentFilter,
-  GeometryFilter
-}
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import com.vividsolutions.jts.geom._
 
 abstract class OSMPoi(
     geometry: Geometry,
@@ -35,14 +26,13 @@ abstract class OSMPoi(
 
   def apply(filter: GeometryComponentFilter): Unit = geometry.apply(filter)
 
-  def getCoordinateSequence: CoordinateArraySequence =
-    new CoordinateArraySequence(getCoordinates)
-
   override def computeEnvelopeInternal(): Envelope =
     if (isEmpty)
       new Envelope
     else
       getCoordinateSequence.expandEnvelope(new Envelope)
+
+  override def isEmpty: Boolean = geometry.isEmpty
 
   override def getBoundary: Geometry = geometry.getBoundary
 
@@ -63,12 +53,19 @@ abstract class OSMPoi(
     else 0
   }
 
+  def getCoordinateSequence: CoordinateArraySequence =
+    new CoordinateArraySequence(getCoordinates)
+
+  override def getCoordinates: Array[Coordinate] = geometry.getCoordinates
+
+  override def getNumPoints: Int = geometry.getNumPoints
+
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
     val w: OSMPoi = o.asInstanceOf[OSMPoi]
     comp.compare(getCoordinateSequence, w.getCoordinateSequence)
   }
 
-  override def getCoordinates: Array[Coordinate] = geometry.getCoordinates
+  override def getCentroid: Point = geometry.getCentroid
 
   override def getDimension: Int = geometry.getDimension
 
@@ -78,14 +75,10 @@ abstract class OSMPoi(
 
   override def getCoordinate: Coordinate = geometry.getCoordinate
 
-  override def isEmpty: Boolean = geometry.isEmpty
-
   override def normalize(): Unit = geometry.normalize()
 
   override def reverse(): Geometry = geometry.reverse()
 
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = geometry.equalsExact(other, tolerance)
-
-  override def getNumPoints: Int = geometry.getNumPoints
 
 }

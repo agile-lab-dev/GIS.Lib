@@ -12,6 +12,7 @@ import java.io.Serializable
 
 /** The Class SpatialList.
   */
+@SerialVersionUID(1L)
 abstract class SpatialList extends Serializable {
 
   /** The total number of records. */

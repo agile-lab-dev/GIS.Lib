@@ -20,7 +20,7 @@ class PoiManagerSpec extends FlatSpec with Matchers {
     res match {
       case Right(result) =>
         result.size should be > 0
-        result.map(i => i.amenity) should contain allOf (Some("bank"), Some("atm"), Some("recycling"), Some(
+        result.map(i => i.geometry.amenity) should contain allOf (Some("bank"), Some("atm"), Some("recycling"), Some(
           "post_office"), Some("post_box"), Some("telephone"))
       case Left(err) => fail(err.ex)
     }
@@ -48,7 +48,7 @@ class PoiManagerSpec extends FlatSpec with Matchers {
     res match {
       case Right(result) =>
         result.size should be > 0
-        result.map(i => i.landuse) should contain(Some("residential"))
+        result.map(i => i.geometry.landuse) should contain(Some("residential"))
       case Left(err) => fail(err.ex)
     }
 
@@ -75,7 +75,7 @@ class PoiManagerSpec extends FlatSpec with Matchers {
     res match {
       case Right(result) =>
         result.size should be > 0
-        result.map(i => i.leisure) should contain(Some("park"))
+        result.map(i => i.geometry.leisure) should contain(Some("park"))
       case Left(err) => fail(err.ex)
     }
 
@@ -103,7 +103,7 @@ class PoiManagerSpec extends FlatSpec with Matchers {
     res match {
       case Right(result) =>
         result.size should be > 0
-        result.map(i => i.natural) should contain(Some("tree"))
+        result.map(i => i.geometry.natural) should contain(Some("tree"))
       case Left(err) => fail(err.ex)
     }
 
@@ -130,7 +130,7 @@ class PoiManagerSpec extends FlatSpec with Matchers {
     res match {
       case Right(result) =>
         result.size should be > 0
-        result.map(i => i.shop) should contain allOf (Some("shoes"), Some("vacant"), Some("furniture"), Some(
+        result.map(i => i.geometry.shop) should contain allOf (Some("shoes"), Some("vacant"), Some("furniture"), Some(
           "tobacco"), Some("pastry"))
       case Left(err) => fail(err.ex)
     }
