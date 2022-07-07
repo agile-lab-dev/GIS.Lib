@@ -6,13 +6,12 @@
 package it.agilelab.gis.domain.spatialOperator
 
 import java.io.Serializable
-
 import com.graphhopper.util.Helper
 import com.graphhopper.util.shapes.Circle
 import com.vividsolutions.jts.geom._
 import com.vividsolutions.jts.operation.distance.DistanceOp
 import it.agilelab.gis.domain.knnJudgement._
-import it.agilelab.gis.domain.models.KnnResult
+import it.agilelab.gis.domain.models.{ GeometryWithDistance, KnnResult }
 import it.agilelab.gis.domain.spatialList.GeometryList
 
 import scala.collection.JavaConverters._
@@ -174,6 +173,45 @@ object KNNQueryMem extends Serializable {
           .toList
       } else {
         List.empty[T]
+      }
+    } else {
+      throw new IllegalArgumentException("You can't invoke raw search in SpatialQueryWithMaxDistance")
+    }
+
+  /** Spatial query returning the indexed geometries intersecting the circle having as center the queryCenter and
+    * and a radius of d meters and the corresponding distance for every geometry. Results are order by distance.
+    *
+    * @param spatialList the spatial RDD
+    * @param queryCenter the query center
+    * @param distance    the maximum distance in meters
+    * @param useIndex    the use index
+    * @return the list with the calculated distance
+    */
+  def spatialQueryWithMaxDistanceIntegrated[T <: Geometry](
+      spatialList: GeometryList[T],
+      queryCenter: Point,
+      distance: Double,
+      useIndex: Boolean = true
+  ): List[GeometryWithDistance[T]] =
+    if (useIndex) {
+      if (spatialList.index == null) {
+        throw new NullPointerException("Need to invoke buildIndex() first, indexedCollectionNoId is null")
+      }
+      if (spatialList.contains(queryCenter.getCoordinate)) {
+        val circleOfRadiusD = new Circle(queryCenter.getY, queryCenter.getX, distance)
+        val circleEnvelope = new Envelope(
+          circleOfRadiusD.getBounds.minLon,
+          circleOfRadiusD.getBounds.maxLon,
+          circleOfRadiusD.getBounds.minLat,
+          circleOfRadiusD.getBounds.maxLat
+        )
+        JudgementUsingIndexS
+          .invoke[T](spatialList.index, circleEnvelope)
+          .map(r => GeometryWithDistance(r, distanceInMeters(r, queryCenter)))
+          .sortBy(r => r.distance)
+          .toList
+      } else {
+        List.empty[GeometryWithDistance[T]]
       }
     } else {
       throw new IllegalArgumentException("You can't invoke raw search in SpatialQueryWithMaxDistance")

@@ -26,16 +26,16 @@ case class PoiManager(conf: Config) extends Logger {
   def findAmenity(
       point: IdentifiableGPSPoint,
       distanceInMeters: Double
-  ): Either[PoiSearchError, List[OSMPoiAmenity]] = {
+  ): Either[PoiSearchError, List[GeometryWithDistance[OSMPoiAmenity]]] = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
     Try(
       KNNQueryMem
-        .spatialQueryWithMaxDistance(
+        .spatialQueryWithMaxDistanceIntegrated(
           indexManager.indexSet.amenity,
           queryPoint,
           distanceInMeters
         )
-        .filter(i => !config.filterEmptyAmenity || i.amenity.exists(_.trim.nonEmpty))) match {
+        .filter(i => !config.filterEmptyAmenity || i.geometry.amenity.exists(_.trim.nonEmpty))) match {
       case Success(res) => Right(res)
       case Failure(ex) =>
         logger.error("Failed to find amenity poi", ex)
@@ -46,16 +46,16 @@ case class PoiManager(conf: Config) extends Logger {
   def findLanduse(
       point: IdentifiableGPSPoint,
       distanceInMeters: Double
-  ): Either[PoiSearchError, List[OSMPoiLanduse]] = {
+  ): Either[PoiSearchError, List[GeometryWithDistance[OSMPoiLanduse]]] = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
     Try(
       KNNQueryMem
-        .spatialQueryWithMaxDistance(
+        .spatialQueryWithMaxDistanceIntegrated(
           indexManager.indexSet.landuse,
           queryPoint,
           distanceInMeters
         )
-        .filter(i => !config.filterEmptyLanduse || i.landuse.exists(_.trim.nonEmpty))) match {
+        .filter(i => !config.filterEmptyLanduse || i.geometry.landuse.exists(_.trim.nonEmpty))) match {
       case Success(res) => Right(res)
       case Failure(ex) =>
         logger.error("Failed to find landuse poi", ex)
@@ -66,16 +66,16 @@ case class PoiManager(conf: Config) extends Logger {
   def findLeisure(
       point: IdentifiableGPSPoint,
       distanceInMeters: Double
-  ): Either[PoiSearchError, List[OSMPoiLeisure]] = {
+  ): Either[PoiSearchError, List[GeometryWithDistance[OSMPoiLeisure]]] = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
     Try(
       KNNQueryMem
-        .spatialQueryWithMaxDistance(
+        .spatialQueryWithMaxDistanceIntegrated(
           indexManager.indexSet.leisure,
           queryPoint,
           distanceInMeters
         )
-        .filter(i => !config.filterEmptyLeisure || i.leisure.exists(_.trim.nonEmpty))) match {
+        .filter(i => !config.filterEmptyLeisure || i.geometry.leisure.exists(_.trim.nonEmpty))) match {
       case Success(res) => Right(res)
       case Failure(ex) =>
         logger.error("Failed to find leisure poi", ex)
@@ -86,16 +86,16 @@ case class PoiManager(conf: Config) extends Logger {
   def findNatural(
       point: IdentifiableGPSPoint,
       distanceInMeters: Double
-  ): Either[PoiSearchError, List[OSMPoiNatural]] = {
+  ): Either[PoiSearchError, List[GeometryWithDistance[OSMPoiNatural]]] = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
     Try(
       KNNQueryMem
-        .spatialQueryWithMaxDistance(
+        .spatialQueryWithMaxDistanceIntegrated(
           indexManager.indexSet.natural,
           queryPoint,
           distanceInMeters
         )
-        .filter(i => !config.filterEmptyNatural || i.natural.exists(_.trim.nonEmpty))) match {
+        .filter(i => !config.filterEmptyNatural || i.geometry.natural.exists(_.trim.nonEmpty))) match {
       case Success(res) => Right(res)
       case Failure(ex) =>
         logger.error("Failed to find natural poi", ex)
@@ -106,16 +106,16 @@ case class PoiManager(conf: Config) extends Logger {
   def findShop(
       point: IdentifiableGPSPoint,
       distanceInMeters: Double
-  ): Either[PoiSearchError, List[OSMPoiShop]] = {
+  ): Either[PoiSearchError, List[GeometryWithDistance[OSMPoiShop]]] = {
     val queryPoint: Point = new GeometryFactory().createPoint(new Coordinate(point.lon, point.lat))
     Try(
       KNNQueryMem
-        .spatialQueryWithMaxDistance(
+        .spatialQueryWithMaxDistanceIntegrated(
           indexManager.indexSet.shop,
           queryPoint,
           distanceInMeters
         )
-        .filter(i => !config.filterEmptyShop || i.shop.exists(_.trim.nonEmpty))) match {
+        .filter(i => !config.filterEmptyShop || i.geometry.shop.exists(_.trim.nonEmpty))) match {
       case Success(res) => Right(res)
       case Failure(ex) =>
         logger.error("Failed to find shop poi", ex)
