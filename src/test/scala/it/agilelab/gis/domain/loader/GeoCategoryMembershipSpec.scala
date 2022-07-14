@@ -278,12 +278,14 @@ class GeoCategoryMembershipSpec extends FlatSpec with Matchers {
           ))
         point <- Try(new GeometryFactory().createMultiPoint(seq.toArray))
         runnable = new Runnable {
-          override def run(): Unit =
+          override def run(): Unit = {
             sut.getGeoMembershipInfoOf(
               InputCategory.Country,
               point,
               strictMembership = true
             )
+            ()
+          }
         }
       } yield runnable
 

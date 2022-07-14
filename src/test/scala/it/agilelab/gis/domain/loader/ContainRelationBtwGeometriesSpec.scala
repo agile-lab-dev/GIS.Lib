@@ -6,7 +6,7 @@ import it.agilelab.gis.domain.managers.GeocodePathManager
 import it.agilelab.gis.domain.models.OSMBoundary
 import org.scalatest.{ FeatureSpec, GivenWhenThen, Matchers }
 
-import scala.collection.JavaConversions._
+import collection.JavaConverters._
 
 class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen with Matchers {
 
@@ -19,7 +19,7 @@ class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen wi
   val rootConf: Config = ConfigFactory.load()
   val geocodeConf: Config = rootConf.getConfig("geocode")
   val indexConf: Config = geocodeConf.getConfig("index")
-  val inputPaths: Seq[String] = indexConf.getStringList("input_paths").toList
+  val inputPaths: Seq[String] = indexConf.getStringList("input_paths").asScala
   val boundaryConf: Config = indexConf.getConfig("boundary")
   val pathConf: Config = indexConf.getConfig("path")
   val pathManager: GeocodePathManager = GeocodePathManager(pathConf)

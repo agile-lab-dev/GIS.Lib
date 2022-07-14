@@ -6,7 +6,7 @@ import com.graphhopper.util.EdgeIteratorState
 import it.agilelab.gis.core.utils.Logger
 
 import java.util
-import scala.collection.JavaConversions._
+import collection.JavaConverters._
 import scala.collection.mutable
 
 /** @author andreaL
@@ -66,7 +66,7 @@ class CarFlagEncoderEnrich(speedBits: Int = 8, speedFactor: Double = 1, maxTurnC
     "steps"
   )
 
-  logger.info(highwayList.diff(defaultSpeedMap.keySet().toSeq).toString())
+  logger.info(highwayList.diff(defaultSpeedMap.keySet().asScala.toSeq).toString())
 
   highwayList.zipWithIndex.foreach { case (value, idx) =>
     highwayMap.put(value, idx)
@@ -90,7 +90,7 @@ class CarFlagEncoderEnrich(speedBits: Int = 8, speedFactor: Double = 1, maxTurnC
 
   override def handleWayTags(way: ReaderWay, allowed: Long, relationFlags: Long): Long = {
     val hwValue = getHighwayValue(way)
-    highwayEncoder.setValue(super.handleWayTags(way, allowed, relationFlags), hwValue)
+    highwayEncoder.setValue(super.handleWayTags(way, allowed, relationFlags), hwValue.toLong)
   }
 
   override def defineWayBits(index: Int, shift: Int): Int = {
@@ -112,7 +112,7 @@ class CarFlagEncoderEnrich(speedBits: Int = 8, speedFactor: Double = 1, maxTurnC
     highwayMapIndex.get(v) match {
       case Some(value) => value
       case None =>
-        logger.warn(s"Highway $v not found in ${highwayMap.mkString(",")}")
+        logger.warn(s"Highway $v not found in ${highwayMap.asScala.mkString(",")}")
         unknownHighway
     }
   }

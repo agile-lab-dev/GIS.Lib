@@ -110,9 +110,9 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet] {
       parseGeometry(geoStr.tail)
     } else {
       val cleanGeoStr = if (geoStr.head == closeStep) geoStr.tail else geoStr
-      val sepPos = cleanGeoStr.indexOf(geoSeparator)
+      val sepPos = cleanGeoStr.indexOf(geoSeparator.toString)
       if (sepPos == -1) {
-        val closePos = cleanGeoStr.indexOf(closeStep)
+        val closePos = cleanGeoStr.indexOf(closeStep.toString)
         if (closePos != -1) {
           val newField = cleanGeoStr.substring(0, closePos)
           Array(newField)

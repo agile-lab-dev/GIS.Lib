@@ -24,7 +24,7 @@ class GeometryList[T <: Geometry](polygonList: List[T]) extends SpatialList {
     *
     * @param outputLocation the output location
     */
-  def saveAsGeoJSON(outputLocation: String) {
+  def saveAsGeoJSON(outputLocation: String): Unit = {
     val writer = new GeoJSONWriter()
     val fw = new FileWriter(outputLocation, true)
 
@@ -34,16 +34,4 @@ class GeometryList[T <: Geometry](polygonList: List[T]) extends SpatialList {
     } finally fw.close()
   }
 
-  /** Minimum bounding rectangle.
-    *
-    * @return the rectangle RDD
-    */
-  def MinimumBoundingRectangle(): RectangleList = {
-
-    val rectangleList = this.rawSpatialCollection.map { spatialObject =>
-      spatialObject.asInstanceOf[Geometry].getEnvelopeInternal
-    }
-    new RectangleList(rectangleList)
-
-  }
 }

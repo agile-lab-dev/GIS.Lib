@@ -25,7 +25,7 @@ case class GraphHopperSettings(
     elevationEnabled: Boolean,
     contractionHierarchiesEnabled: Boolean,
     mapMatchingAlgorithm: AlgorithmType,
-    measurementErrorSigma: Int
+    measurementErrorSigma: Double
 )
 
 /** GraphHopperConfiguration holds [[it.agilelab.gis.domain.graphhopper.GraphHopperManager]] configurations.
@@ -67,7 +67,7 @@ object GraphHopperConfiguration extends Configuration with ValidationUtils with 
       contractionHierarchiesEnabled <- read[Boolean](conf, CONTRACTION_HIERARCHIES_ENABLED.value)
       mapMatchingAlgorithmRaw       <- read[String](conf, MAP_MATCHING_ALGORITHM.value)
       mapMatchingAlgorithm          <- tryOrLog(AlgorithmType.fromValue(mapMatchingAlgorithmRaw))
-      measurementErrorSigma         <- read[Int](conf, MEASUREMENT_ERROR_SIGMA.value)
+      measurementErrorSigma         <- read[Double](conf, MEASUREMENT_ERROR_SIGMA.value)
     } yield GraphHopperSettings(
       graphLocation,
       elevationEnabled,

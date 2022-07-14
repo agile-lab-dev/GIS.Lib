@@ -11,5 +11,6 @@ object GeoRelationManagerLoader extends Logger {
     val config = ConfigFactory.load().getConfig(GEORELATION.value)
     logger.info("GeoRelation Config {}", config)
     GeoRelationManager(config)
+    ()
   }
 }

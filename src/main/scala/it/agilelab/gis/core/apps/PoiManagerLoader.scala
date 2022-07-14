@@ -18,6 +18,7 @@ object PoiManagerLoader extends Logger with Configuration {
     }
     logger.info("PoiManager Config {}", config)
     PoiManager(config)
+    ()
   }
 
 }

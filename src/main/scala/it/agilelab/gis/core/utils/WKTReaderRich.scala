@@ -30,7 +30,7 @@ class WKTReaderRich extends WKTReader {
   override def read(wellKnownText: String): Geometry = {
     val reader = new StringReader(wellKnownText)
     val tokenizer = new StreamTokenizer(reader)
-    try getNextWord(tokenizer) match {
+    getNextWord(tokenizer) match {
       case Circle | CIRCLE | LC_circle =>
         readCircle(tokenizer) match {
           case Success(geom)      => geom
@@ -69,17 +69,16 @@ class WKTReaderRich extends WKTReader {
     token match {
       case StreamTokenizer.TT_WORD =>
         val word = tokenizer.sval
-        if (word.equalsIgnoreCase(Empty)) return Empty
-        return word
+        if (word.equalsIgnoreCase(Empty)) Empty
+        else word
       case '(' =>
-        return L_Paren
+        L_Paren
       case ')' =>
-        return R_Paren
+        R_Paren
       case ',' =>
-        return Comma
+        Comma
+      case _ => throw new ParseException("Circle wrongly formatted: cannot read next word")
     }
-    throw new ParseException("Circle wrongly formatted: cannot read next word")
-    null
   }
 
   /** @param tokenizer
@@ -103,9 +102,8 @@ class WKTReaderRich extends WKTReader {
     */
   private def getNextEmptyOrOpener(tokenizer: StreamTokenizer): String = {
     val nextWord = getNextWord(tokenizer)
-    if (nextWord == Empty || nextWord == L_Paren) return nextWord
-    throw new ParseException(Empty + " or " + L_Paren + " missing")
-    null
+    if (nextWord == Empty || nextWord == L_Paren) nextWord
+    else throw new ParseException(Empty + " or " + L_Paren + " missing")
   }
 
   /** @param tokenizer
@@ -113,9 +111,8 @@ class WKTReaderRich extends WKTReader {
     */
   private def getNextEmptyOrCloser(tokenizer: StreamTokenizer): String = {
     val nextWord = getNextWord(tokenizer)
-    if (nextWord == Empty || nextWord == R_Paren || nextWord == Comma) return nextWord
-    throw new ParseException(Empty + " or " + R_Paren + " missing")
-    null
+    if (nextWord == Empty || nextWord == R_Paren || nextWord == Comma) nextWord
+    else throw new ParseException(Empty + " or " + R_Paren + " missing")
   }
 
   /** @param tokenizer
