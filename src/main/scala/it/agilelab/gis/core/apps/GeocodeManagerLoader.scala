@@ -11,5 +11,6 @@ object GeocodeManagerLoader extends Logger {
     val config = ConfigFactory.load().getConfig(GEOCODE.value)
     logger.info("Geocode Config {}", config)
     GeocodeManager(config)
+    ()
   }
 }

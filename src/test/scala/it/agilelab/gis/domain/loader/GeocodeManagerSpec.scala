@@ -1,12 +1,12 @@
 package it.agilelab.gis.domain.loader
 
-import com.typesafe.config.{ Config, ConfigFactory }
+import com.typesafe.config.{Config, ConfigFactory}
 import it.agilelab.gis.core.utils.ConfigurationProperties.GEOCODE
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
-import it.agilelab.gis.domain.loader.ReverseGeocoder.{ HouseNumbers, Streets }
+import it.agilelab.gis.domain.loader.ReverseGeocoder.{HouseNumbers, Streets}
 import it.agilelab.gis.domain.managers.GeocodeManager
 import it.agilelab.gis.domain.models.ReverseGeocodingResponse
-import org.scalatest.{ BeforeAndAfterAll, EitherValues, FlatSpec, Matchers }
+import org.scalatest.{Assertion, BeforeAndAfterAll, EitherValues, FlatSpec, Matchers}
 
 class GeocodeManagerSpec extends FlatSpec with Matchers with EitherValues with BeforeAndAfterAll {
 
@@ -220,7 +220,7 @@ class GeocodeManagerSpec extends FlatSpec with Matchers with EitherValues with B
     reverseGeocodeTurin(managerIndexRetriever)
   }
 
-  private def reverseGeocodeTurin(geocodeManager: GeocodeManager): Unit = {
+  private def reverseGeocodeTurin(geocodeManager: GeocodeManager): Assertion = {
     val id = "abc"
     val point = IdentifiableGPSPoint(id, 45.068032, 7.643780, None, System.currentTimeMillis())
 

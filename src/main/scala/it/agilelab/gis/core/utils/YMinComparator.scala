@@ -1,40 +1,22 @@
 package it.agilelab.gis.core.utils
 
-import java.io.Serializable
-import java.util.Comparator
+import com.vividsolutions.jts.geom.Geometry
 
-import com.vividsolutions.jts.geom.{ Envelope, Geometry }
-import it.agilelab.gis.core.model.geometry.Circle
+import java.io.Serializable
 
 /** @author andreaL
   */
-class YMinComparator extends Ordering[Any] with Serializable {
+class YMinComparator extends Ordering[Geometry] with Serializable {
 
-  /* (non-Javadoc)
-   * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-   */
-  override def compare(spatialObject1: Any, spatialObject2: Any): Int =
-    spatialObject1 match {
+  override def compare(spatialObject1: Geometry, spatialObject2: Geometry): Int =
+    if (
+      spatialObject1.getEnvelopeInternal.getMinY >
+        spatialObject2.getEnvelopeInternal.getMinY
+    ) 1
+    else if (
+      spatialObject1.getEnvelopeInternal.getMinY <
+        spatialObject2.getEnvelopeInternal.getMinY
+    ) -1
+    else 0
 
-      case envelope: Envelope =>
-        if (envelope.getMinY > spatialObject2.asInstanceOf[Envelope].getMinY) 1
-        else if (envelope.getMinY < spatialObject2.asInstanceOf[Envelope].getMinY) -1
-        else 0
-
-      case circle: Circle =>
-        if (circle.getMBR.getMinY > spatialObject2.asInstanceOf[Circle].getMBR.getMinY) 1
-        else if (circle.getMBR.getMinY < spatialObject2.asInstanceOf[Circle].getMBR.getMinY) -1
-        else 0
-
-      case _ =>
-        if (
-          spatialObject1.asInstanceOf[Geometry].getEnvelopeInternal.getMinY >
-            spatialObject2.asInstanceOf[Geometry].getEnvelopeInternal.getMinY
-        ) 1
-        else if (
-          spatialObject1.asInstanceOf[Geometry].getEnvelopeInternal.getMinY <
-            spatialObject2.asInstanceOf[Geometry].getEnvelopeInternal.getMinY
-        ) -1
-        else 0
-    }
 }

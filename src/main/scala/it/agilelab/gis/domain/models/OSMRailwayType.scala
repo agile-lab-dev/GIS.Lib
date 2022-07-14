@@ -5,18 +5,6 @@ trait OSMRailwayType {
 }
 
 object OSMRailwayType {
-  case object ABANDONED extends OSMRailwayType { lazy val value = "abandoned" }
-  case object CONSTRUCTION extends OSMRailwayType { lazy val value = "construction" }
-  case object FUNICULAR extends OSMRailwayType { lazy val value = "funicular" }
-  case object LIGHT_RAIL extends OSMRailwayType { lazy val value = "light_rail" }
-  case object MINIATURE extends OSMRailwayType { lazy val value = "miniature" }
-  case object MONORAIL extends OSMRailwayType { lazy val value = "monorail" }
-  case object NARROW_GAUGE extends OSMRailwayType { lazy val value = "narrow_gauge" }
-  case object PRESERVED extends OSMRailwayType { lazy val value = "preserved" }
-  case object RAIL extends OSMRailwayType { lazy val value = "rail" }
-  case object SUBWAY extends OSMRailwayType { lazy val value = "subway" }
-  case object TRAM extends OSMRailwayType { lazy val value = "tram" }
-  case object ND extends OSMRailwayType { lazy val value = "N.D" }
 
   /** Possible values of railway type */
   val values = Seq(
@@ -50,4 +38,28 @@ object OSMRailwayType {
       case TRAM.value         => TRAM
       case _                  => OSMRailwayType.ND
     }
+
+  case object ABANDONED extends OSMRailwayType { lazy val value = "abandoned" }
+
+  case object CONSTRUCTION extends OSMRailwayType { lazy val value = "construction" }
+
+  case object FUNICULAR extends OSMRailwayType { lazy val value = "funicular" }
+
+  case object LIGHT_RAIL extends OSMRailwayType { lazy val value = "light_rail" }
+
+  case object MINIATURE extends OSMRailwayType { lazy val value = "miniature" }
+
+  case object MONORAIL extends OSMRailwayType { lazy val value = "monorail" }
+
+  case object NARROW_GAUGE extends OSMRailwayType { lazy val value = "narrow_gauge" }
+
+  case object PRESERVED extends OSMRailwayType { lazy val value = "preserved" }
+
+  case object RAIL extends OSMRailwayType { lazy val value = "rail" }
+
+  case object SUBWAY extends OSMRailwayType { lazy val value = "subway" }
+
+  case object TRAM extends OSMRailwayType { lazy val value = "tram" }
+
+  case object ND extends OSMRailwayType { lazy val value = "N.D" }
 }

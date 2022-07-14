@@ -1,7 +1,7 @@
 package it.agilelab.gis.core.utils
 
 import com.typesafe.config.Config
-import scala.collection.JavaConversions._
+import collection.JavaConverters._
 
 trait ConfigurationReader[T] {
   def read(config: Config, key: String): T
@@ -29,6 +29,6 @@ object ConfigurationReader {
   }
 
   implicit object StringListConfigurationReader extends ConfigurationReader[List[String]] {
-    override def read(config: Config, key: String): List[String] = config.getStringList(key).toList
+    override def read(config: Config, key: String): List[String] = config.getStringList(key).asScala.toList
   }
 }

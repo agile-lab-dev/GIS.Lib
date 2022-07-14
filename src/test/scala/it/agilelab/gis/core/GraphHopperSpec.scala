@@ -649,7 +649,7 @@ class GraphHopperSpec
 
     val response = manager.matchingRoute(gpsPoint).right.value
 
-    response.points should have length (response.distanceBetweenPoints.length + 1)
+    response.points.length should be (response.distanceBetweenPoints.length + 1)
 
     distanceBetween(response, 4000d, 4500d)
   }
@@ -756,7 +756,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(gpsPoints).right.value
 
-    result.distanceBetweenPoints should have length result.points.length - 1
+    result.distanceBetweenPoints.length should be (result.points.length - 1)
   }
 
   it should "return distance between points on a matchable route" taggedAs Slow in { // DONE
@@ -829,7 +829,7 @@ class GraphHopperSpec
     val lats = points.head
     val lots = points.last
 
-    lats should have length lots.length
+    lats.length should be (lots.length)
 
     val gpsPoints = lats.zip(lots).zipWithIndex.map { case ((lat, lon), idx) => GPSPoint(lat, lon, None, idx.toLong) }
 
@@ -1060,7 +1060,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(gpsPoints).right.value
 
-    result.distanceBetweenPoints should have length result.points.length - 1
+    result.distanceBetweenPoints.length should be (result.points.length - 1)
 
     distanceBetween(result, 24900d, 24950d)
 
@@ -1112,7 +1112,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(points).right.value
 
-    result.distanceBetweenPoints should have length result.points.length - 1
+    result.distanceBetweenPoints.length should be (result.points.length - 1)
 
     distanceBetween(result, 1050, 1150d)
 
@@ -1191,7 +1191,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(points).right.value
 
-    result.distanceBetweenPoints should have length result.points.length - 1
+    result.distanceBetweenPoints.length should be (result.points.length - 1)
 
     distanceBetween(result, 2300d, 2500d)
 
@@ -1403,7 +1403,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(points).right.value
 
-    result.distanceBetweenPoints should have length result.points.length - 1
+    result.distanceBetweenPoints.length should be (result.points.length - 1)
 
     distanceBetween(result, 9900d, 10100d)
 
@@ -2207,8 +2207,8 @@ class GraphHopperSpec
       .map { case (p, idx) => new GPSPoint(p(1).toDouble, p(2).toDouble, None, idx.toLong) }
       .toList
 
-  private def distanceBetween(r: MatchedRoute, min: Double, max: Double): Unit = {
-    r.distanceBetweenPoints should have size r.points.size - 1
+  private def distanceBetween(r: MatchedRoute, min: Double, max: Double): Assertion = {
+    r.distanceBetweenPoints.length should be (r.points.size - 1)
 
     r.length.value should be <= max
     r.length.value should be >= min
@@ -2224,7 +2224,7 @@ class GraphHopperSpec
     diffTime shouldBe times
   }
 
-  private def distanceBetween(r: DistancePoint, min: Double, max: Double): Unit = {
+  private def distanceBetween(r: DistancePoint, min: Double, max: Double): Assertion = {
     r.distance.get should be <= max
     r.distance.get should be >= min
 

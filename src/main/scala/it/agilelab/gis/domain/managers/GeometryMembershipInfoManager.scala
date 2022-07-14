@@ -5,21 +5,29 @@ import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.loader.OSMCategoriesLoader
 import it.agilelab.gis.domain.managers.GeometryMembershipInfoManager.OSMGeoCategories
 import it.agilelab.gis.domain.models.CategoriesCfg.{ CategoryInfoCfg, Country => CountryCfg, Custom => CustomCfg }
-import it.agilelab.gis.domain.models.{ CategoriesCfg, CategoryMembershipOutput, InputCategory, OSMGeoCategory }
 import it.agilelab.gis.domain.models.InputCategory.{ Country, Custom }
+import it.agilelab.gis.domain.models.{ CategoriesCfg, CategoryMembershipOutput, InputCategory, OSMGeoCategory }
 import scalaz.Kleisli
+
 import scala.collection.parallel.ParSeq
 import scala.util.Try
 
 class GeometryMembershipInfoManager private (categoriesInfo: Map[InputCategory, OSMGeoCategories]) {
 
   private val geoFactory = new GeometryFactory()
+  private val toCategoryMembershipOut: OSMGeoCategory => CategoryMembershipOutput =
+    cat => CategoryMembershipOutput(cat.label, cat.geometa.description, cat.geometa.map)
 
   def getGeoMembershipInfoOf(category: InputCategory, geometry: Point): Seq[CategoryMembershipOutput] =
     findAll(setupCategory(category))(_.covers(geometry))
 
   def getFirstGeoMembershipInfoOf(category: InputCategory, geometry: Point): Option[CategoryMembershipOutput] =
     findFirst(setupCategory(category))(_.covers(geometry))
+
+  private def findFirst(categories: ParSeq[OSMGeoCategory])(matcher: OSMGeoCategory => Boolean) =
+    categories
+      .find(matcher)
+      .map(toCategoryMembershipOut)
 
   def getGeoMembershipInfoOf(
       category: InputCategory,
@@ -38,18 +46,10 @@ class GeometryMembershipInfoManager private (categoriesInfo: Map[InputCategory, 
       .map(toCategoryMembershipOut)
       .toList
 
-  private def findFirst(categories: ParSeq[OSMGeoCategory])(matcher: OSMGeoCategory => Boolean) =
-    categories
-      .find(matcher)
-      .map(toCategoryMembershipOut)
-
   private def setupCategory(category: InputCategory): ParSeq[OSMGeoCategory] =
     categoriesInfo
       .getOrElse(category, Seq.empty)
       .par
-
-  private val toCategoryMembershipOut: OSMGeoCategory => CategoryMembershipOutput =
-    cat => CategoryMembershipOutput(cat.label, cat.geometa.description, cat.geometa.map)
 
 }
 
@@ -77,7 +77,7 @@ object GeometryMembershipInfoManager extends Logger {
             acc <- tryAcc
             x <- cfg match {
               case cfg: CountryCfg => groupByCategory(cfg, Country)
-              case cfg: Custom     => groupByCategory(cfg, Custom(cfg.label))
+              case cfg: CustomCfg  => groupByCategory(cfg, Custom(cfg.label))
             }
           } yield acc ++ x
         }

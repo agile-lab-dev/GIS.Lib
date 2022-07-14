@@ -11,12 +11,12 @@ import it.agilelab.gis.domain.exceptions.MatchedRouteError
 import it.agilelab.gis.domain.graphhopper.GraphHopperManager._
 import it.agilelab.gis.domain.loader.RouteMatcher
 
-import scala.collection.JavaConversions._
+import collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.util.{ Failure, Success, Try }
 
-/** GraphHopperManager is an implementation of a [[RouteMatcher]].
+/** GraphHopperManager is an implementation of a RouteMatcher.
   * @param conf configuration for this [[GraphHopperManager]], see [[GraphHopperConfiguration]] for more information.
   */
 case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
@@ -25,15 +25,15 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
   override def matchingRoute(gpsPoints: Seq[GPSPoint]): Either[MatchedRouteError, MatchedRoute] =
     Try {
-      val calcRoute: MatchResult = graphConf.mapMatching.doWork(gpsPoints.map(_.toGPXEntry))
+      val calcRoute: MatchResult = graphConf.mapMatching.doWork(gpsPoints.map(_.toGPXEntry).asJava)
 
       val length = calcRoute.getMatchLength
       val time = calcRoute.getMatchMillis
-      val routeTypesKm: Map[String, Double] = getRouteTypesKm(getMappedEdges(calcRoute.getEdgeMatches))
-      val edges: List[Edge] = getEdges(calcRoute.getEdgeMatches)
+      val routeTypesKm: Map[String, Double] = getRouteTypesKm(getMappedEdges(calcRoute.getEdgeMatches.asScala))
+      val edges: List[Edge] = getEdges(calcRoute.getEdgeMatches.asScala)
       val points: Seq[TracePoint] = getTracePoints(edges, graphConf.encoder)
 
-      if (calcRoute.getMergedPath.calcEdges().nonEmpty) {
+      if (!calcRoute.getMergedPath.calcEdges().isEmpty) {
         MatchedRoute(
           points,
           Some(length),
@@ -87,12 +87,11 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
     // retrieve details for each pair of points
     val details = calcRoute.getMergedPath
       .calcDetails(
-        List("details"),
+        List("details").asJava,
         new CustomPathDetailsBuilderFactory(typeOfRouteFunc = edge => typeOfRoute(edge, graphConf.encoder)),
         0)
       .get("details")
-      .toList
-      .toBuffer
+      .asScala
 
     // Assign at each edge a set of details, so that we know how long the edge is.
     //
@@ -197,7 +196,7 @@ object GraphHopperManager {
   }
 
   private def getEdges(edges: Seq[EdgeMatch]): List[Edge] =
-    edges.toList.flatMap(edge => edge.getGpxExtensions.map(item => Edge(edge = edge, item = item)))
+    edges.toList.flatMap(edge => edge.getGpxExtensions.asScala.map(item => Edge(edge = edge, item = item)))
 
   private def getTracePoints(edges: List[Edge], encoder: CarFlagEncoderEnrich) =
     edges.map(edge => createTracePoint(edge.edge, edge.item, encoder))

@@ -23,3 +23,5 @@ buildNumber.properties
 src/test/resources/osm/maps-index/
 src/test/resources/graphHopper/
 src/test/resources/graphHopperSource/italy-latest.osm.pbf
+
+.bsp/
