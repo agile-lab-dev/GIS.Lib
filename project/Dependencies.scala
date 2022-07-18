@@ -18,8 +18,8 @@ trait Dependencies {
       ExclusionRule(organization = "com.fasterxml.jackson.core", name = "jackson-core")
     ),
     "com.graphhopper" % "graphhopper-core" % "0.11.0" exclude ("com.vividsolutions", "jts-core"),
-    "com.graphhopper" % "graphhopper-reader-osm" % "0.11.0",
-    "com.graphhopper" % "graphhopper-map-matching-core" % "0.11.0-4",
+    "com.graphhopper" % "graphhopper-reader-osm" % "0.11.0" exclude ("com.vividsolutions", "jts-core"),
+    "com.graphhopper" % "graphhopper-map-matching-core" % "0.11.0-4" exclude ("com.vividsolutions", "jts-core"),
     "org.scalatest" %% "scalatest" % "3.0.4" % Test,
     "org.apache.xmlgraphics" % "xmlgraphics-commons" % "2.6" exclude ("commons-logging", "commons-logging")
   )

@@ -7,11 +7,16 @@ import com.typesafe.config.Config
 import it.agilelab.gis.core.encoder.CarFlagEncoderEnrich
 import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.configuration.GraphHopperConfiguration
-import it.agilelab.gis.domain.exceptions.MatchedRouteError
+import it.agilelab.gis.domain.exceptions.{
+  GenericMatchedRouteError,
+  MatchedRouteError,
+  NotRecoverableBrokenSequenceRouteError,
+  RecoverableBrokenSequenceRouteError
+}
 import it.agilelab.gis.domain.graphhopper.GraphHopperManager._
 import it.agilelab.gis.domain.loader.RouteMatcher
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.util.{ Failure, Success, Try }
@@ -68,9 +73,16 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
       }
     } match {
       case Success(route) => Right(route)
+      case Failure(ex) if ex.getMessage.startsWith("Sequence is broken for submitted track") =>
+        logger.error("Failed to match route due to a broken sequence", ex)
+        val oPoint = extractObservationPoint(ex.getMessage)
+        oPoint match {
+          case Some(point) => Left(RecoverableBrokenSequenceRouteError(ex, point))
+          case None        => Left(NotRecoverableBrokenSequenceRouteError(ex))
+        }
       case Failure(ex) =>
         logger.error("Failed to match route", ex)
-        Left(MatchedRouteError(ex))
+        Left(GenericMatchedRouteError(ex))
     }
 
   /** Get distances between every pair of neighbour point of the trip.
@@ -169,6 +181,28 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
         acc :+ elem
       }
     }
+
+  private def extractObservationPoint(s: String): Option[GPSPoint] = {
+    val pattern = """observation:(\S+),(\S+),(\S+),\s*(\d+)""".r
+    pattern.findFirstMatchIn(s) match {
+      case Some(m) =>
+        Try(
+          GPSPoint(
+            m.group(1).toDouble,
+            m.group(2).toDouble,
+            if (m.group(3).toDouble.isNaN) None else Some(m.group(3).toDouble),
+            m.group(4).toLong)) match {
+          case Failure(ex) =>
+            logger.warn(s"Error while creating observation point from message '$s'", ex)
+            None
+          case Success(value) => Some(value)
+        }
+      case None =>
+        logger.warn("Failed to extract observation point from message '{}' using regex", s)
+        None
+    }
+  }
+
 }
 
 object GraphHopperManager {
@@ -189,11 +223,6 @@ object GraphHopperManager {
     mappedEdges
       .groupBy { case (highway, _) => highway }
       .map { case (highway, distances) => (highway, distances.map { case (_, distance) => distance }.sum) }
-
-  private def emptyToNone(s: String): Option[String] = s match {
-    case s if s.trim.isEmpty => None
-    case s: String           => Some(s)
-  }
 
   private def getEdges(edges: Seq[EdgeMatch]): List[Edge] =
     edges.toList.flatMap(edge => edge.getGpxExtensions.asScala.map(item => Edge(edge = edge, item = item)))
@@ -218,4 +247,9 @@ object GraphHopperManager {
 
   private def typeOfRoute(edge: EdgeIteratorState, encoder: CarFlagEncoderEnrich): Option[String] =
     emptyToNone(encoder.getHighwayAsString(edge))
+
+  private def emptyToNone(s: String): Option[String] = s match {
+    case s if s.trim.isEmpty => None
+    case s: String           => Some(s)
+  }
 }
