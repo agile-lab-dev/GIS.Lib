@@ -1,6 +1,16 @@
 package it.agilelab.gis.domain
 
+import it.agilelab.gis.domain.graphhopper.GPSPoint
+
 package object exceptions {
+
+  /** Matcher route error.
+    */
+  sealed trait MatchedRouteError {
+    val ex: Throwable
+  }
+
+  sealed trait GeoRelationError
 
   /** Reverse geocoding error.
     *
@@ -8,13 +18,24 @@ package object exceptions {
     */
   case class ReverseGeocodingError(ex: Throwable)
 
-  /** Matcher route error.
+  /** Recoverable broken sequence error
+    *
+    * @param ex error reason.
+    * @param observation the point that caused the error
+    */
+  case class RecoverableBrokenSequenceRouteError(ex: Throwable, observation: GPSPoint) extends MatchedRouteError
+
+  /** Not recoverable broken sequence error
     *
     * @param ex error reason.
     */
-  case class MatchedRouteError(ex: Throwable)
+  case class NotRecoverableBrokenSequenceRouteError(ex: Throwable) extends MatchedRouteError
 
-  sealed trait GeoRelationError
+  /** Generic map matching error
+    *
+    * @param ex error reason.
+    */
+  case class GenericMatchedRouteError(ex: Throwable) extends MatchedRouteError
 
   /** Railways distance error.
     *

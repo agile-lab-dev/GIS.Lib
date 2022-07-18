@@ -3,6 +3,7 @@ package it.agilelab.gis.core
 import com.typesafe.config.{ Config, ConfigFactory }
 import it.agilelab.gis.core.apps.ConverterFromOSMToGraphHopperMap
 import it.agilelab.gis.core.utils.Logger
+import it.agilelab.gis.domain.exceptions.RecoverableBrokenSequenceRouteError
 import it.agilelab.gis.domain.graphhopper._
 import org.scalatest._
 import org.scalatest.tagobjects.Slow
@@ -649,7 +650,7 @@ class GraphHopperSpec
 
     val response = manager.matchingRoute(gpsPoint).right.value
 
-    response.points.length should be (response.distanceBetweenPoints.length + 1)
+    response.points.length should be(response.distanceBetweenPoints.length + 1)
 
     distanceBetween(response, 4000d, 4500d)
   }
@@ -756,7 +757,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(gpsPoints).right.value
 
-    result.distanceBetweenPoints.length should be (result.points.length - 1)
+    result.distanceBetweenPoints.length should be(result.points.length - 1)
   }
 
   it should "return distance between points on a matchable route" taggedAs Slow in { // DONE
@@ -829,7 +830,7 @@ class GraphHopperSpec
     val lats = points.head
     val lots = points.last
 
-    lats.length should be (lots.length)
+    lats.length should be(lots.length)
 
     val gpsPoints = lats.zip(lots).zipWithIndex.map { case ((lat, lon), idx) => GPSPoint(lat, lon, None, idx.toLong) }
 
@@ -1060,7 +1061,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(gpsPoints).right.value
 
-    result.distanceBetweenPoints.length should be (result.points.length - 1)
+    result.distanceBetweenPoints.length should be(result.points.length - 1)
 
     distanceBetween(result, 24900d, 24950d)
 
@@ -1112,7 +1113,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(points).right.value
 
-    result.distanceBetweenPoints.length should be (result.points.length - 1)
+    result.distanceBetweenPoints.length should be(result.points.length - 1)
 
     distanceBetween(result, 1050, 1150d)
 
@@ -1191,7 +1192,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(points).right.value
 
-    result.distanceBetweenPoints.length should be (result.points.length - 1)
+    result.distanceBetweenPoints.length should be(result.points.length - 1)
 
     distanceBetween(result, 2300d, 2500d)
 
@@ -1403,7 +1404,7 @@ class GraphHopperSpec
 
     val result = manager.matchingRoute(points).right.value
 
-    result.distanceBetweenPoints.length should be (result.points.length - 1)
+    result.distanceBetweenPoints.length should be(result.points.length - 1)
 
     distanceBetween(result, 9900d, 10100d)
 
@@ -2197,6 +2198,29 @@ class GraphHopperSpec
     distanceBetween(res, 30000, 31000)
   }
 
+  "trip with a broken sequence" should "return a left with BrokenSequenceRouteError" in {
+    val points = csvToPoints(
+      """
+        |1550840076000000, 45.46615, 9.18700
+        |1550840222000000, 45.46608, 9.18643
+        |1550840322000000, 45.46592, 9.1845
+        |1550840484000000, 45.46686, 9.18524
+        |""".stripMargin
+    )
+
+    val res = manager.matchingRoute(points)
+    val bse = res.left.value
+    bse match {
+      case RecoverableBrokenSequenceRouteError(_, observation) =>
+        observation.lat shouldBe 45.46686
+        observation.lon shouldBe 9.18524
+        observation.alt shouldBe None
+        observation.time shouldBe 3
+      case _ =>
+        fail("Expected RecoverableBrokenSequenceRouteError")
+    }
+  }
+
   private def csvToPoints(points: String): Seq[GPSPoint] =
     points.stripMargin.lines
       .map(_.trim)
@@ -2208,7 +2232,7 @@ class GraphHopperSpec
       .toList
 
   private def distanceBetween(r: MatchedRoute, min: Double, max: Double): Assertion = {
-    r.distanceBetweenPoints.length should be (r.points.size - 1)
+    r.distanceBetweenPoints.length should be(r.points.size - 1)
 
     r.length.value should be <= max
     r.length.value should be >= min
