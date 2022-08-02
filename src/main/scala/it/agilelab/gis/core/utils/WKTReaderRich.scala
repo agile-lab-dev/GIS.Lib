@@ -1,10 +1,10 @@
 package it.agilelab.gis.core.utils
 
-import com.vividsolutions.jts.geom.{ Coordinate, Geometry, Point }
-import com.vividsolutions.jts.io.{ ParseException, WKTReader }
 import it.agilelab.gis.core.model.geometry.GeometryFactoryEnriched
-import java.io.{ IOException, Reader, StreamTokenizer, StringReader }
+import org.locationtech.jts.geom.{ Coordinate, Geometry, Point }
+import org.locationtech.jts.io.{ ParseException, WKTReader }
 
+import java.io.{ StreamTokenizer, StringReader }
 import scala.util.{ Failure, Success, Try }
 
 /** Extension of vividsolution WKTReader
@@ -62,26 +62,6 @@ class WKTReaderRich extends WKTReader {
     }
 
   /** @param tokenizer
-    * @return String with the parsed content
-    */
-  private def getNextWord(tokenizer: StreamTokenizer): String = {
-    val token = tokenizer.nextToken
-    token match {
-      case StreamTokenizer.TT_WORD =>
-        val word = tokenizer.sval
-        if (word.equalsIgnoreCase(Empty)) Empty
-        else word
-      case '(' =>
-        L_Paren
-      case ')' =>
-        R_Paren
-      case ',' =>
-        Comma
-      case _ => throw new ParseException("Circle wrongly formatted: cannot read next word")
-    }
-  }
-
-  /** @param tokenizer
     * @return create a Point starting from parsed wkt string
     */
   private def readPointText(tokenizer: StreamTokenizer): Option[Point] = {
@@ -107,6 +87,17 @@ class WKTReaderRich extends WKTReader {
   }
 
   /** @param tokenizer
+    * @return Double if next chars in parsed string are numbers
+    */
+  private def getNextNumber(tokenizer: StreamTokenizer): Double = {
+    val number = tokenizer.nextToken
+    number match {
+      case StreamTokenizer.TT_NUMBER => tokenizer.nval
+      case _                         => throw new ParseException("Invalid symbol: " + tokenizer.sval)
+    }
+  }
+
+  /** @param tokenizer
     * @return string if it is an empty string or ')'
     */
   private def getNextEmptyOrCloser(tokenizer: StreamTokenizer): String = {
@@ -116,13 +107,22 @@ class WKTReaderRich extends WKTReader {
   }
 
   /** @param tokenizer
-    * @return Double if next chars in parsed string are numbers
+    * @return String with the parsed content
     */
-  private def getNextNumber(tokenizer: StreamTokenizer): Double = {
-    val number = tokenizer.nextToken
-    number match {
-      case StreamTokenizer.TT_NUMBER => tokenizer.nval
-      case _                         => throw new ParseException("Invalid symbol: " + tokenizer.sval)
+  private def getNextWord(tokenizer: StreamTokenizer): String = {
+    val token = tokenizer.nextToken
+    token match {
+      case StreamTokenizer.TT_WORD =>
+        val word = tokenizer.sval
+        if (word.equalsIgnoreCase(Empty)) Empty
+        else word
+      case '(' =>
+        L_Paren
+      case ')' =>
+        R_Paren
+      case ',' =>
+        Comma
+      case _ => throw new ParseException("Circle wrongly formatted: cannot read next word")
     }
   }
 }

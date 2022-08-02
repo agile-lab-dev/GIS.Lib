@@ -1,11 +1,11 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
 /** @author Gloria Lovera
   */
 
 import com.graphhopper.util.Helper
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import it.agilelab.gis.domain.models.{ GeometryFactoryOSM, OSMStreetType }
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 object OSMStreetAndHouseNumber {
 
@@ -13,7 +13,7 @@ object OSMStreetAndHouseNumber {
       roadEL: OSMStreetAndHouseNumber,
       houseNumberEls: Seq[OSMHouseNumber]
   ): OSMStreetAndHouseNumber = {
-    val numbersEls =
+    val numbersEls: Seq[OSMSmallAddressNumber] =
       houseNumberEls.map(houseNumber =>
         OSMSmallAddressNumber(
           houseNumber.point.getCoordinate.x,
@@ -21,7 +21,17 @@ object OSMStreetAndHouseNumber {
           houseNumber.number
         ))
 
-    roadEL.copy(numbers = numbersEls)
+    OSMStreetAndHouseNumber(
+      roadEL.osm_id,
+      roadEL.pointsArray,
+      roadEL.street,
+      roadEL.streetType,
+      numbersEls,
+      roadEL.speedLimit,
+      roadEL.isBridge,
+      roadEL.isTunnel,
+      roadEL.oneway
+    )
   }
 }
 
@@ -57,6 +67,9 @@ case class OSMStreetAndHouseNumber(
       (getCoordinates.map(p1 => Helper.DIST_EARTH.calcDist(p1.y, p1.x, queryPoint.getY, queryPoint.getX)).min, None)
   }
 
+  override def getCoordinates: Array[Coordinate] =
+    this.pointsArray.sliding(dimensionPoints, dimensionPoints).map(e => new Coordinate(e(0), e(1))).toArray
+
   override def toString: String =
     s"""
        |Line (LINE REMOVED)
@@ -69,14 +82,14 @@ case class OSMStreetAndHouseNumber(
        |isTunnel: ${isTunnel.map(_.toString).getOrElse("N.D")}
     """.stripMargin
 
-  def getCoordinateSequence: CoordinateArraySequence =
-    new CoordinateArraySequence(getCoordinates)
-
   override def computeEnvelopeInternal(): Envelope =
     if (isEmpty)
       new Envelope
     else
       getCoordinateSequence.expandEnvelope(new Envelope)
+
+  def getCoordinateSequence: CoordinateArraySequence =
+    new CoordinateArraySequence(getCoordinates)
 
   override def getBoundary: Geometry = getBoundary
 
@@ -104,13 +117,11 @@ case class OSMStreetAndHouseNumber(
     comp.compare(getCoordinateSequence, s.getCoordinateSequence)
   }
 
-  def getXIndex(n: Int): Int = n * dimensionPoints
+  override def getDimension: Int = 1
 
-  def getYIndex(n: Int): Int = n * dimensionPoints + 1
+  override def getGeometryType: String = "LineString"
 
-  def dimensionPoints = 2
-
-  def getCoordinateN(n: Int): Coordinate = new Coordinate(pointsArray(getXIndex(n)), pointsArray(getYIndex(n)))
+  override def getBoundaryDimension: Int = if (this.isClosed) -1 else 0
 
   def isClosed: Boolean =
     if (this.isEmpty)
@@ -118,21 +129,19 @@ case class OSMStreetAndHouseNumber(
     else
       this.getCoordinateN(0).equals2D(this.getCoordinateN(this.getNumPoints - 1))
 
-  def getLineString: LineString =
-    factory.createLineString(pointsArray.sliding(2, 2).map(ll => new Coordinate(ll(0), ll(1))).toArray)
+  def getCoordinateN(n: Int): Coordinate = new Coordinate(pointsArray(getXIndex(n)), pointsArray(getYIndex(n)))
 
-  override def getCoordinates: Array[Coordinate] =
-    this.pointsArray.sliding(dimensionPoints, dimensionPoints).map(e => new Coordinate(e(0), e(1))).toArray
+  def getXIndex(n: Int): Int = n * dimensionPoints
 
-  override def getDimension: Int = 1
+  def dimensionPoints = 2
 
-  override def getGeometryType: String = "LineString"
-
-  override def getBoundaryDimension: Int = if (this.isClosed) -1 else 0
-
-  override def getCoordinate: Coordinate = if (this.isEmpty) null else getCoordinateN(0)
+  def getYIndex(n: Int): Int = n * dimensionPoints + 1
 
   override def isEmpty: Boolean = this.pointsArray.length == 0
+
+  override def getNumPoints: Int = pointsArray.length / dimensionPoints
+
+  override def getCoordinate: Coordinate = if (this.isEmpty) null else getCoordinateN(0)
 
   override def normalize(): Unit = getLineString.normalize()
 
@@ -152,8 +161,6 @@ case class OSMStreetAndHouseNumber(
     if (tolerance == 0.0d) a == b
     else a.distance(b) <= tolerance
 
-  override def getNumPoints: Int = pointsArray.length / dimensionPoints
-
   def apply(filter: CoordinateFilter): Unit = getLineString.apply(filter)
 
   def apply(filter: CoordinateSequenceFilter): Unit = getLineString.apply(filter)
@@ -162,4 +169,12 @@ case class OSMStreetAndHouseNumber(
 
   def apply(filter: GeometryComponentFilter): Unit = getLineString.apply(filter)
 
+  override def reverseInternal(): Geometry = getLineString.reverseInternal()
+
+  override def copyInternal(): Geometry = getLineString.copyInternal()
+
+  def getLineString: LineString =
+    factory.createLineString(pointsArray.sliding(2, 2).map(ll => new Coordinate(ll(0), ll(1))).toArray)
+
+  override def getTypeCode: Int = getLineString.getTypeCode
 }

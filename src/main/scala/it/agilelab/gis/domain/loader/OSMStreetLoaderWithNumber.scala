@@ -1,9 +1,8 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.utils.Logger
-import it.agilelab.gis.domain.models.{ OSMHouseNumber, OSMStreetAndHouseNumber }
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom.{ Geometry, OSMHouseNumber, OSMStreetAndHouseNumber }
 
 class OSMStreetLoaderWithNumber(houseNumbersIndex: (Geometry, String) => Seq[OSMHouseNumber])
     extends OSMGenericStreetLoader

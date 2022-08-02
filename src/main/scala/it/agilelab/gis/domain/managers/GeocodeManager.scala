@@ -1,7 +1,6 @@
 package it.agilelab.gis.domain.managers
 
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, Point }
 import it.agilelab.gis.core.utils.{ GeocodeManagerUtils, Logger }
 import it.agilelab.gis.domain.configuration.GeocodeManagerConfiguration
 import it.agilelab.gis.domain.exceptions.ReverseGeocodingError
@@ -11,6 +10,7 @@ import it.agilelab.gis.domain.loader.ReverseGeocoder.{ Boundaries, HouseNumbers,
 import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
+import org.locationtech.jts.geom._
 
 import scala.annotation.tailrec
 import scala.util.{ Failure, Success, Try }
@@ -103,12 +103,22 @@ case class GeocodeManager(conf: Config) extends ReverseGeocoder with Logger {
     roadsResult
       .find(p => !config.filterEmptyStreets || p.street.exists(_.trim.nonEmpty))
       .map(s =>
-        s.copy(numbers = houseNumbers.map(n =>
-          OSMSmallAddressNumber(
-            n.point.getCoordinate.x,
-            n.point.getCoordinate.y,
-            n.number
-          ))))
+        OSMStreetAndHouseNumber(
+          s.osm_id,
+          s.pointsArray,
+          s.street,
+          s.streetType,
+          houseNumbers.map(n =>
+            OSMSmallAddressNumber(
+              n.point.getCoordinate.x,
+              n.point.getCoordinate.y,
+              n.number
+            )),
+          s.speedLimit,
+          s.isBridge,
+          s.isTunnel,
+          s.oneway
+        ))
   }
 
   private def makeAddress(

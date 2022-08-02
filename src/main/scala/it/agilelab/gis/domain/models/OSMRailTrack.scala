@@ -1,7 +1,7 @@
 package it.agilelab.gis.domain.models
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom._
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 case class OSMRailTrack(
     multiLineString: Geometry,
@@ -29,12 +29,11 @@ case class OSMRailTrack(
        |Usage: ${usage.map(_.value)}
     """.stripMargin
 
-  def getCoordinateSequence: CoordinateArraySequence =
-    new CoordinateArraySequence(getCoordinates)
-
   override def computeEnvelopeInternal(): Envelope =
     if (isEmpty) new Envelope
     else getCoordinateSequence.expandEnvelope(new Envelope)
+
+  override def isEmpty: Boolean = multiLineString.isEmpty
 
   override def getBoundary: Geometry = multiLineString.getBoundary
 
@@ -54,12 +53,17 @@ case class OSMRailTrack(
     else 0
   }
 
+  def getCoordinateSequence: CoordinateArraySequence =
+    new CoordinateArraySequence(getCoordinates)
+
+  override def getCoordinates: Array[Coordinate] = multiLineString.getCoordinates
+
+  override def getNumPoints: Int = multiLineString.getNumPoints
+
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
     val s: OSMStreet = o.asInstanceOf[OSMStreet]
     comp.compare(getCoordinateSequence, s.getCoordinateSequence)
   }
-
-  override def getCoordinates: Array[Coordinate] = multiLineString.getCoordinates
 
   override def getDimension: Int = multiLineString.getDimension
 
@@ -69,13 +73,7 @@ case class OSMRailTrack(
 
   override def getCoordinate: Coordinate = multiLineString.getCoordinate
 
-  override def isEmpty: Boolean = multiLineString.isEmpty
-
   override def normalize(): Unit = multiLineString.normalize()
 
-  override def reverse(): Geometry = multiLineString.reverse()
-
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = multiLineString.equalsExact(other, tolerance)
-
-  override def getNumPoints: Int = multiLineString.getNumPoints
 }

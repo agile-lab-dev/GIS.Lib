@@ -1,9 +1,8 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.loader.Loader
-import it.agilelab.gis.domain.models.OSMHouseNumber
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom.{ Geometry, OSMHouseNumber }
 
 object OSMHouseNumbersLoader {
 

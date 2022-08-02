@@ -1,6 +1,6 @@
 package it.agilelab.gis.domain.models
 
-import com.vividsolutions.jts.geom.{ Geometry, MultiPolygon, Polygon }
+import org.locationtech.jts.geom.{ Geometry, MultiPolygon, Polygon }
 
 case class OSMGeoCategory(label: String, geometa: OSMGeoMetadata, multiPolygon: Geometry)
     extends MultiPolygon(
@@ -18,9 +18,9 @@ sealed trait InputCategory
 
 object InputCategory {
 
-  case object Country extends InputCategory
-
   case class Custom(label: String) extends InputCategory
+
+  case object Country extends InputCategory
 
 }
 

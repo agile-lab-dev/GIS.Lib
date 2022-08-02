@@ -1,7 +1,6 @@
 package it.agilelab.gis.core.utils
 
-import com.vividsolutions.jts.geom.Geometry
-import com.vividsolutions.jts.io.WKTReader
+import org.locationtech.jts.geom.Geometry
 
 import scala.util.{ Failure, Success, Try }
 

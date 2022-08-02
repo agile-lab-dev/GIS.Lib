@@ -1,11 +1,11 @@
 package it.agilelab.gis.domain.spatialList
 
-import com.vividsolutions.jts.geom.{ Coordinate, Envelope, Geometry, GeometryFactory }
-import com.vividsolutions.jts.index.SpatialIndex
-import com.vividsolutions.jts.index.quadtree.Quadtree
-import com.vividsolutions.jts.index.strtree.STRtree
 import it.agilelab.gis.core.model.IndexType
 import it.agilelab.gis.core.utils.{ XMaxComparator, XMinComparator, YMaxComparator, YMinComparator }
+import org.locationtech.jts.geom.{ Coordinate, Envelope, Geometry }
+import org.locationtech.jts.index.SpatialIndex
+import org.locationtech.jts.index.quadtree.Quadtree
+import org.locationtech.jts.index.strtree.STRtree
 
 import java.io.Serializable
 

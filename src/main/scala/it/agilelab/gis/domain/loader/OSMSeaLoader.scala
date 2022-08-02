@@ -1,8 +1,7 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom._
 import it.agilelab.gis.core.loader.Loader
-import it.agilelab.gis.domain.models.OSMSea
+import org.locationtech.jts.geom.{ OSMSea, _ }
 
 import java.util
 

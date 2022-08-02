@@ -1,7 +1,7 @@
 package it.agilelab.gis.core.model.geometry
 
-import com.vividsolutions.jts.geom._
 import it.agilelab.gis.core.utils.DistanceUtils
+import org.locationtech.jts.geom._
 
 /** @author andreaL
   */
@@ -31,8 +31,8 @@ object Circle {
 case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryEnriched)
     extends Geometry(circleFactory: GeometryFactoryEnriched) {
 
-  private lazy val coordinates = circleFactory.getCoordinateSequenceFactory.create(getCoordinates());
   protected lazy val shell: LinearRing = factory.createLinearRing(coordinates)
+  private lazy val coordinates = circleFactory.getCoordinateSequenceFactory.create(getCoordinates());
 
   /** Define a shell: a square (built as LinearRing) that contains the circle
     */
@@ -43,18 +43,6 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
     val coordinates_3 = new Coordinate(getMBR.getMinX, getMBR.getMaxY)
     Array[Coordinate](coordinates_0, coordinates_1, coordinates_2, coordinates_3, coordinates_0)
   }
-
-  def apply(geomComponentFilter: GeometryComponentFilter): Unit = geomComponentFilter.filter(this)
-  def apply(geomFilter: GeometryFilter): Unit = geomFilter.filter(this)
-  def apply(coordSeqFilter: CoordinateSequenceFilter): Unit =
-    if (!this.isEmpty) {
-      coordSeqFilter.filter(this.coordinates, 0)
-      if (coordSeqFilter.isGeometryChanged) this.geometryChanged()
-    }
-  def apply(coordFilter: CoordinateFilter): Unit =
-    if (!this.isEmpty) {
-      coordFilter.filter(this.getCoordinate)
-    }
 
   /** Gets the mbr.
     *
@@ -68,22 +56,34 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
       center.getY + radius
     )
 
-  /** Contains.
+  def apply(geomComponentFilter: GeometryComponentFilter): Unit = geomComponentFilter.filter(this)
+
+  def apply(geomFilter: GeometryFilter): Unit = geomFilter.filter(this)
+
+  def apply(coordSeqFilter: CoordinateSequenceFilter): Unit =
+    if (!this.isEmpty) {
+      coordSeqFilter.filter(this.coordinates, 0)
+      if (coordSeqFilter.isGeometryChanged) this.geometryChanged()
+    }
+
+  def apply(coordFilter: CoordinateFilter): Unit =
+    if (!this.isEmpty) {
+      coordFilter.filter(this.getCoordinate)
+    }
+
+  /** is Empty
     *
-    * @param other the geometry to check against
-    * @return true, if other geometry is completely or partially contained
+    * @return boolean
     */
-  override def contains(other: Geometry): Boolean =
-    if (
-      DistanceUtils.haversineFormula(
-        this.center.getX,
-        this.center.getY,
-        other.getInteriorPoint.getX,
-        other.getInteriorPoint.getY) < radius
-    ) // TODO: currently it behaves like intersect
-      true
-    else
-      false
+  override def isEmpty: Boolean = shell.isEmpty
+
+  /** Coordinates
+    *
+    * @return coordinates of the circle center point
+    */
+  override def getCoordinate: Coordinate =
+    if (isEmpty()) null
+    else new Coordinate(center.getX, center.getY, 0)
 
   /** Intersects.
     *
@@ -143,31 +143,34 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
         geom.getInteriorPoint.getY) - radius
     else 0.0
 
+  /** Contains.
+    *
+    * @param other the geometry to check against
+    * @return true, if other geometry is completely or partially contained
+    */
+  override def contains(other: Geometry): Boolean =
+    if (
+      DistanceUtils.haversineFormula(
+        this.center.getX,
+        this.center.getY,
+        other.getInteriorPoint.getX,
+        other.getInteriorPoint.getY) < radius
+    ) // TODO: currently it behaves like intersect
+      true
+    else
+      false
+
   /** Geometry type
     *
     * @return always string "Circle"
     */
   override def getGeometryType: String = "Circle"
 
-  /** Coordinates
-    *
-    * @return coordinates of the circle center point
-    */
-  override def getCoordinate: Coordinate =
-    if (isEmpty()) null
-    else new Coordinate(center.getX, center.getY, 0)
-
   /** NumPoints
     *
     * @return the number of coordinates the circle is made of (always 1, the center)
     */
   override def getNumPoints: Int = 1
-
-  /** is Empty
-    *
-    * @return boolean
-    */
-  override def isEmpty: Boolean = shell.isEmpty
 
   /** Dimension of the circle geometry
     *
@@ -245,4 +248,10 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
     else if (this.radius < other.radius) -1
     else 0
   }
+
+  override def reverseInternal(): Geometry = this
+
+  override def copyInternal(): Geometry = this
+
+  override def getTypeCode: Int = CustomGeometry.TYPECODE_CIRCLE
 }

@@ -1,10 +1,10 @@
 package it.agilelab.gis.domain.managers
 
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.utils.GeocodeManagerUtils.Path
 import it.agilelab.gis.core.utils.{ Logger, ObjectPickler }
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.utils.ScalaUtils.{ load, recordDuration }
+import org.locationtech.jts.geom.Geometry
 
 import java.util.concurrent.Callable
 import scala.reflect.ClassTag

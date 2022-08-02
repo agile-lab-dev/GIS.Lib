@@ -1,13 +1,13 @@
 package it.agilelab.gis.domain.managers
 
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, Point }
 import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.configuration.PoiManagerConfiguration
 import it.agilelab.gis.domain.exceptions.PoiSearchError
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
 import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialOperator.KNNQueryMem
+import org.locationtech.jts.geom._
 
 import scala.util.{ Failure, Success, Try }
 

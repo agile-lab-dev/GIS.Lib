@@ -5,9 +5,9 @@ import it.agilelab.gis.core.utils.Configuration
 import it.agilelab.gis.core.utils.GeocodeManagerUtils.Path
 import it.agilelab.gis.domain.configuration.PoiIndexManagerConfiguration
 import it.agilelab.gis.domain.loader._
-import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.utils.ScalaUtils.recordDuration
+import org.locationtech.jts.geom._
 
 import java.io.File
 import java.util.concurrent.Executors

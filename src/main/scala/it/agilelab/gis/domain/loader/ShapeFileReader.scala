@@ -1,15 +1,23 @@
 package it.agilelab.gis.domain.loader
 
+import org.geotools.data.shapefile._
+import org.geotools.data.simple._
+import org.locationtech.jts.geom.{
+  Coordinate,
+  Geometry,
+  GeometryFactory,
+  LineString,
+  MultiLineString,
+  MultiPoint,
+  MultiPolygon,
+  Point,
+  Polygon
+}
+import org.opengis.feature.simple._
+
 import java.io.File
 import java.net.URL
 import java.util
-
-import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory, MultiPolygon, Point }
-import com.vividsolutions.jts.{ geom => jts }
-import org.geotools.data.shapefile._
-import org.geotools.data.simple._
-import org.opengis.feature.simple._
-
 import scala.collection.mutable.ListBuffer
 
 object ShapeFileReader {
@@ -23,7 +31,7 @@ object ShapeFileReader {
       * @tparam G geometry's type.
       * @return geometry of the feature [[ft]], if any.
       */
-    def geom[G <: jts.Geometry: Manifest](idx: Int = 0 /* the geometry is usually at the first index */ ): Option[G] =
+    def geom[G <: Geometry: Manifest](idx: Int = 0 /* the geometry is usually at the first index */ ): Option[G] =
       ft.getAttribute(idx) match {
         case g: G => Some(g)
         case _    => None
@@ -35,37 +43,20 @@ object ShapeFileReader {
       * @tparam G geometry's type.
       * @return geometry of the feature [[ft]], if any.
       */
-    def geom[G <: jts.Geometry: Manifest](attribute: String): Option[G] =
+    def geom[G <: Geometry: Manifest](attribute: String): Option[G] =
       ft.getAttribute(attribute) match {
         case g: G => Some(g)
         case _    => None
       }
   }
 
-  def readSimpleFeatures(path: String): Seq[SimpleFeature] = {
+  def readPointFeatures(path: String): Seq[(Point, util.List[AnyRef])] =
+    readSimpleFeatures(path).flatMap(ft => ft.geom[Point]().map(e => (e, ft.getAttributes)))
 
-    // Extract the features as GeoTools 'SimpleFeatures'
-    val url = s"file://${new File(path).getAbsolutePath}"
-    val ds: ShapefileDataStore = new ShapefileDataStore(new URL(url))
-    val ftItr: SimpleFeatureIterator = ds.getFeatureSource.getFeatures.features
-
-    try {
-      val simpleFeatures = ListBuffer[SimpleFeature]()
-      while (ftItr.hasNext) simpleFeatures += ftItr.next()
-      simpleFeatures.toList
-    } finally {
-      ftItr.close()
-      ds.dispose()
-    }
-  }
-
-  def readPointFeatures(path: String): Seq[(jts.Point, util.List[AnyRef])] =
-    readSimpleFeatures(path).flatMap(ft => ft.geom[jts.Point]().map(e => (e, ft.getAttributes)))
-
-  def readPointFeaturesToPolygon(path: String): Seq[(jts.Polygon, util.List[AnyRef])] = {
+  def readPointFeaturesToPolygon(path: String): Seq[(Polygon, util.List[AnyRef])] = {
 
     val points: Seq[(Point, util.List[AnyRef])] = readSimpleFeatures(path)
-      .flatMap(ft => ft.geom[jts.Point]().map(e => (e, ft.getAttributes)))
+      .flatMap(ft => ft.geom[Point]().map(e => (e, ft.getAttributes)))
 
     val fact = new GeometryFactory()
 
@@ -84,23 +75,40 @@ object ShapeFileReader {
 
   }
 
-  def readLineFeatures(path: String): Seq[jts.LineString] =
-    readSimpleFeatures(path).flatMap(ft => ft.geom[jts.LineString]())
+  def readLineFeatures(path: String): Seq[LineString] =
+    readSimpleFeatures(path).flatMap(ft => ft.geom[LineString]())
 
-  def readPolygonFeatures(path: String, attr: String): Seq[(jts.Polygon, SimpleFeature)] =
+  def readPolygonFeatures(path: String, attr: String): Seq[(Polygon, SimpleFeature)] =
     readSimpleFeatures(path)
-      .flatMap(ft => ft.geom[jts.Polygon](attr).map(e => (e, ft)))
+      .flatMap(ft => ft.geom[Polygon](attr).map(e => (e, ft)))
 
-  def readMultiPointFeatures(path: String): Seq[(jts.MultiPoint, util.List[AnyRef])] =
+  def readMultiPointFeatures(path: String): Seq[(MultiPoint, util.List[AnyRef])] =
     readSimpleFeatures(path)
       .flatMap { ft =>
-        ft.geom[jts.MultiPoint]()
+        ft.geom[MultiPoint]()
           .map(e => (e, ft.getAttributes))
       }
 
-  def readMultiLineFeatures(path: String): Seq[(jts.MultiLineString, util.List[AnyRef])] =
+  def readSimpleFeatures(path: String): Seq[SimpleFeature] = {
+
+    // Extract the features as GeoTools 'SimpleFeatures'
+    val url = s"file://${new File(path).getAbsolutePath}"
+    val ds: ShapefileDataStore = new ShapefileDataStore(new URL(url))
+    val ftItr: SimpleFeatureIterator = ds.getFeatureSource.getFeatures.features
+
+    try {
+      val simpleFeatures = ListBuffer[SimpleFeature]()
+      while (ftItr.hasNext) simpleFeatures += ftItr.next()
+      simpleFeatures.toList
+    } finally {
+      ftItr.close()
+      ds.dispose()
+    }
+  }
+
+  def readMultiLineFeatures(path: String): Seq[(MultiLineString, util.List[AnyRef])] =
     readSimpleFeatures(path).flatMap { ft =>
-      ft.geom[jts.MultiLineString]().map(e => (e, ft.getAttributes))
+      ft.geom[MultiLineString]().map(e => (e, ft.getAttributes))
     }
 
   /** @return a Seq of tuple ([[MultiPolygon]],[[SimpleFeature]]) and remove null geometry

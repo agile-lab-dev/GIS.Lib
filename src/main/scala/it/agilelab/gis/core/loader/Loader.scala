@@ -1,17 +1,13 @@
 package it.agilelab.gis.core.loader
 
-import com.vividsolutions.jts.geom._
 import it.agilelab.gis.core.model.IndexType
 import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom._
 
 /** Created by paolo on 25/01/2017.
   */
 trait Loader[T <: Geometry] extends Logger {
-
-  protected def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)]
-
-  protected def objectMapping(fields: Array[AnyRef], line: Geometry): T
 
   def loadIndex(sources: String*): GeometryList[T] = loadIndexWithFilter(sources: _*)()
 
@@ -31,4 +27,8 @@ trait Loader[T <: Geometry] extends Logger {
     logger.info(s"R-Tree built in ${System.currentTimeMillis() - start} (ms)")
     objectIndex
   }
+
+  protected def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)]
+
+  protected def objectMapping(fields: Array[AnyRef], line: Geometry): T
 }

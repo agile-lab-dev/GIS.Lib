@@ -1,12 +1,12 @@
 package it.agilelab.gis.domain.loader
 
 import com.typesafe.config.{ Config, ConfigFactory }
-import com.vividsolutions.jts.geom.{ Coordinate, GeometryFactory }
 import it.agilelab.gis.domain.managers.GeocodePathManager
 import it.agilelab.gis.domain.models.OSMBoundary
+import org.locationtech.jts.geom.{ Coordinate, GeometryFactory }
 import org.scalatest.{ FeatureSpec, GivenWhenThen, Matchers }
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 
 class ContainRelationBtwGeometriesSpec extends FeatureSpec with GivenWhenThen with Matchers {
 

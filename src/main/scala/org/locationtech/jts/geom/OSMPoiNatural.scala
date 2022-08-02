@@ -1,19 +1,17 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom.Geometry
-
-case class OSMPoiShop(
+case class OSMPoiNatural(
     geometry: Geometry,
     osmId: Option[String] = None,
     name: Option[String] = None,
-    shop: Option[String] = None
+    natural: Option[String] = None
 ) extends OSMPoi(geometry, osmId, name) {
 
   override def toString: String =
     s"""Poi: ${geometry.toString}
        |osmId: ${osmId.getOrElse("")}
        |name: ${name.getOrElse("")}
-       |shop: ${shop.getOrElse("")}
+       |natural: ${natural.getOrElse("")}
        """.stripMargin
 
 }

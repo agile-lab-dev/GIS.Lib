@@ -1,7 +1,6 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 case class OSMSea(
     polygon: Geometry,
@@ -26,14 +25,13 @@ case class OSMSea(
 
   def apply(filter: GeometryComponentFilter): Unit = polygon.apply(filter)
 
-  def getCoordinateSequence: CoordinateArraySequence =
-    new CoordinateArraySequence(getCoordinates)
-
   override def computeEnvelopeInternal(): Envelope =
     if (isEmpty)
       new Envelope
     else
       getCoordinateSequence.expandEnvelope(new Envelope)
+
+  override def isEmpty: Boolean = polygon.isEmpty
 
   override def getBoundary: Geometry = polygon.getBoundary
 
@@ -54,12 +52,17 @@ case class OSMSea(
     else 0
   }
 
+  def getCoordinateSequence: CoordinateArraySequence =
+    new CoordinateArraySequence(getCoordinates)
+
+  override def getCoordinates: Array[Coordinate] = polygon.getCoordinates
+
+  override def getNumPoints: Int = polygon.getNumPoints
+
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
     val w: OSMSea = o.asInstanceOf[OSMSea]
     comp.compare(getCoordinateSequence, w.getCoordinateSequence)
   }
-
-  override def getCoordinates: Array[Coordinate] = polygon.getCoordinates
 
   override def getDimension: Int = polygon.getDimension
 
@@ -69,14 +72,15 @@ case class OSMSea(
 
   override def getCoordinate: Coordinate = polygon.getCoordinate
 
-  override def isEmpty: Boolean = polygon.isEmpty
-
   override def normalize(): Unit = polygon.normalize()
 
   override def reverse(): Geometry = polygon.reverse()
 
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = polygon.equalsExact(other, tolerance)
 
-  override def getNumPoints: Int = polygon.getNumPoints
+  override def reverseInternal(): Geometry = polygon.reverseInternal()
 
+  override def copyInternal(): Geometry = polygon.copyInternal()
+
+  override def getTypeCode: Int = polygon.getTypeCode
 }

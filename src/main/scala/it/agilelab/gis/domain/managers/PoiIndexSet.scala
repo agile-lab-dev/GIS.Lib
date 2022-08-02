@@ -1,7 +1,7 @@
 package it.agilelab.gis.domain.managers
 
-import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom._
 
 /** [[PoiIndexSet]] holds all indices for [[PoiManager]].
   *

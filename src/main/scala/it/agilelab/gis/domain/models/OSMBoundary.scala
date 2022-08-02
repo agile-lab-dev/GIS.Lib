@@ -1,7 +1,7 @@
 package it.agilelab.gis.domain.models
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom._
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 case class OSMBoundary(
     multiPolygon: Geometry,
@@ -36,6 +36,12 @@ case class OSMBoundary(
   def isAddressDefined: Boolean =
     city.isDefined && county.isDefined && region.isDefined && country.isDefined
 
+  override def computeEnvelopeInternal(): Envelope =
+    if (isEmpty)
+      new Envelope
+    else
+      getCoordinateSequence.expandEnvelope(new Envelope)
+
   /** As seen from class Street, the missing signatures are as follows.
     * For convenience, these are usable as stub implementations.
     */
@@ -50,11 +56,9 @@ case class OSMBoundary(
   def getCoordinateSequence: CoordinateArraySequence =
     new CoordinateArraySequence(getCoordinates)
 
-  override def computeEnvelopeInternal(): Envelope =
-    if (isEmpty)
-      new Envelope
-    else
-      getCoordinateSequence.expandEnvelope(new Envelope)
+  override def getCoordinates: Array[Coordinate] = multiPolygon.getCoordinates
+
+  override def isEmpty: Boolean = multiPolygon.isEmpty
 
   override def getBoundary: Geometry = multiPolygon.getBoundary
 
@@ -75,12 +79,12 @@ case class OSMBoundary(
     else 0
   }
 
+  override def getNumPoints: Int = multiPolygon.getNumPoints
+
   override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
     val s: OSMStreet = o.asInstanceOf[OSMStreet]
     comp.compare(getCoordinateSequence, s.getCoordinateSequence)
   }
-
-  override def getCoordinates: Array[Coordinate] = multiPolygon.getCoordinates
 
   override def getDimension: Int = multiPolygon.getDimension
 
@@ -90,15 +94,9 @@ case class OSMBoundary(
 
   override def getCoordinate: Coordinate = multiPolygon.getCoordinate
 
-  override def isEmpty: Boolean = multiPolygon.isEmpty
-
   override def normalize(): Unit = multiPolygon.normalize()
 
-  override def reverse(): Geometry = multiPolygon.reverse()
-
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = multiPolygon.equalsExact(other, tolerance)
-
-  override def getNumPoints: Int = multiPolygon.getNumPoints
 
   def customCovers(other: OSMBoundary): Boolean =
     other.env.getMinX >= this.env.getMinX &&
@@ -110,14 +108,17 @@ case class OSMBoundary(
     * Only if an attribute is missing in the current boundary but defined in the other one its value will be updated.
     */
   def merge(other: OSMBoundary): OSMBoundary =
-    this.copy(
+    OSMBoundary(
+      multiPolygon = this.multiPolygon,
       city = emptyToNone(this.city).orElse(emptyToNone(other.city)),
       county = emptyToNone(this.county).orElse(emptyToNone(other.county)),
       region = emptyToNone(this.region).orElse(emptyToNone(other.region)),
       country = emptyToNone(this.country).orElse(emptyToNone(other.country)),
       countryCode = emptyToNone(this.countryCode).orElse(emptyToNone(other.countryCode)),
       countyCode = emptyToNone(this.countyCode).orElse(emptyToNone(other.countyCode)),
-      postalCode = emptyToNone(this.postalCode).orElse(emptyToNone(other.postalCode))
+      postalCode = emptyToNone(this.postalCode).orElse(emptyToNone(other.postalCode)),
+      this.boundaryType,
+      this.env
     )
 
   private def emptyToNone(s: Option[String]): Option[String] =

@@ -1,19 +1,19 @@
 package it.agilelab.gis.domain.managers
 
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.utils.GeocodeManagerUtils.{ BoundaryPathGroup, CountryPathSet, Path }
 import it.agilelab.gis.core.utils.{ Configuration, Logger, ObjectPickler }
-import it.agilelab.gis.domain.configuration.{ GeoRelationIndexManagerConfiguration, GeocodeIndexManagerConfiguration }
+import it.agilelab.gis.domain.configuration.GeocodeIndexManagerConfiguration
 import it.agilelab.gis.domain.loader.{
   OSMAdministrativeBoundariesLoader,
   OSMGenericStreetLoader,
   OSMHouseNumbersLoader,
   OSMPostalCodeLoader
 }
-import it.agilelab.gis.domain.models.{ OSMBoundary, OSMHouseNumber, OSMStreetAndHouseNumber }
+import it.agilelab.gis.domain.models.OSMBoundary
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.utils.ScalaUtils.{ load, recordDuration }
+import org.locationtech.jts.geom.{ Geometry, OSMHouseNumber, OSMStreetAndHouseNumber }
 
 import java.io.File
 import java.util.concurrent.{ Callable, Executors }
@@ -87,6 +87,110 @@ case class GeocodeIndexManager(conf: Config) extends Configuration with Logger {
     }
   }
 
+  //TODO review performances
+  def createCountryBoundariesWithPostalCodes(
+      paths: BoundaryPathGroup,
+      postalCodesPath: Array[Path]
+  ): BoundaryIndices = {
+
+    val loadPostalCode: Seq[Path] => Seq[OSMBoundary] = pathList => pathList.flatMap(postalCodeLoader.loadObjects(_))
+    val loadBoundaries: Seq[Path] => Seq[OSMBoundary] = pathList => pathList.flatMap(boundariesLoader.loadObjects(_))
+
+    val countryBoundary: Seq[OSMBoundary] = loadBoundaries(paths.country)
+
+    val countryName = countryBoundary.head.country.getOrElse("UNDEFINED COUNTRY")
+
+    logger.info(s"Start loading boundary of: $countryName...")
+
+    val boundaries: Seq[Seq[OSMBoundary]] = Seq(
+      // Note the order is important, start from the biggest area
+      countryBoundary,
+      loadBoundaries(paths.region),
+      loadBoundaries(paths.county),
+      loadBoundaries(paths.city),
+      loadPostalCode(postalCodesPath)
+    )
+
+    val boundariesEnriched = boundaries
+      .reduce((a, b) => mergeBoundaries(b, a))
+
+    logger.info(s"Loaded boundary of: $countryName...")
+
+    BoundaryIndices(boundariesEnriched)
+  }
+
+  /** Create the addresses index that will be used to decorate the road index leaves by adding
+    * a sequence of [[OSMStreetAndHouseNumber]] to retrieve the candidate street number
+    */
+  def createAddressesIndex(roads: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
+    logger.info(s"Loading OSM roads ...")
+    recordDuration(
+      OSMGenericStreetLoader(roads, Seq()).loadIndex(roads: _*),
+      d => logger.info(s"Done loading OSM roads in $d ms!")
+    )
+  }
+
+  def createHouseNumbersIndex(houseNumbers: List[Path]): GeometryList[OSMHouseNumber] = {
+    logger.info(s"Loading OSM house numbers ...")
+    recordDuration(
+      new OSMHouseNumbersLoader().loadIndex(houseNumbers: _*),
+      d => logger.info(s"Done loading OSM house numbers in $d ms!")
+    )
+  }
+
+  /** Merges the inner boundaries with the additional attributes of the matching outers.
+    * If an element of the inner boundaries is contained inside an element of the outer boundaries, the inner boundary
+    * is merged with the outer one. The merge will add to the inner boundary all the attributes of the outer one that
+    * are not defined yet.
+    *
+    * @param inner collection of boundaries that could be contained in some outer ones
+    * @param outer collection of boundaries that could contain some elements of the inner ones
+    * @return the merged boundaries (if inner is empty returns outer)
+    */
+  protected def mergeBoundaries(inner: Seq[OSMBoundary], outer: Seq[OSMBoundary]): Seq[OSMBoundary] = {
+    val innerPar = inner.par
+    outer.par
+      .map(b => (b, innerPar.filter(_.multiPolygon.getInteriorPoint.coveredBy(b))))
+      .flatMap { case (out, inners) =>
+        if (inners.isEmpty)
+          Seq(out)
+        else
+          inners.map(_.merge(out))
+      }
+      .seq
+  }
+
+  /** @param path the path in which the index will be stored
+    * @param geometryList the [[GeometryList]] saved at the given path
+    * @tparam T the specific [[Geometry]] class
+    */
+  protected def makeIndex[T <: Geometry](path: Path, geometryList: GeometryList[T])(implicit
+      ctag: ClassTag[T]
+  ): Unit = {
+    recordDuration(
+      ObjectPickler.pickle(geometryList, path),
+      d => logger.info(s"Saved index for ${ctag.runtimeClass.getSimpleName} to file $path in $d ms")
+    )
+    System.gc()
+  }
+
+  /** Loads the index for a particular geometry [[T]]
+    *
+    * @param path the path in which the index is saved
+    * @tparam T the specific [[Geometry]] class
+    * @return a [[Callable]] version of [[GeometryList]]
+    */
+  protected def createIndex[T <: Geometry](path: Path)(implicit ctag: ClassTag[T]): Callable[GeometryList[T]] =
+    load(
+      recordDuration(
+        ObjectPickler.unpickle[GeometryList[T]](path),
+        d => {
+          logger.info(s"Loaded index for ${ctag.runtimeClass.getSimpleName} from file $path in $d ms")
+          System.gc()
+        }
+      )
+    )
+
   /** Loads and creates an index set from the given input directories.
     *
     * @param multiCountriesPathSet input paths
@@ -154,79 +258,6 @@ case class GeocodeIndexManager(conf: Config) extends Configuration with Logger {
     boundariesGeometryList
   }
 
-  //TODO review performances
-  def createCountryBoundariesWithPostalCodes(
-      paths: BoundaryPathGroup,
-      postalCodesPath: Array[Path]
-  ): BoundaryIndices = {
-
-    val loadPostalCode: Seq[Path] => Seq[OSMBoundary] = pathList => pathList.flatMap(postalCodeLoader.loadObjects(_))
-    val loadBoundaries: Seq[Path] => Seq[OSMBoundary] = pathList => pathList.flatMap(boundariesLoader.loadObjects(_))
-
-    val countryBoundary: Seq[OSMBoundary] = loadBoundaries(paths.country)
-
-    val countryName = countryBoundary.head.country.getOrElse("UNDEFINED COUNTRY")
-
-    logger.info(s"Start loading boundary of: $countryName...")
-
-    val boundaries: Seq[Seq[OSMBoundary]] = Seq(
-      // Note the order is important, start from the biggest area
-      countryBoundary,
-      loadBoundaries(paths.region),
-      loadBoundaries(paths.county),
-      loadBoundaries(paths.city),
-      loadPostalCode(postalCodesPath)
-    )
-
-    val boundariesEnriched = boundaries
-      .reduce((a, b) => mergeBoundaries(b, a))
-
-    logger.info(s"Loaded boundary of: $countryName...")
-
-    BoundaryIndices(boundariesEnriched)
-  }
-
-  /** Merges the inner boundaries with the additional attributes of the matching outers.
-    * If an element of the inner boundaries is contained inside an element of the outer boundaries, the inner boundary
-    * is merged with the outer one. The merge will add to the inner boundary all the attributes of the outer one that
-    * are not defined yet.
-    *
-    * @param inner collection of boundaries that could be contained in some outer ones
-    * @param outer collection of boundaries that could contain some elements of the inner ones
-    * @return the merged boundaries (if inner is empty returns outer)
-    */
-  protected def mergeBoundaries(inner: Seq[OSMBoundary], outer: Seq[OSMBoundary]): Seq[OSMBoundary] = {
-    val innerPar = inner.par
-    outer.par
-      .map(b => (b, innerPar.filter(_.multiPolygon.getInteriorPoint.coveredBy(b))))
-      .flatMap { case (out, inners) =>
-        if (inners.isEmpty)
-          Seq(out)
-        else
-          inners.map(_.merge(out))
-      }
-      .seq
-  }
-
-  /** Create the addresses index that will be used to decorate the road index leaves by adding
-    * a sequence of [[OSMStreetAndHouseNumber]] to retrieve the candidate street number
-    */
-  def createAddressesIndex(roads: Seq[Path]): GeometryList[OSMStreetAndHouseNumber] = {
-    logger.info(s"Loading OSM roads ...")
-    recordDuration(
-      OSMGenericStreetLoader(roads, Seq()).loadIndex(roads: _*),
-      d => logger.info(s"Done loading OSM roads in $d ms!")
-    )
-  }
-
-  def createHouseNumbersIndex(houseNumbers: List[Path]): GeometryList[OSMHouseNumber] = {
-    logger.info(s"Loading OSM house numbers ...")
-    recordDuration(
-      new OSMHouseNumbersLoader().loadIndex(houseNumbers: _*),
-      d => logger.info(s"Done loading OSM house numbers in $d ms!")
-    )
-  }
-
   /** Creates indices and serializes them in the configured output directory if specified.
     *
     * @param config indices configuration
@@ -262,35 +293,4 @@ case class GeocodeIndexManager(conf: Config) extends Configuration with Logger {
       }
     }
   }
-
-  /** @param path the path in which the index will be stored
-    * @param geometryList the [[GeometryList]] saved at the given path
-    * @tparam T the specific [[Geometry]] class
-    */
-  protected def makeIndex[T <: Geometry](path: Path, geometryList: GeometryList[T])(implicit
-      ctag: ClassTag[T]
-  ): Unit = {
-    recordDuration(
-      ObjectPickler.pickle(geometryList, path),
-      d => logger.info(s"Saved index for ${ctag.runtimeClass.getSimpleName} to file $path in $d ms")
-    )
-    System.gc()
-  }
-
-  /** Loads the index for a particular geometry [[T]]
-    *
-    * @param path the path in which the index is saved
-    * @tparam T the specific [[Geometry]] class
-    * @return a [[Callable]] version of [[GeometryList]]
-    */
-  protected def createIndex[T <: Geometry](path: Path)(implicit ctag: ClassTag[T]): Callable[GeometryList[T]] =
-    load(
-      recordDuration(
-        ObjectPickler.unpickle[GeometryList[T]](path),
-        d => {
-          logger.info(s"Loaded index for ${ctag.runtimeClass.getSimpleName} from file $path in $d ms")
-          System.gc()
-        }
-      )
-    )
 }

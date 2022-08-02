@@ -1,10 +1,10 @@
 package it.agilelab.gis.domain.loader
 
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.loader.Loader
 import it.agilelab.gis.domain.managers.{ CountrySettings, GeocodePathManager }
 import it.agilelab.gis.domain.models.OSMBoundary
+import org.locationtech.jts.geom.Geometry
 import org.opengis.feature.simple.SimpleFeature
 
 import java.io.File
@@ -36,17 +36,6 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: Geocod
         Array(list, countryName) -> multiPolygon
       }
       .toIterator
-  }
-
-  def extractISO(iso: String): String = {
-    val parts = iso.split("-")
-    if (parts.length == 1) {
-      parts(0)
-    } else if (parts.length == 2) {
-      parts(1)
-    } else {
-      iso
-    }
   }
 
   protected def objectMapping(fields: Array[AnyRef], line: Geometry): OSMBoundary = {
@@ -96,6 +85,17 @@ case class OSMAdministrativeBoundariesLoader(config: Config, pathManager: Geocod
       throw new IllegalArgumentException(
         s"Unrecognized administrative level: $administrativeLevel [administrativeValue: $administrativeValue] in any of $countrySettings"
       )
+    }
+  }
+
+  def extractISO(iso: String): String = {
+    val parts = iso.split("-")
+    if (parts.length == 1) {
+      parts(0)
+    } else if (parts.length == 2) {
+      parts(1)
+    } else {
+      iso
     }
   }
 
