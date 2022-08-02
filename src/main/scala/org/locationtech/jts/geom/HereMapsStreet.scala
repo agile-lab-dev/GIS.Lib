@@ -1,13 +1,23 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 trait HereMapsStreetType {
   def value: String
 }
 
 object HereMapsStreetType {
+
+  def fromValue(v: String): HereMapsStreetType =
+    v.toLowerCase.trim match {
+      case "1" => MOTORWAY
+      case "2" => MAIN
+      case "3" => LOCAL_ACCESS
+      case "4" => RESIDENTIAL
+      case "5" => TRAIL
+      case "6" => TRUCK
+      case _   => ND
+    }
 
   case object MOTORWAY extends HereMapsStreetType {
     lazy val value = "motorway"
@@ -36,17 +46,6 @@ object HereMapsStreetType {
   case object ND extends HereMapsStreetType {
     lazy val value = "N.D"
   }
-
-  def fromValue(v: String): HereMapsStreetType =
-    v.toLowerCase.trim match {
-      case "1" => MOTORWAY
-      case "2" => MAIN
-      case "3" => LOCAL_ACCESS
-      case "4" => RESIDENTIAL
-      case "5" => TRAIL
-      case "6" => TRUCK
-      case _   => ND
-    }
 }
 
 object HereMapsStreet {}
@@ -94,6 +93,8 @@ case class HereMapsStreet(
     else
       getCoordinateSequence.expandEnvelope(new Envelope)
 
+  override def isEmpty: Boolean = lineString.isEmpty
+
   override def getBoundary: Geometry = lineString.getBoundary
 
   override def compareToSameClass(o: scala.Any): Int = {
@@ -114,15 +115,17 @@ case class HereMapsStreet(
     else 0
   }
 
-  override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
-    val s: HereMapsStreet = o.asInstanceOf[HereMapsStreet]
-    comp.compare(getCoordinateSequence, s.getCoordinateSequence)
-  }
+  override def getNumPoints: Int = lineString.getNumPoints
 
   def getCoordinateSequence: CoordinateArraySequence =
     new CoordinateArraySequence(getCoordinates)
 
   override def getCoordinates: Array[Coordinate] = lineString.getCoordinates
+
+  override def compareToSameClass(o: scala.Any, comp: CoordinateSequenceComparator): Int = {
+    val s: HereMapsStreet = o.asInstanceOf[HereMapsStreet]
+    comp.compare(getCoordinateSequence, s.getCoordinateSequence)
+  }
 
   override def getDimension: Int = lineString.getDimension
 
@@ -132,14 +135,15 @@ case class HereMapsStreet(
 
   override def getCoordinate: Coordinate = lineString.getCoordinate
 
-  override def isEmpty: Boolean = lineString.isEmpty
-
   override def normalize(): Unit = lineString.normalize()
 
   override def reverse(): Geometry = lineString.reverse()
 
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = lineString.equalsExact(other, tolerance)
 
-  override def getNumPoints: Int = lineString.getNumPoints
+  override def reverseInternal(): Geometry = lineString.reverseInternal()
 
+  override def copyInternal(): Geometry = lineString.copyInternal()
+
+  override def getTypeCode: Int = lineString.getTypeCode
 }

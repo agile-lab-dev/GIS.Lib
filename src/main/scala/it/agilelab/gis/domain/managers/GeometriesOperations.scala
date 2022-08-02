@@ -1,7 +1,7 @@
 package it.agilelab.gis.domain.managers
 
-import com.vividsolutions.jts.geom.{ Geometry, GeometryFactory, MultiPoint, Point }
 import it.agilelab.gis.core.utils.DistanceUtils
+import org.locationtech.jts.geom.{ Geometry, GeometryFactory, MultiPoint, Point }
 
 /** Collector of all the operations that are performed on the geometries.
   */

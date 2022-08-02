@@ -1,7 +1,6 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 case class OSMHouseNumber(point: Geometry, number: String) extends Geometry(point.getFactory) {
 
@@ -18,9 +17,6 @@ case class OSMHouseNumber(point: Geometry, number: String) extends Geometry(poin
 
   def apply(filter: GeometryComponentFilter): Unit = point.apply(filter)
 
-  def getCoordinateSequence: CoordinateArraySequence =
-    new CoordinateArraySequence(getCoordinates)
-
   override def computeEnvelopeInternal(): Envelope =
     if (isEmpty) {
       new Envelope
@@ -28,13 +24,20 @@ case class OSMHouseNumber(point: Geometry, number: String) extends Geometry(poin
       getCoordinateSequence.expandEnvelope(new Envelope)
     }
 
+  override def isEmpty: Boolean = point.isEmpty
+
   override def getBoundary: Geometry = point.getBoundary
 
   override def compareToSameClass(o: Any): Int =
     getCoordinate.compareTo(o.asInstanceOf[OSMHouseNumber].getCoordinate)
 
+  override def getCoordinate: Coordinate = point.getCoordinate
+
   override def compareToSameClass(o: Any, comp: CoordinateSequenceComparator): Int =
     comp.compare(getCoordinateSequence, o.asInstanceOf[OSMHouseNumber].getCoordinateSequence)
+
+  def getCoordinateSequence: CoordinateArraySequence =
+    new CoordinateArraySequence(getCoordinates)
 
   override def getCoordinates: Array[Coordinate] = point.getCoordinates
 
@@ -43,10 +46,6 @@ case class OSMHouseNumber(point: Geometry, number: String) extends Geometry(poin
   override def getGeometryType: String = point.getGeometryType
 
   override def getBoundaryDimension: Int = point.getBoundaryDimension
-
-  override def getCoordinate: Coordinate = point.getCoordinate
-
-  override def isEmpty: Boolean = point.isEmpty
 
   override def normalize(): Unit = point.normalize()
 
@@ -61,4 +60,9 @@ case class OSMHouseNumber(point: Geometry, number: String) extends Geometry(poin
        |Number:$number
        """.stripMargin
 
+  override def reverseInternal(): Geometry = point.reverseInternal()
+
+  override def copyInternal(): Geometry = point.copyInternal()
+
+  override def getTypeCode: Int = point.getTypeCode
 }

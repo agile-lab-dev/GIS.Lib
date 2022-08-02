@@ -1,12 +1,12 @@
 package it.agilelab.gis.domain.managers
 
-import com.vividsolutions.jts.geom.{ GeometryFactory, MultiPoint, Point }
 import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.loader.OSMCategoriesLoader
 import it.agilelab.gis.domain.managers.GeometryMembershipInfoManager.OSMGeoCategories
 import it.agilelab.gis.domain.models.CategoriesCfg.{ CategoryInfoCfg, Country => CountryCfg, Custom => CustomCfg }
 import it.agilelab.gis.domain.models.InputCategory.{ Country, Custom }
 import it.agilelab.gis.domain.models.{ CategoriesCfg, CategoryMembershipOutput, InputCategory, OSMGeoCategory }
+import org.locationtech.jts.geom.{ GeometryFactory, MultiPoint, Point }
 import scalaz.Kleisli
 
 import scala.collection.parallel.ParSeq
@@ -20,6 +20,17 @@ class GeometryMembershipInfoManager private (categoriesInfo: Map[InputCategory, 
 
   def getGeoMembershipInfoOf(category: InputCategory, geometry: Point): Seq[CategoryMembershipOutput] =
     findAll(setupCategory(category))(_.covers(geometry))
+
+  private def findAll(categories: ParSeq[OSMGeoCategory])(matcher: OSMGeoCategory => Boolean) =
+    categories
+      .filter(matcher)
+      .map(toCategoryMembershipOut)
+      .toList
+
+  private def setupCategory(category: InputCategory): ParSeq[OSMGeoCategory] =
+    categoriesInfo
+      .getOrElse(category, Seq.empty)
+      .par
 
   def getFirstGeoMembershipInfoOf(category: InputCategory, geometry: Point): Option[CategoryMembershipOutput] =
     findFirst(setupCategory(category))(_.covers(geometry))
@@ -39,17 +50,6 @@ class GeometryMembershipInfoManager private (categoriesInfo: Map[InputCategory, 
       Seq()
     else findAll(shapes)(_.intersects(geometry))
   }
-
-  private def findAll(categories: ParSeq[OSMGeoCategory])(matcher: OSMGeoCategory => Boolean) =
-    categories
-      .filter(matcher)
-      .map(toCategoryMembershipOut)
-      .toList
-
-  private def setupCategory(category: InputCategory): ParSeq[OSMGeoCategory] =
-    categoriesInfo
-      .getOrElse(category, Seq.empty)
-      .par
 
 }
 

@@ -1,7 +1,6 @@
 package it.agilelab.gis.domain.managers
 
 import com.typesafe.config.Config
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.utils.GeoRelationManagerUtils.{ CountryPathSet, Path }
 import it.agilelab.gis.core.utils.{ Configuration, Logger, ObjectPickler }
 import it.agilelab.gis.domain.configuration.GeoRelationIndexManagerConfiguration
@@ -9,6 +8,7 @@ import it.agilelab.gis.domain.loader._
 import it.agilelab.gis.domain.models._
 import it.agilelab.gis.domain.spatialList.GeometryList
 import it.agilelab.gis.utils.ScalaUtils.recordDuration
+import org.locationtech.jts.geom.{ Geometry, OSMSea }
 
 import java.io.File
 import java.util.concurrent.{ Callable, Executors }
@@ -84,6 +84,57 @@ case class GeoRelationIndexManager(conf: Config) extends Configuration with Logg
     }
   }
 
+  /** Creates the railways index
+    */
+  def createRailwaysIndex(railways: Seq[Path]): GeometryList[OSMRailTrack] = {
+    logger.info(s"Loading OSM railways ...")
+    recordDuration(
+      new OSMRailwayLoader().loadIndex(railways: _*),
+      d => logger.info(s"Done loading OSM railways in $d ms!")
+    )
+  }
+
+  /** Creates the sea index
+    */
+  def createSeaIndex(sea: Array[Path]): GeometryList[OSMSea] = {
+    logger.info(s"Loading OSM sea ...")
+    recordDuration(
+      new OSMSeaLoader().loadIndex(sea: _*),
+      d => logger.info(s"Done loading OSM sea in $d ms!")
+    )
+  }
+
+  /** @param path the path in which the index will be stored
+    * @param geometryList the [[GeometryList]] saved at the given path
+    * @tparam T the specific [[Geometry]] class
+    */
+  protected def makeIndex[T <: Geometry](path: Path, geometryList: GeometryList[T])(implicit
+      ctag: ClassTag[T]
+  ): Unit = {
+    recordDuration(
+      ObjectPickler.pickle(geometryList, path),
+      d => logger.info(s"Saved index for ${ctag.runtimeClass.getSimpleName} to file $path in $d ms")
+    )
+    System.gc()
+  }
+
+  /** Loads the index for a particular geometry [[T]]
+    *
+    * @param path the path in which the index is saved
+    * @tparam T the specific [[Geometry]] class
+    * @return a [[Callable]] version of [[GeometryList]]
+    */
+  protected def createIndex[T <: Geometry](path: Path)(implicit ctag: ClassTag[T]): Callable[GeometryList[T]] =
+    load(
+      recordDuration(
+        ObjectPickler.unpickle[GeometryList[T]](path),
+        d => {
+          logger.info(s"Loaded index for ${ctag.runtimeClass.getSimpleName} from file $path in $d ms")
+          System.gc()
+        }
+      )
+    )
+
   /** Loads and creates an index set from the given input directories.
     *
     * @param multiCountriesPathSet input paths
@@ -130,26 +181,6 @@ case class GeoRelationIndexManager(conf: Config) extends Configuration with Logg
     seaGeometryList
   }
 
-  /** Creates the railways index
-    */
-  def createRailwaysIndex(railways: Seq[Path]): GeometryList[OSMRailTrack] = {
-    logger.info(s"Loading OSM railways ...")
-    recordDuration(
-      new OSMRailwayLoader().loadIndex(railways: _*),
-      d => logger.info(s"Done loading OSM railways in $d ms!")
-    )
-  }
-
-  /** Creates the sea index
-    */
-  def createSeaIndex(sea: Array[Path]): GeometryList[OSMSea] = {
-    logger.info(s"Loading OSM sea ...")
-    recordDuration(
-      new OSMSeaLoader().loadIndex(sea: _*),
-      d => logger.info(s"Done loading OSM sea in $d ms!")
-    )
-  }
-
   /** Creates indices and serializes them in the configured output directory if specified.
     *
     * @param config indices configuration
@@ -191,35 +222,4 @@ case class GeoRelationIndexManager(conf: Config) extends Configuration with Logg
   private def load[T](f: => T): Callable[T] = new Callable[T] {
     override def call(): T = f
   }
-
-  /** @param path the path in which the index will be stored
-    * @param geometryList the [[GeometryList]] saved at the given path
-    * @tparam T the specific [[Geometry]] class
-    */
-  protected def makeIndex[T <: Geometry](path: Path, geometryList: GeometryList[T])(implicit
-      ctag: ClassTag[T]
-  ): Unit = {
-    recordDuration(
-      ObjectPickler.pickle(geometryList, path),
-      d => logger.info(s"Saved index for ${ctag.runtimeClass.getSimpleName} to file $path in $d ms")
-    )
-    System.gc()
-  }
-
-  /** Loads the index for a particular geometry [[T]]
-    *
-    * @param path the path in which the index is saved
-    * @tparam T the specific [[Geometry]] class
-    * @return a [[Callable]] version of [[GeometryList]]
-    */
-  protected def createIndex[T <: Geometry](path: Path)(implicit ctag: ClassTag[T]): Callable[GeometryList[T]] =
-    load(
-      recordDuration(
-        ObjectPickler.unpickle[GeometryList[T]](path),
-        d => {
-          logger.info(s"Loaded index for ${ctag.runtimeClass.getSimpleName} from file $path in $d ms")
-          System.gc()
-        }
-      )
-    )
 }

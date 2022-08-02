@@ -1,19 +1,17 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom.Geometry
-
-case class OSMPoiLeisure(
+case class OSMPoiAmenity(
     geometry: Geometry,
     osmId: Option[String] = None,
     name: Option[String] = None,
-    leisure: Option[String] = None
+    amenity: Option[String] = None
 ) extends OSMPoi(geometry, osmId, name) {
 
   override def toString: String =
     s"""Poi: ${geometry.toString}
        |osmId: ${osmId.getOrElse("")}
        |name: ${name.getOrElse("")}
-       |leisure: ${leisure.getOrElse("")}
+       |amenity: ${amenity.getOrElse("")}
        """.stripMargin
 
 }

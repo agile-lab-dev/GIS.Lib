@@ -1,10 +1,9 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom._
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory
 import it.agilelab.gis.core.loader.Loader
-import it.agilelab.gis.domain.models.{ HereMapsStreet, HereMapsStreetType }
 import it.agilelab.gis.domain.spatialList.GeometryList
+import org.locationtech.jts.geom._
+import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory
 
 import scala.io.Source
 
@@ -32,27 +31,6 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet] {
   val closeStep = ')'
 
   val sridFactory8003 = new GeometryFactory(new PrecisionModel(), 8003, CoordinateArraySequenceFactory.instance())
-
-  protected def objectMapping(fields: Array[AnyRef], line: Geometry): HereMapsStreet = {
-
-    val stringFields = fields.map(_.toString)
-
-    val streetType: String = stringFields(4)
-    val st = HereMapsStreetType.fromValue(streetType)
-
-    val length: Double = stringFields(8).replace(',', '.').toDouble
-    var biDirected: Boolean = false
-    if (stringFields(10) == "\"Y\"") biDirected = true
-    val street: String = stringFields(11)
-    val city: String = stringFields(12)
-    val county: String = stringFields(13)
-    val state: String = stringFields(14)
-    val country: String = stringFields(15)
-    val fromSpeed: Integer = stringFields(16).toInt
-    val toSpeed: Integer = stringFields(17).toInt
-
-    HereMapsStreet(line, street, city, county, state, country, Math.max(fromSpeed, toSpeed), biDirected, length, st)
-  }
 
   override def loadFile(source: String): Iterator[(Array[AnyRef], Geometry)] = {
 
@@ -125,5 +103,26 @@ class CTLLoader(geometryPosition: Int) extends Loader[HereMapsStreet] {
         parseGeometry(otherPart).+:(newField)
       }
     }
+
+  protected def objectMapping(fields: Array[AnyRef], line: Geometry): HereMapsStreet = {
+
+    val stringFields = fields.map(_.toString)
+
+    val streetType: String = stringFields(4)
+    val st = HereMapsStreetType.fromValue(streetType)
+
+    val length: Double = stringFields(8).replace(',', '.').toDouble
+    var biDirected: Boolean = false
+    if (stringFields(10) == "\"Y\"") biDirected = true
+    val street: String = stringFields(11)
+    val city: String = stringFields(12)
+    val county: String = stringFields(13)
+    val state: String = stringFields(14)
+    val country: String = stringFields(15)
+    val fromSpeed: Integer = stringFields(16).toInt
+    val toSpeed: Integer = stringFields(17).toInt
+
+    HereMapsStreet(line, street, city, county, state, country, Math.max(fromSpeed, toSpeed), biDirected, length, st)
+  }
 
 }

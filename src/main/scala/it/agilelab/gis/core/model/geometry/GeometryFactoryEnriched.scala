@@ -1,6 +1,6 @@
 package it.agilelab.gis.core.model.geometry
 
-import com.vividsolutions.jts.geom._
+import org.locationtech.jts.geom._
 
 /**  GeometryFactory class extended in order to add Circle related functions
   */

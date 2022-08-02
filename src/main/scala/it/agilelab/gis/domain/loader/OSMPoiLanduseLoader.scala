@@ -1,7 +1,6 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom.{ Geometry, MultiLineString, MultiPolygon, Point }
-import it.agilelab.gis.domain.models.OSMPoiLanduse
+import org.locationtech.jts.geom._
 
 import scala.util.Try
 

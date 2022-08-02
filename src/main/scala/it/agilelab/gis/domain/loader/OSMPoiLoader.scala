@@ -1,8 +1,8 @@
 package it.agilelab.gis.domain.loader
 
-import com.vividsolutions.jts.geom.Geometry
 import it.agilelab.gis.core.loader.Loader
 import it.agilelab.gis.core.utils.Logger
+import org.locationtech.jts.geom.Geometry
 
 import scala.util.Try
 

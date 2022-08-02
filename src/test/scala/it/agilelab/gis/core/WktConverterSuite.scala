@@ -1,7 +1,7 @@
 package it.agilelab.gis.core
 
-import com.vividsolutions.jts.geom.Coordinate
-import com.vividsolutions.jts.io.WKTWriter
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.io.WKTWriter
 import it.agilelab.gis.core.utils.{ INVALID_WKT, WktConverter }
 import org.scalatest.{ FlatSpec, Matchers }
 

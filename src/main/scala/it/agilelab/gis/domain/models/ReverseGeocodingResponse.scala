@@ -2,6 +2,7 @@ package it.agilelab.gis.domain.models
 
 import it.agilelab.gis.core.model.output.OutputModel
 import it.agilelab.gis.domain.graphhopper.IdentifiableGPSPoint
+import org.locationtech.jts.geom.OSMStreetAndHouseNumber
 
 object ReverseGeocodingResponse {
 

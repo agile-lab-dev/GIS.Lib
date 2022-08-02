@@ -10,13 +10,10 @@ trait Dependencies {
     "com.typesafe" % "config" % "1.2.1",
     "org.scalaz" %% "scalaz-core" % "7.3.2",
     "com.github.pureconfig" %% "pureconfig" % "0.12.1",
-    "org.datasyslab" % "JTSplus" % "0.1.0",
-    "org.geotools" % "gt-shapefile" % "17.2" exclude ("com.vividsolutions", "jts"),
-    "org.wololo" % "jts2geojson" % "0.7.0" excludeAll (
-      ExclusionRule(organization = "com.vividsolutions", name = "jts"),
-      ExclusionRule(organization = "com.fasterxml.jackson.core", name = "jackson-databind"),
-      ExclusionRule(organization = "com.fasterxml.jackson.core", name = "jackson-core")
-    ),
+    "org.locationtech.jts" % "jts-core" % "1.19.0",
+    "org.locationtech.jts.io" % "jts-io-common" % "1.19.0",
+    "org.geotools" % "gt-shapefile" % "27.0" exclude ("com.vividsolutions", "jts"),
+    "org.geotools" % "gt-metadata" % "27.0" exclude ("com.vividsolutions", "jts"),
     "com.graphhopper" % "graphhopper-core" % "0.11.0" exclude ("com.vividsolutions", "jts-core"),
     "com.graphhopper" % "graphhopper-reader-osm" % "0.11.0" exclude ("com.vividsolutions", "jts-core"),
     "com.graphhopper" % "graphhopper-map-matching-core" % "0.11.0-4" exclude ("com.vividsolutions", "jts-core"),

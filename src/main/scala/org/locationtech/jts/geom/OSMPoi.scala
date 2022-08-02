@@ -1,7 +1,6 @@
-package it.agilelab.gis.domain.models
+package org.locationtech.jts.geom
 
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence
-import com.vividsolutions.jts.geom._
+import org.locationtech.jts.geom.impl.CoordinateArraySequence
 
 abstract class OSMPoi(
     geometry: Geometry,
@@ -34,6 +33,11 @@ abstract class OSMPoi(
 
   override def isEmpty: Boolean = geometry.isEmpty
 
+  def getCoordinateSequence: CoordinateArraySequence =
+    new CoordinateArraySequence(getCoordinates)
+
+  override def getCoordinates: Array[Coordinate] = geometry.getCoordinates
+
   override def getBoundary: Geometry = geometry.getBoundary
 
   override def compareToSameClass(o: scala.Any): Int = {
@@ -52,11 +56,6 @@ abstract class OSMPoi(
     else if (j < w.getNumPoints) -1
     else 0
   }
-
-  def getCoordinateSequence: CoordinateArraySequence =
-    new CoordinateArraySequence(getCoordinates)
-
-  override def getCoordinates: Array[Coordinate] = geometry.getCoordinates
 
   override def getNumPoints: Int = geometry.getNumPoints
 
@@ -80,5 +79,11 @@ abstract class OSMPoi(
   override def reverse(): Geometry = geometry.reverse()
 
   override def equalsExact(other: Geometry, tolerance: Double): Boolean = geometry.equalsExact(other, tolerance)
+
+  override def reverseInternal(): Geometry = geometry.reverseInternal()
+
+  override def copyInternal(): Geometry = geometry.copyInternal()
+
+  override def getTypeCode: Int = geometry.getTypeCode
 
 }
