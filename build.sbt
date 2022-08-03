@@ -4,7 +4,7 @@ inThisBuild(
   Seq(
     scalaVersion := scala211,
     organization := "it.agilelab",
-    version := "1.7.0-SNAPSHOT",
+    version := "1.7.0",
     scapegoatVersion := "1.4.15",
     RepositoriesSupport.allResolvers,
     WarningAsErrorsSupport.enableWarningAsErrors,
