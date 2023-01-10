@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. Dates are displayed in UTC.
 
+#### [v1.7.1](https://github.com/agile-lab-dev/GIS.Lib/compare/v1.7.0...v1.7.1)
+
+- [#140] fix wrong speed limit [`85d26d3`](https://github.com/agile-lab-dev/GIS.Lib/commit/85d26d32021ad61ab8d40e66f924303f3eda095a)
+
 #### [v1.7.0](https://github.com/agile-lab-dev/GIS.Lib/compare/v1.6.0...v1.7.0)
+
+> 3 August 2022
 
 - [#138] Update JTS Library [`#138`](https://github.com/agile-lab-dev/GIS.Lib/issues/138)
 - [#136] Differentiate map matching error due to a broken sequence [`#136`](https://github.com/agile-lab-dev/GIS.Lib/issues/136)
