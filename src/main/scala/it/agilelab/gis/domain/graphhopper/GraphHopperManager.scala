@@ -241,7 +241,7 @@ object GraphHopperManager {
       matchedAltitude = Some(item.getQueryResult.getSnappedPoint.ele),
       roadType = typeOfRoute(edge.getEdgeState, encoder),
       roadName = Some(edge.getEdgeState.getName),
-      speedLimit = Some(encoder.getSpeed(item.getQueryResult.getClosestEdge.getFlags).toInt),
+      speedLimit = Some(encoder.getSpeed(edge.getEdgeState.getFlags).toInt),
       linearDistance = Some(item.getQueryResult.getQueryDistance)
     )
 
