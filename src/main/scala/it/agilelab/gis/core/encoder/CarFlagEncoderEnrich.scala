@@ -29,9 +29,28 @@ class CarFlagEncoderEnrich(speedBits: Int = 8, speedFactor: Double = 1, maxTurnC
   defaultSpeedMap.put("cycleway", 0)
   defaultSpeedMap.put("bridleway", 30)
   defaultSpeedMap.put("raceway", 90)
-  defaultSpeedMap.put("escape", 30)
-  defaultSpeedMap.put("busway", 45)
-  defaultSpeedMap.put("bus_guideway", 45)
+  defaultSpeedMap.put("escape", 40)
+  defaultSpeedMap.put("busway", 50)
+  defaultSpeedMap.put("bus_guideway", 50)
+
+  // overrides values in CarFlagEncoder.java
+  defaultSpeedMap.put("motorway", 110)
+  defaultSpeedMap.put("motorway_link", 70)
+  defaultSpeedMap.put("motorroad", 90)
+  defaultSpeedMap.put("trunk", 100)
+  defaultSpeedMap.put("trunk_link", 60)
+  defaultSpeedMap.put("primary", 70)
+  defaultSpeedMap.put("primary_link", 60)
+  defaultSpeedMap.put("secondary", 60)
+  defaultSpeedMap.put("secondary_link", 50)
+  defaultSpeedMap.put("tertiary", 50)
+  defaultSpeedMap.put("tertiary_link", 40)
+  defaultSpeedMap.put("unclassified", 50)
+  defaultSpeedMap.put("residential", 30)
+  defaultSpeedMap.put("living_street", 5)
+  defaultSpeedMap.put("service", 40)
+  defaultSpeedMap.put("road", 50)
+  defaultSpeedMap.put("track", 15)
 
   val highwayList: Seq[String] = Seq(
     /* reserve index=0 for unset roads (not accessible) */
