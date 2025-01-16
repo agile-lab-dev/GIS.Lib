@@ -1,7 +1,9 @@
 package it.agilelab.gis.core.encoder
 
 import com.graphhopper.reader.ReaderWay
-import com.graphhopper.routing.util.{ CarFlagEncoder, EncodedValue }
+import com.graphhopper.routing.profiles.{EncodedValue, UnsignedDecimalEncodedValue}
+import com.graphhopper.routing.util.{CarFlagEncoder, EncodedValue, EncodedValueOld, EncodingManager}
+import com.graphhopper.storage.IntsRef
 import com.graphhopper.util.EdgeIteratorState
 import it.agilelab.gis.core.utils.Logger
 
@@ -107,7 +109,7 @@ class CarFlagEncoderEnrich(speedBits: Int = 8, speedFactor: Double = 1, maxTurnC
       Option(highwayMap.get(highwayValue).asInstanceOf[Int]).getOrElse(0)
   }
 
-  override def handleWayTags(way: ReaderWay, allowed: Long, relationFlags: Long): Long = {
+  override def handleWayTags(way: ReaderWay, allowed: Long, relationFlags: Long): IntsRef = {
     val hwValue = getHighwayValue(way)
     highwayEncoder.setValue(super.handleWayTags(way, allowed, relationFlags), hwValue.toLong)
   }
@@ -154,4 +156,6 @@ class CarFlagEncoderEnrich(speedBits: Int = 8, speedFactor: Double = 1, maxTurnC
     case max: Double if max >= 0 => max
     case _                       => speed
   }
+
+  override def getSpeed(way: ReaderWay): Double = super.getSpeed(way)
 }

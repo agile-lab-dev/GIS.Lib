@@ -1,25 +1,20 @@
 package it.agilelab.gis.domain.graphhopper
 
-import com.graphhopper.matching.{ EdgeMatch, GPXExtension, MatchResult }
+import com.graphhopper.matching.{EdgeMatch, MatchResult, State}
 import com.graphhopper.util.details._
-import com.graphhopper.util.{ DistancePlaneProjection, EdgeIteratorState }
+import com.graphhopper.util.{DistancePlaneProjection, EdgeIteratorState}
 import com.typesafe.config.Config
 import it.agilelab.gis.core.encoder.CarFlagEncoderEnrich
 import it.agilelab.gis.core.utils.Logger
 import it.agilelab.gis.domain.configuration.GraphHopperConfiguration
-import it.agilelab.gis.domain.exceptions.{
-  GenericMatchedRouteError,
-  MatchedRouteError,
-  NotRecoverableBrokenSequenceRouteError,
-  RecoverableBrokenSequenceRouteError
-}
+import it.agilelab.gis.domain.exceptions.{GenericMatchedRouteError, MatchedRouteError, NotRecoverableBrokenSequenceRouteError, RecoverableBrokenSequenceRouteError}
 import it.agilelab.gis.domain.graphhopper.GraphHopperManager._
 import it.agilelab.gis.domain.loader.RouteMatcher
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.util.{ Failure, Success, Try }
+import scala.util.{Failure, Success, Try}
 
 /** GraphHopperManager is an implementation of a RouteMatcher.
   * @param conf configuration for this [[GraphHopperManager]], see [[GraphHopperConfiguration]] for more information.
@@ -30,7 +25,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
   override def matchingRoute(gpsPoints: Seq[GPSPoint]): Either[MatchedRouteError, MatchedRoute] =
     Try {
-      val calcRoute: MatchResult = graphConf.mapMatching.doWork(gpsPoints.map(_.toGPXEntry).asJava)
+      val calcRoute: MatchResult = graphConf.mapMatching.doWork(gpsPoints.map(_.toObservation).asJava)
 
       val length = calcRoute.getMatchLength
       val time = calcRoute.getMatchMillis
@@ -225,16 +220,16 @@ object GraphHopperManager {
       .map { case (highway, distances) => (highway, distances.map { case (_, distance) => distance }.sum) }
 
   private def getEdges(edges: Seq[EdgeMatch]): List[Edge] =
-    edges.toList.flatMap(edge => edge.getGpxExtensions.asScala.map(item => Edge(edge = edge, item = item)))
+    edges.toList.flatMap(edge => edge.getStates.asScala.map(item => Edge(edge = edge, item = item)))
 
   private def getTracePoints(edges: List[Edge], encoder: CarFlagEncoderEnrich) =
     edges.map(edge => createTracePoint(edge.edge, edge.item, encoder))
 
-  private def createTracePoint(edge: EdgeMatch, item: GPXExtension, encoder: CarFlagEncoderEnrich) =
+  private def createTracePoint(edge: EdgeMatch, item: State, encoder: CarFlagEncoderEnrich) =
     TracePoint(
-      latitude = item.getEntry.lat,
-      longitude = item.getEntry.lon,
-      altitude = Some(item.getEntry.ele),
+      latitude = item.getEntry.getPoint.lat,
+      longitude = item.getEntry.getPoint.lon,
+      altitude = None,
       time = item.getEntry.getTime,
       matchedLatitude = Some(item.getQueryResult.getSnappedPoint.lat),
       matchedLongitude = Some(item.getQueryResult.getSnappedPoint.lon),

@@ -83,7 +83,7 @@ object GraphHopperConfiguration extends Configuration with ValidationUtils with 
         hopperOSM.setElevation(settings.elevationEnabled)
         val encoder =
           new CarFlagEncoderEnrich() // TODO refactor to use a generic trait and not a single encoder implementation
-        hopperOSM.setEncodingManager(new EncodingManager(encoder))
+        hopperOSM.setEncodingManager(EncodingManager.create(encoder))
         val weighting =
           new FastestWeighting(
             encoder,
