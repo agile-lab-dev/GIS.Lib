@@ -4,6 +4,7 @@ import sbt._
 trait Dependencies {
 
   lazy val coreDependencies: Seq[ModuleID] = Seq(
+    "com.google.protobuf" % "protobuf-java" % "3.25.5",
     "org.slf4j" % "slf4j-api" % "1.7.26",
     "org.slf4j" % "slf4j-simple" % "1.7.26",
     "org.rogach" %% "scallop" % "3.5.1",
