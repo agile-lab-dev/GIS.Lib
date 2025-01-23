@@ -150,7 +150,7 @@ class GeocodeManagerSpec extends FlatSpec with Matchers with EitherValues with B
         speedLimit = None,
         speedCategory = None,
         roadType = Some("residential"),
-        distance = Some(1.4465500367107154)
+        distance = Some(1.4465500367107156)
       )
 
     corsoSaccoEVanzettiActual should be(corsoSaccoEVanzettiExpected)

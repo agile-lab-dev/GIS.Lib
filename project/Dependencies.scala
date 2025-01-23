@@ -4,7 +4,6 @@ import sbt._
 trait Dependencies {
 
   lazy val coreDependencies: Seq[ModuleID] = Seq(
-    "com.google.protobuf" % "protobuf-java" % "4.29.3",
     "org.slf4j" % "slf4j-api" % "1.7.26",
     "org.slf4j" % "slf4j-simple" % "1.7.26",
     "org.rogach" %% "scallop" % "3.5.1",
@@ -13,8 +12,8 @@ trait Dependencies {
     "com.github.pureconfig" %% "pureconfig" % "0.14.0",
     "org.locationtech.jts" % "jts-core" % "1.19.0",
     "org.locationtech.jts.io" % "jts-io-common" % "1.19.0",
-    "org.geotools" % "gt-shapefile" % "31.5" exclude ("com.vividsolutions", "jts"),
-    "org.geotools" % "gt-metadata" % "31.5" exclude ("com.vividsolutions", "jts"),
+    "org.geotools" % "gt-shapefile" % "31.5" exclude ("com.vividsolutions", "jts-core"),
+    "org.geotools" % "gt-metadata" % "31.5" exclude ("com.vividsolutions", "jt-cores"),
     "com.graphhopper" % "graphhopper-core" % "0.11.0" exclude ("com.vividsolutions", "jts-core"),
     "com.graphhopper" % "graphhopper-reader-osm" % "0.11.0" exclude ("com.vividsolutions", "jts-core"),
     "com.graphhopper" % "graphhopper-map-matching-core" % "0.11.0-4" exclude ("com.vividsolutions", "jts-core"),

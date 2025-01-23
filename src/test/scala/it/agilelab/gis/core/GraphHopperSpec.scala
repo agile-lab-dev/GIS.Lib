@@ -7,6 +7,7 @@ import it.agilelab.gis.domain.exceptions.RecoverableBrokenSequenceRouteError
 import it.agilelab.gis.domain.graphhopper._
 import org.scalatest._
 import org.scalatest.tagobjects.Slow
+import scala.jdk.CollectionConverters._
 
 import java.io.File
 import java.nio.file.{ Files, Paths }
@@ -77,7 +78,7 @@ class GraphHopperSpec
           roadType = Some("residential"),
           roadName = Some("Via Bassano Porrone"),
           speedLimit = Some(30),
-          linearDistance = Some(0.5240652051613223)
+          linearDistance = Some(0.5240652051613224)
         )),
       length = Some(0.0),
       time = Some(0),
@@ -246,7 +247,7 @@ class GraphHopperSpec
         |45.17262,9.04016,1619089411000
         |""".stripMargin
 
-    val points: Seq[GPSPoint] = trip.lines
+    val points: Seq[GPSPoint] = trip.lines.iterator().asScala
       .filter(_.nonEmpty)
       .map(_.split(","))
       .map(r => GPSPoint(r.head.toDouble, r(1).toDouble, None, r(2).toLong))
@@ -729,7 +730,7 @@ class GraphHopperSpec
       |40.74456 14.47613
       |""".stripMargin
 
-    val gpsPoints = points.lines
+    val gpsPoints = points.lines.iterator().asScala
       .filter(_.nonEmpty)
       .map(p => p.split(" "))
       .zipWithIndex
@@ -748,7 +749,7 @@ class GraphHopperSpec
                    |40.7445 14.47465
                    |""".stripMargin
 
-    val gpsPoints = points.lines
+    val gpsPoints = points.lines.iterator().asScala
       .filter(_.nonEmpty)
       .map(p => p.split(" "))
       .zipWithIndex
@@ -771,7 +772,7 @@ class GraphHopperSpec
         |43.67554 12.39515
         |""".stripMargin
 
-    val gpsPoints = points.lines
+    val gpsPoints = points.lines.iterator().asScala
       .filter(_.nonEmpty)
       .map(p => p.split(" "))
       .zipWithIndex
@@ -819,7 +820,7 @@ class GraphHopperSpec
     val points = """
       |45.75124, 45.7513, 45.75139, 45.75133, 45.75101, 45.75068, 45.75014, 45.74992, 45.75026, 45.75116, 45.7523, 45.75354, 45.75482, 45.75606, 45.75635, 45.75644, 45.75654, 45.75663, 45.75772, 45.75865, 45.75876, 45.7588, 45.75886, 45.75892, 45.75897, 45.75936, 45.76017, 45.7611, 45.76208, 45.763, 45.76391, 45.76518, 45.76633, 45.76753, 45.76785, 45.76797, 45.76908, 45.76927, 45.7692, 45.7692, 45.7692, 45.7692, 45.76919, 45.76918, 45.76918, 45.76918, 45.76916, 45.76916, 45.76916, 45.76917, 45.76918
       |9.05274, 9.05281, 9.05241, 9.05231, 9.05236, 9.05189, 9.05106, 9.05045, 9.05038, 9.05043, 9.05048, 9.05055, 9.05066, 9.05119, 9.05154, 9.0516, 9.05161, 9.05159, 9.05149, 9.05191, 9.05215, 9.05221, 9.05224, 9.05223, 9.0522, 9.05194, 9.05212, 9.05317, 9.05438, 9.05551, 9.05662, 9.05756, 9.05836, 9.05942, 9.05971, 9.05977, 9.06032, 9.06098, 9.06106, 9.06106, 9.06106, 9.06106, 9.06107, 9.06107, 9.06107, 9.06107, 9.06106, 9.06106, 9.06106, 9.06106, 9.06106
-      |""".stripMargin.lines
+      |""".stripMargin.lines.iterator().asScala
       .filter(_.nonEmpty)
       .map(l => l.split(","))
       .map(l => l.filter(_.nonEmpty).map(_.trim.toDouble))
@@ -1052,7 +1053,7 @@ class GraphHopperSpec
         |
         |""".stripMargin
 
-    val gpsPoints = points.lines
+    val gpsPoints = points.lines.iterator().asScala
       .filter(_.nonEmpty)
       .map(p => p.trim.split(" ").filter(_.trim.nonEmpty))
       .zipWithIndex
@@ -2222,7 +2223,7 @@ class GraphHopperSpec
   }
 
   private def csvToPoints(points: String): Seq[GPSPoint] =
-    points.stripMargin.lines
+    points.stripMargin.lines.iterator().asScala
       .map(_.trim)
       .filter(_.nonEmpty)
       .filterNot(_.startsWith("#")) // Commenting system for coordinates
