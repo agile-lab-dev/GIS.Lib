@@ -13,7 +13,7 @@ import org.locationtech.jts.geom.{
   Point,
   Polygon
 }
-import org.opengis.feature.simple._
+import org.geotools.api.feature.simple._
 
 import java.io.File
 import java.net.URL

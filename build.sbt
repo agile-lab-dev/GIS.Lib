@@ -2,9 +2,9 @@ import com.sksamuel.scapegoat.sbt.ScapegoatSbtPlugin.autoImport._
 
 inThisBuild(
   Seq(
-    scalaVersion := scala211,
+    scalaVersion := scala212,
     organization := "it.agilelab",
-    version := "1.8.0-SNAPSHOT",
+    version := "1.9.0-SNAPSHOT",
     scapegoatVersion := "1.4.15",
     RepositoriesSupport.allResolvers,
     WarningAsErrorsSupport.enableWarningAsErrors,
@@ -43,5 +43,4 @@ lazy val root = (project in file("."))
   )
 
 lazy val scala212 = "2.12.16"
-lazy val scala211 = "2.11.12"
-lazy val supportedScalaVersions = List(scala212, scala211)
+lazy val supportedScalaVersions = List(scala212)
