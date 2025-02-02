@@ -1,6 +1,7 @@
 package it.agilelab.gis.domain.graphhopper
 
-import com.graphhopper.util.GPXEntry
+import com.graphhopper.matching.{ Observation, Observation2, State }
+import com.graphhopper.util.shapes.GHPoint
 
 import scala.util.Try
 
@@ -26,7 +27,8 @@ class GPSPoint(val lat: Double, val lon: Double, val alt: Option[Double], val ti
       speedLimit = None
     )
 
-  def toGPXEntry: GPXEntry = new GPXEntry(lat, lon, time)
+  //def toGPXEntry: GPXEntry = new GPXEntry(lat, lon, time)
+  def toObservation: Observation = new Observation(new GHPoint(lat, lon), time)
 
 }
 

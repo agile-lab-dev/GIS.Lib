@@ -1,7 +1,9 @@
 package it.agilelab.gis.core.encoder
 
 import com.graphhopper.reader.ReaderWay
-import com.graphhopper.routing.util.{ CarFlagEncoder, EncodedValue }
+import com.graphhopper.routing.profiles.UnsignedIntEncodedValue
+import com.graphhopper.routing.util.{ CarFlagEncoder, EncodingManager, FlagEncoder }
+import com.graphhopper.storage.IntsRef
 import com.graphhopper.util.EdgeIteratorState
 import it.agilelab.gis.core.utils.Logger
 
@@ -15,12 +17,7 @@ class CarFlagEncoderEnrich(speedBits: Int = 8, speedFactor: Double = 1, maxTurnC
     extends CarFlagEncoder(speedBits, speedFactor, maxTurnCosts)
     with Logger {
 
-  final private val highwayMap: util.Map[String, Integer] = new util.HashMap[String, Integer]
-  final private val highwayMapIndex: mutable.Map[Int, String] = mutable.Map()
-
   private final val unknownHighway = "unclassified"
-
-  private var highwayEncoder: EncodedValue = _
 
   defaultSpeedMap.put("steps", 0)
   defaultSpeedMap.put("pedestrian", 0)
@@ -52,106 +49,72 @@ class CarFlagEncoderEnrich(speedBits: Int = 8, speedFactor: Double = 1, maxTurnC
   defaultSpeedMap.put("road", 50)
   defaultSpeedMap.put("track", 15)
 
-  val highwayList: Seq[String] = Seq(
-    /* reserve index=0 for unset roads (not accessible) */
-    "_default",
-    "motorway",
-    "motorway_link",
-    "motorroad",
-    "trunk",
-    "trunk_link",
-    "primary",
-    "primary_link",
-    "secondary",
-    "secondary_link",
-    "tertiary",
-    "tertiary_link",
-    "unclassified",
-    "residential",
-    "living_street",
-    "service",
-    "road",
-    "track",
-    "forestry",
-    "cycleway",
-    "path",
-    "footway",
-    "pedestrian",
-    "bus_guideway",
-    "escape",
-    "raceway",
-    "busway",
-    "bridleway",
-    "steps"
-  )
+  val highwayEncoder = new UnsignedIntEncodedValue("highway", 4, false)
 
-  logger.info(highwayList.diff(defaultSpeedMap.keySet().asScala.toSeq).toString())
+  override def getAccess(way: ReaderWay): EncodingManager.Access =
+    if (getHighwayValue(way) == 0) {
+      EncodingManager.Access.CAN_SKIP
+    } else {
+      super.getAccess(way)
+    }
 
-  highwayList.zipWithIndex.foreach { case (value, idx) =>
-    highwayMap.put(value, idx)
-    highwayMapIndex.put(idx, value)
+  override def handleWayTags(
+      edgeFlags: IntsRef,
+      way: ReaderWay,
+      access: EncodingManager.Access,
+      relationFlags: Long
+  ): IntsRef = {
+    val value = super.handleWayTags(edgeFlags, way, access, relationFlags)
+    highwayEncoder.setInt(false, value, getHighwayValue(way))
+    value
   }
-
-  override def acceptWay(way: ReaderWay): Long =
-    // important to skip unsupported highways, otherwise too many have to be removed after graph creation
-    // and node removal is not yet designed for that
-    if (getHighwayValue(way) == 0) 0
-    else acceptBit
 
   private def getHighwayValue(way: ReaderWay): Int = {
     val highwayValue: String = way.getTag("highway")
-
     if (way.hasTag("impassable", "yes") || way.hasTag("status", "impassable"))
       0
     else
-      Option(highwayMap.get(highwayValue).asInstanceOf[Int]).getOrElse(0)
+      HighwayType.indexOf(highwayValue)
   }
-
-  override def handleWayTags(way: ReaderWay, allowed: Long, relationFlags: Long): Long = {
-    val hwValue = getHighwayValue(way)
-    highwayEncoder.setValue(super.handleWayTags(way, allowed, relationFlags), hwValue.toLong)
-  }
-
-  override def defineWayBits(index: Int, shift: Int): Int = {
-    // first bits are reserved for route handling in superclass
-    val _shift: Int = super.defineWayBits(index, shift)
-
-    highwayEncoder = new EncodedValue("highway", _shift, speedBits, speedFactor, 0, highwayMap.size, true)
-
-    _shift + highwayEncoder.getBits
-  }
-
-  def getHighway(edge: EdgeIteratorState): Int = highwayEncoder.getValue(edge.getFlags).toInt
 
   /** Do not use within weighting as this is suboptimal from performance point of view.
     */
   def getHighwayAsString(edge: EdgeIteratorState): String = {
     val v: Int = getHighway(edge)
 
-    highwayMapIndex.get(v) match {
-      case Some(value) => value
+    HighwayType.fromId(v) match {
+      case Some(value) => value.toString
       case None =>
-        logger.warn(s"Highway $v not found in ${highwayMap.asScala.mkString(",")}")
+        logger.warn(s"Highway $v not found in ${HighwayType.values.toList.mkString(",")}")
         unknownHighway
     }
   }
 
-  /*
+  def getHighway(edge: EdgeIteratorState): Int = highwayEncoder.getInt(false, edge.getFlags)
 
-  Override reasoning: CarFlagEncoder.applyMaxSpeed implementation is:
-
-        double maxSpeed = getMaxSpeed(way);
-        // We obey speed limits
-        if (maxSpeed >= 0) {
-            // We assume that the average speed is 90% of the allowed maximum
-            return maxSpeed * 0.9;
-        }
-        return speed;
-
-   That 0.9 factor is not what we want.
-   */
   override def applyMaxSpeed(way: ReaderWay, speed: Double): Double = getMaxSpeed(way) match {
     case max: Double if max >= 0 => max
     case _                       => speed
   }
+
+  // Method copied from AbstractFlagEncoder that is overridden in CarFlagEncoder
+  def getSpeedEncoderValue(reverse: Boolean, edgeFlags: IntsRef): Double = {
+    val speedVal: Double = speedEncoder.getDecimal(reverse, edgeFlags)
+    if (speedVal < 0) {
+      throw new IllegalStateException("Speed was negative!? " + speedVal)
+    }
+    speedVal
+  }
+}
+
+object HighwayType extends Enumeration {
+  type HighwayType = Value
+
+  val _default, motorway, motorway_link, motorroad, trunk, trunk_link, primary, primary_link, secondary, secondary_link,
+      tertiary, tertiary_link, unclassified, residential, living_street, service, road, track, forestry, cycleway, path,
+      footway, pedestrian, bus_guideway, escape, raceway, busway, bridleway, steps = Value
+
+  def indexOf(value: String): Int = values.find(_.toString == value).map(_.id).getOrElse(0)
+  def fromId(id: Int): Option[HighwayType] = values.find(_.id == id)
+
 }

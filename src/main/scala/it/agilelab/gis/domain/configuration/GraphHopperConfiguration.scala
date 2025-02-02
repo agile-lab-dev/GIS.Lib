@@ -83,15 +83,12 @@ object GraphHopperConfiguration extends Configuration with ValidationUtils with 
         hopperOSM.setElevation(settings.elevationEnabled)
         val encoder =
           new CarFlagEncoderEnrich() // TODO refactor to use a generic trait and not a single encoder implementation
-        hopperOSM.setEncodingManager(new EncodingManager(encoder))
+        hopperOSM.setEncodingManager(EncodingManager.create(encoder))
         val weighting =
           new FastestWeighting(
             encoder,
             new PMap()
           ) // TODO refactor to use a generic trait and not a single weighting implementation
-
-        //We disable the contraction hierarchies post processing. It seems to be mandatory in order to do map matching
-        hopperOSM.getCHFactoryDecorator.setEnabled(settings.contractionHierarchiesEnabled)
 
         //If no new map is specified, load from the resource folder
         hopperOSM.load(settings.graphLocation)

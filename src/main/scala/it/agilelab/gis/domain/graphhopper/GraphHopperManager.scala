@@ -1,6 +1,6 @@
 package it.agilelab.gis.domain.graphhopper
 
-import com.graphhopper.matching.{ EdgeMatch, GPXExtension, MatchResult }
+import com.graphhopper.matching.{ EdgeMatch, MatchResult, State }
 import com.graphhopper.util.details._
 import com.graphhopper.util.{ DistancePlaneProjection, EdgeIteratorState }
 import com.typesafe.config.Config
@@ -30,7 +30,7 @@ case class GraphHopperManager(conf: Config) extends RouteMatcher with Logger {
 
   override def matchingRoute(gpsPoints: Seq[GPSPoint]): Either[MatchedRouteError, MatchedRoute] =
     Try {
-      val calcRoute: MatchResult = graphConf.mapMatching.doWork(gpsPoints.map(_.toGPXEntry).asJava)
+      val calcRoute: MatchResult = graphConf.mapMatching.doWork(gpsPoints.map(_.toObservation).asJava)
 
       val length = calcRoute.getMatchLength
       val time = calcRoute.getMatchMillis
@@ -225,23 +225,23 @@ object GraphHopperManager {
       .map { case (highway, distances) => (highway, distances.map { case (_, distance) => distance }.sum) }
 
   private def getEdges(edges: Seq[EdgeMatch]): List[Edge] =
-    edges.toList.flatMap(edge => edge.getGpxExtensions.asScala.map(item => Edge(edge = edge, item = item)))
+    edges.toList.flatMap(edge => edge.getStates.asScala.map(item => Edge(edge = edge, item = item)))
 
   private def getTracePoints(edges: List[Edge], encoder: CarFlagEncoderEnrich) =
     edges.map(edge => createTracePoint(edge.edge, edge.item, encoder))
 
-  private def createTracePoint(edge: EdgeMatch, item: GPXExtension, encoder: CarFlagEncoderEnrich) =
+  private def createTracePoint(edge: EdgeMatch, item: State, encoder: CarFlagEncoderEnrich) =
     TracePoint(
-      latitude = item.getEntry.lat,
-      longitude = item.getEntry.lon,
-      altitude = Some(item.getEntry.ele),
+      latitude = item.getEntry.getPoint.lat,
+      longitude = item.getEntry.getPoint.lon,
+      altitude = None,
       time = item.getEntry.getTime,
       matchedLatitude = Some(item.getQueryResult.getSnappedPoint.lat),
       matchedLongitude = Some(item.getQueryResult.getSnappedPoint.lon),
       matchedAltitude = Some(item.getQueryResult.getSnappedPoint.ele),
       roadType = typeOfRoute(edge.getEdgeState, encoder),
       roadName = Some(edge.getEdgeState.getName),
-      speedLimit = Some(encoder.getSpeed(edge.getEdgeState.getFlags).toInt),
+      speedLimit = Some(encoder.getSpeedEncoderValue(false, edge.getEdgeState.getFlags).toInt),
       linearDistance = Some(item.getQueryResult.getQueryDistance)
     )
 
