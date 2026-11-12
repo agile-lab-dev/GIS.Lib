@@ -7,17 +7,26 @@ import org.locationtech.jts.geom._
   */
 object Circle {
 
-  /** MB rto circle.
+  /** Converts an MBR (Envelope) into its circumscribed Circle, i.e. the smallest circle
+    * centered on the MBR's centroid that fully contains the whole MBR.
     *
     * @param mbr the mbr
     * @return the circle
     */
   def MBRtoCircle(mbr: Envelope): Circle = {
-    val radius = (mbr.getMaxX - mbr.getMinX) / 2
-    val fact = new GeometryFactory
-    val coordinate = new Coordinate(mbr.getMinX + radius, mbr.getMinY + radius)
-    val point = fact.createPoint(coordinate)
+    val width = mbr.getMaxX - mbr.getMinX
+    val height = mbr.getMaxY - mbr.getMinY
+    // Half of the diagonal: guarantees the circle contains the entire MBR,
+    // including its corners. Using min(width, height) / 2 would instead yield
+    // the inscribed circle, which does NOT cover the full MBR when it's not a square.
+    val radius = Math.sqrt(width * width + height * height) / 2.0
+
     val factory = new GeometryFactoryEnriched()
+    val coordinate = new Coordinate(
+      (mbr.getMinX + mbr.getMaxX) / 2.0,
+      (mbr.getMinY + mbr.getMaxY) / 2.0
+    )
+    val point = factory.createPoint(coordinate)
     new Circle(point, radius, factory)
   }
 }
@@ -137,10 +146,10 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
   override def distance(geom: Geometry) =
     if (!this.contains(geom))
       DistanceUtils.haversineFormula(
-        this.center.getX,
         this.center.getY,
-        geom.getInteriorPoint.getX,
-        geom.getInteriorPoint.getY) - radius
+        this.center.getX,
+        geom.getInteriorPoint.getY,
+        geom.getInteriorPoint.getX) - radius
     else 0.0
 
   /** Contains.
@@ -151,10 +160,10 @@ case class Circle(center: Point, radius: Double, circleFactory: GeometryFactoryE
   override def contains(other: Geometry): Boolean =
     if (
       DistanceUtils.haversineFormula(
-        this.center.getX,
         this.center.getY,
-        other.getInteriorPoint.getX,
-        other.getInteriorPoint.getY) < radius
+        this.center.getX,
+        other.getInteriorPoint.getY,
+        other.getInteriorPoint.getX) < radius
     ) // TODO: currently it behaves like intersect
       true
     else
