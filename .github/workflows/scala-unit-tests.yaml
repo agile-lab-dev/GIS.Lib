@@ -10,7 +10,7 @@ jobs:
       JAVA_OPTS: "-Xmx6g -Xms6g"
       JVM_OPTS: "-Xmx6g -Xms6g"
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
 
@@ -19,6 +19,8 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: sbt
+
+      - uses: sbt/setup-sbt@v1
 
       - name: Build and Test
         run: sbt -v "+testOnly -- -l org.scalatest.tags.Slow"
